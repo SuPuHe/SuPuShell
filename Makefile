@@ -32,7 +32,7 @@ LDFLAGS = -lreadline
 
 RM = rm -rf
 
-SRCS = minishell.c
+SRCS = minishell.c helpers.c env_helpers.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))
