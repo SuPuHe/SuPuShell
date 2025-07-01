@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/06/30 12:36:42 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/01 13:27:18 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,29 @@ void	do_pwd(void)
 	char	buf[512];
 
 	getcwd(buf, sizeof(buf));
-	printf(GREEN"%s\n"RESET, buf);
+	printf(BOLDGREEN"%s\n"RESET, buf);
+}
+
+char *get_env_value(t_env *env, const char *key)
+{
+	while (env)
+	{
+		if (ft_strcmp(env->key, key) == 0)
+			return env->value;
+		env = env->next;
+	}
+	return NULL;
+}
+
+void	goto_prev_dir(t_env **env)
+{
+	char	*old;
+
+	old = get_env_value(*env, "OLDPWD");
+	if (old && chdir(old) == 0)
+		do_pwd();
+	else
+		perror(BOLDRED"cd"RESET);
 }
 
 void	do_cd(char **commands, t_env **env)
@@ -28,21 +50,24 @@ void	do_cd(char **commands, t_env **env)
 
 	if (!getcwd(oldpwd, sizeof(oldpwd)))
 		return ;
-	if (ft_strncmp(commands[1], "~", 2) == 0)
+	if (!commands[1])
 		chdir(home);
-	else if (commands[1])
+	else if (ft_strncmp(commands[1], "~", 2) == 0)
+		chdir(home);
+	else if (ft_strncmp(commands[1], "-", 2) == 0)
+		goto_prev_dir(env);
+	else
 	{
 		if (chdir(commands[1]) == -1)
-			perror(RED"cd"RESET);
+			perror(BOLDRED"cd"RESET);
 	}
-	else
-		chdir(home);
 	if (getcwd(newpwd, sizeof(newpwd)))
 	{
 		update_or_add_env_var(env, "OLDPWD", oldpwd);
 		update_or_add_env_var(env, "PWD", newpwd);
 	}
 }
+
 
 void	do_export(char **argv, t_env **env)
 {
@@ -59,7 +84,7 @@ void	do_export(char **argv, t_env **env)
 			return ;
 		if (!parse_export_argument(tmp, &key, &val))
 		{
-			printf(RED"export: invalid format: %s\n"RESET, argv[i]);
+			printf(BOLDRED"export: invalid format: %s\n"RESET, argv[i]);
 			i++;
 			continue ;
 		}
@@ -86,7 +111,7 @@ void	do_env(t_env *env)
 	while (env)
 	{
 		if (env->value)
-			printf(GREEN"%s=%s\n"RESET, env->key, env->value);
+			printf(BOLDMAGENTA"%s=%s\n"RESET, env->key, env->value);
 		env = env->next;
 	}
 }
@@ -108,26 +133,28 @@ void	command_handler(char **argv, t_env **env)
 	else if (ft_strncmp(argv[0], "unset", 6) == 0)
 		do_unset(argv, env);
 	else
-		printf(RED"I don't know this command: %s\n"RESET, argv[0]);
+		printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
 }
 
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
 	char	**commands;
-	t_env	*env = create_env(envp);
+	t_env	*env;
 
 	(void)argc;
 	(void)argv;
+	env = create_env(envp);
 	while (1)
 	{
-		line = readline(CYAN"SuPuShell$ "RESET);
+		// line = readline(BOLDCYAN"SuPuShell$ "RESET);
+		line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
 		if (!line)
 			break ;
 		if (*line)
 			add_history(line);
 		commands = split_args(line);
-		command_handler(commands, &env);
+		command_handler(commands, &env);;
 		free_args(commands);
 		free(line);
 	}
