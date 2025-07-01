@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/01 13:27:18 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/01 20:06:06 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,24 @@ void	do_env(t_env *env)
 	}
 }
 
+void	do_echo(char **argv)
+{
+	int	i;
+
+	i = 1;
+	if (!argv[i])
+		printf("\n");
+	else if (ft_strncmp(argv[i], "-n", 3) == 0)
+	{
+		while (ft_strncmp(argv[i], "-n", 3) == 0)
+			i++;
+		if (argv[i])
+			printf("%s", argv[i]);
+	}
+	else
+		printf("%s\n", argv[i]);
+}
+
 void	command_handler(char **argv, t_env **env)
 {
 	if (!argv || !argv[0])
@@ -132,6 +150,8 @@ void	command_handler(char **argv, t_env **env)
 		do_export(argv, env);
 	else if (ft_strncmp(argv[0], "unset", 6) == 0)
 		do_unset(argv, env);
+	else if (ft_strncmp(argv[0], "echo", 5) == 0)
+		do_echo(argv);
 	else
 		printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
 }
