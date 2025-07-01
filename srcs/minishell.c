@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/01 20:06:06 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/01 20:12:50 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,20 +119,32 @@ void	do_env(t_env *env)
 void	do_echo(char **argv)
 {
 	int	i;
+	int	j;
+	int	new_line_flag;
 
 	i = 1;
-	if (!argv[i])
-		printf("\n");
-	else if (ft_strncmp(argv[i], "-n", 3) == 0)
+	new_line_flag = 1;
+	while (argv[i] && argv[i][0] == '-' && argv[i][1] == 'n')
 	{
-		while (ft_strncmp(argv[i], "-n", 3) == 0)
-			i++;
-		if (argv[i])
-			printf("%s", argv[i]);
+		j = 2;
+		while (argv[i][j] == 'n')
+			j++;
+		if (argv[i][j] != '\0')
+			break;
+		new_line_flag = 0;
+		i++;
 	}
-	else
-		printf("%s\n", argv[i]);
+	while (argv[i])
+	{
+		printf("%s", argv[i]);
+		if (argv[i + 1])
+			printf(" ");
+		i++;
+	}
+	if (new_line_flag)
+		printf("\n");
 }
+
 
 void	command_handler(char **argv, t_env **env)
 {
