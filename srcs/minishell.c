@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/01 20:12:50 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/04 13:52:56 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,7 +186,7 @@ int	main(int argc, char **argv, char **envp)
 		if (*line)
 			add_history(line);
 		commands = split_args(line);
-		command_handler(commands, &env);;
+		command_handler(commands, &env);
 		free_args(commands);
 		free(line);
 	}
