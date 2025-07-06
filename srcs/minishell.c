@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/01 20:12:50 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/06 17:48:10 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,169 @@ void	do_echo(char **argv)
 		printf("\n");
 }
 
+char	*ft_strcpy(char *dest, const char *src)
+{
+	int	i;
+
+	i = 0;
+	while (src[i])
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+	return dest;
+}
+
+char	*ft_strcat(char *dest, const char *src)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = 0;
+	while (dest[i])
+		i++;
+
+	while (src[j])
+	{
+		dest[i + j] = src[j];
+		j++;
+	}
+	dest[i + j] = '\0';
+	return dest;
+}
+
+char	**build_envp(t_env *env)
+{
+	int		count;
+	t_env	*tmp;
+	char	**envp;
+	int		i;
+	char	*entry;
+
+	tmp = env;
+	count = 0;
+	while (tmp)
+	{
+		if (tmp->key && tmp->value)
+			count++;
+		tmp = tmp->next;
+	}
+	envp = malloc(sizeof(char *) * (count + 1));
+	i = 0;
+	tmp = env;
+	while (tmp)
+	{
+		if (tmp->key && tmp->value)
+		{
+			entry = malloc(ft_strlen(tmp->key) + ft_strlen(tmp->value) + 2);
+			ft_strcpy(entry, tmp->key);
+			ft_strcat(entry, "=");
+			ft_strcat(entry, tmp->value);
+			envp[i++] = entry;
+		}
+		tmp = tmp->next;
+	}
+	envp[i] = NULL;
+	return envp;
+}
+
+char	*ft_strsep(char **str, const char *sep)
+{
+	char		*start;
+	char		*ptr;
+	const char	*s;
+
+	if (!str || !*str)
+		return (NULL);
+	start = *str;
+	ptr = start;
+	while (*ptr)
+	{
+		s = sep;
+		while (*s)
+		{
+			if (*ptr == *s)
+			{
+				*ptr = '\0';
+				*str = ptr + 1;
+				return (start);
+			}
+			s++;
+		}
+		ptr++;
+	}
+	*str = NULL;
+	return (start);
+}
+
+char	*search_path(const char *cmd, t_env *env)
+{
+	char	*path_var;
+	char	*paths;
+	char	*save;
+	char	*token;
+	char	full_path[1024];
+	char	*result;
+
+	path_var = get_env_value(env, "PATH");
+	if (!path_var)
+		return (NULL);
+	paths = ft_strdup(path_var);
+	save = paths;
+	while ((token = ft_strsep(&paths, ":")) != NULL)
+	{
+		ft_strcpy(full_path, token);
+		ft_strcat(full_path, "/");
+		ft_strcat(full_path, cmd);
+		if (access(full_path, X_OK) == 0)
+		{
+			result = ft_strdup(full_path);
+			free(save);
+			return (result);
+		}
+	}
+	free(save);
+	return (NULL);
+}
+
+void run_external_command(char **argv, t_env *env)
+{
+	pid_t	pid;
+	int		status;
+	char	*path;
+	char	**envp;
+	int		i;
+
+	pid = fork();
+	if (pid == 0)
+	{
+		envp = build_envp(env);
+		if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
+			path = argv[0];
+		else
+			path = search_path(argv[0], env);
+
+		if (!path || access(path, X_OK) != 0)
+		{
+			printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
+			exit(1);
+		}
+		execve(path, argv, envp);
+		i = 0;
+		while (envp[i])
+		{
+			free(envp[i]);
+			i++;
+		}
+		free(envp);
+		perror("execve");
+		exit(1);
+	}
+	else
+		waitpid(pid, &status, 0);
+}
 
 void	command_handler(char **argv, t_env **env)
 {
@@ -155,7 +318,10 @@ void	command_handler(char **argv, t_env **env)
 	else if (ft_strncmp(argv[0], "cd", 3) == 0)
 		do_cd(argv, env);
 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
+	{
+		free_env_list(*env);
 		exit(0);
+	}
 	else if (ft_strncmp(argv[0], "env", 4) == 0)
 		do_env(*env);
 	else if (ft_strncmp(argv[0], "export", 7) == 0)
@@ -165,7 +331,8 @@ void	command_handler(char **argv, t_env **env)
 	else if (ft_strncmp(argv[0], "echo", 5) == 0)
 		do_echo(argv);
 	else
-		printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
+		run_external_command(argv, *env);
+		//printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -179,7 +346,7 @@ int	main(int argc, char **argv, char **envp)
 	env = create_env(envp);
 	while (1)
 	{
-		// line = readline(BOLDCYAN"SuPuShell$ "RESET);
+		//line = readline(BOLDCYAN"SuPuShell$ "RESET);
 		line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
 		if (!line)
 			break ;
@@ -190,6 +357,6 @@ int	main(int argc, char **argv, char **envp)
 		free_args(commands);
 		free(line);
 	}
-	free_env_list(env);
+	// free_env_list(env);
 	return (0);
 }
