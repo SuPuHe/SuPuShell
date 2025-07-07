@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/04 13:52:56 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/07 12:50:47 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,7 @@ void	do_export(char **argv, t_env **env)
 	}
 }
 
+
 void	do_unset(char **argv, t_env **env)
 {
 	int	i;
@@ -105,6 +106,7 @@ void	do_unset(char **argv, t_env **env)
 		i++;
 	}
 }
+
 
 void	do_env(t_env *env)
 {
