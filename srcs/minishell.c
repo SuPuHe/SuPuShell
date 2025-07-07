@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 14:13:50 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/07 15:57:26 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -335,6 +335,30 @@ void	command_handler(char **argv, t_env **env)
 		//printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
 }
 
+int	check_for_input(char *line)
+{
+	int	i;
+	int	quot;
+	int	d_quot;
+
+	i = 0;
+	quot = 0;
+	d_quot = 0;
+	while (line[i])
+	{
+		if (line[i] == '\\' || line[i] == ';')
+			return (printf("Error input\n"), 0);
+		else if (line[i] == '"')
+			d_quot++;
+		else if (line[i] == '\'')
+			quot++;
+		i++;
+	}
+	if (d_quot % 2 != 0 || quot % 2 != 0)
+		return (printf("Error input\n"), 0);
+	return (1);
+}
+
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
@@ -354,6 +378,8 @@ int	main(int argc, char **argv, char **envp)
 			break ;
 		if (*line)
 			add_history(line);
+		if (!check_for_input(line))
+			continue ;
 		commands = split_args(line);
 		command_handler(commands, &env);;
 		free_args(commands);
