@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_helpers.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/06/30 20:05:54 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/07 17:28:08 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

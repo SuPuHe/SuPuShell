@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 13:42:10 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/07 17:20:38 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,8 @@
 //tgetent / tgetstr / tputs (termcap)
 # include <term.h>
 # include <unistd.h>
+//bool
+# include <stdbool.h>
 
 typedef struct s_env
 {
@@ -83,6 +85,15 @@ typedef struct s_env
 	char			*value;
 	struct s_env	*next;
 }	t_env;
+
+typedef struct s_input
+{
+	const char	*line;
+	int			i;
+	t_env		*env;
+	char		**args;
+	bool		syntax_ok;
+}	t_input;
 
 //helpers
 void	free_env_list(t_env *env);
@@ -95,6 +106,7 @@ void	update_or_add_env_var(t_env **env, char *key, char *val);
 int		parse_export_argument(char *arg, char **key, char **val);
 void	remove_env_var(t_env **env, const char *key);
 t_env	*create_env(char **envp);
+char	*ft_strjoin_free(char *s1, const char *s2);
 
 // signals.c
 void	setup_signal(void);

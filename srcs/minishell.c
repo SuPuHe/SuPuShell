@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 15:57:26 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/07 18:31:39 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void	do_pwd(void)
 	printf(BOLDGREEN"%s\n"RESET, buf);
 }
 
-char *get_env_value(t_env *env, const char *key)
+char	*get_env_value(t_env *env, const char *key)
 {
 	while (env)
 	{
@@ -28,7 +28,7 @@ char *get_env_value(t_env *env, const char *key)
 			return env->value;
 		env = env->next;
 	}
-	return NULL;
+	return (NULL);
 }
 
 void	goto_prev_dir(t_env **env)
@@ -48,6 +48,9 @@ void	do_cd(char **commands, t_env **env)
 	char		newpwd[512];
 	char		oldpwd[512];
 
+	// for (int i = 0; commands[i]; i++)
+	// 	printf("%s\n", commands[i]);
+	printf("%s\n", commands[2]);
 	if (!getcwd(oldpwd, sizeof(oldpwd)))
 		return ;
 	if (!commands[1])
@@ -359,6 +362,178 @@ int	check_for_input(char *line)
 	return (1);
 }
 
+int	ft_isspace(char c)
+{
+	return (c == ' ' || c == '\t' || c == '\n'
+		|| c == '\v' || c == '\f' || c == '\r');
+}
+
+void	skip_spaces(t_input *input)
+{
+	while (input->line[input->i]
+		&& (input->line[input->i] == ' ' || input->line[input->i] == '\t'))
+		input->i++;
+}
+
+char	*parse_env_var(t_input *input)
+{
+	int		start;
+	char	*name;
+	char	*value;
+
+	start = ++input->i;
+	while (input->line[input->i]
+		&& (ft_isalnum(input->line[input->i]) || input->line[input->i] == '_'))
+		input->i++;
+	if (input->i == start)
+		return (ft_strdup("$"));
+	name = ft_substr(input->line, start, input->i - start);
+	value = get_env_value(input->env, name);
+	free(name);
+	if (value)
+		return (ft_strdup(value));
+	else
+		return (ft_strdup(""));
+}
+
+char	*parse_single_quote(t_input *input)
+{
+	int		start;
+	char	*result;
+
+	start = ++input->i;
+	while (input->line[input->i] && input->line[input->i] != '\'')
+		input->i++;
+	if (input->line[input->i] != '\'')
+	{
+		input->syntax_ok = false;
+		return (NULL);
+	}
+	result = ft_substr(input->line, start, input->i - start);
+	input->i++;
+	return (result);
+}
+
+char	*parse_double_quote(t_input *input)
+{
+	char	*result;
+	int		start;
+
+	result = ft_strdup("");
+	while (input->line[input->i] && input->line[input->i] != '"')
+	{
+		if (input->line[input->i] == '$')
+			result = ft_strjoin_free(result, parse_env_var(input));
+		else
+		{
+			start = input->i;
+			while (input->line[input->i] && input->line[input->i] != '$'
+				&& input->line[input->i] != '"')
+				input->i++;
+			result = ft_strjoin_free(result,
+					ft_substr(input->line, start, input->i - start));
+		}
+	}
+	if (input->line[input->i] == '"')
+		input->i++;
+	return (result);
+}
+
+char *parse_word(t_input *in)
+{
+	char	*result;
+	int		start;
+
+	result = ft_strdup("");
+	while (in->line[in->i] && !ft_isspace(in->line[in->i])
+		&& in->line[in->i] != '\'' && in->line[in->i] != '"')
+	{
+		if (in->line[in->i] == '$')
+			result = ft_strjoin_free(result, parse_env_var(in));
+		else
+		{
+			start = in->i;
+			while (in->line[in->i] && in->line[in->i] != '$'
+				&& !ft_isspace(in->line[in->i])
+				&& in->line[in->i] != '\'' && in->line[in->i] != '"')
+				in->i++;
+			result = ft_strjoin_free(result,
+					ft_substr(in->line, start, in->i - start));
+		}
+	}
+	return (result);
+}
+
+static int	ft_arrlen(char **arr)
+{
+	int	i;
+
+	i = 0;
+	if (!arr)
+		return (0);
+	while (arr[i])
+		i++;
+	return (i);
+}
+
+char	**append_arg(char **args, char *new_arg)
+{
+	int		i;
+	int		len;
+	char	**new_args;
+
+	len = ft_arrlen(args);
+	new_args = malloc(sizeof(char *) * (len + 2));
+	if (!new_args)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		new_args[i] = args[i];
+		i++;
+	}
+	new_args[len] = new_arg;
+	new_args[len + 1] = NULL;
+	free(args);
+	return (new_args);
+}
+
+
+char	**split_input(char *line, t_env *env)
+{
+	t_input	input;
+	char	*arg;
+
+	input.line = line;
+	input.i = 0;
+	input.env = env;
+	input.args = NULL;
+	input.syntax_ok = true;
+	while (input.line[input.i])
+	{
+		printf("SPLUT\n");
+		skip_spaces(&input);
+		if (!input.line[input.i])
+			break ;
+		arg = NULL;
+		if (input.line[input.i] == '\'')
+			arg = parse_single_quote(&input);
+		else if (input.line[input.i] == '"')
+			arg = parse_double_quote(&input);
+		else
+			arg = parse_word(&input);
+		if (!arg || !input.syntax_ok)
+		{
+			free(arg);
+			free_args(input.args);
+			return (NULL);
+		}
+		input.args = append_arg(input.args, arg);
+	}
+	return (input.args);
+}
+
+
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
@@ -380,8 +555,9 @@ int	main(int argc, char **argv, char **envp)
 			add_history(line);
 		if (!check_for_input(line))
 			continue ;
-		commands = split_args(line);
-		command_handler(commands, &env);;
+		// commands = split_args(line);
+		commands = split_input(line, env);
+		command_handler(commands, &env);
 		free_args(commands);
 		free(line);
 	}
