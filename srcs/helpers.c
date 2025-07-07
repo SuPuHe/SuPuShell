@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   helpers.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:38:55 by omizin            #+#    #+#             */
-/*   Updated: 2025/06/30 19:43:07 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/07 17:20:29 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,4 +92,22 @@ void	free_env_list(t_env *env)
 		free(env);
 		env = tmp;
 	}
+}
+
+char	*ft_strjoin_free(char *s1, const char *s2)
+{
+	char	*word;
+	size_t	len;
+
+	if (!s1 || !s2)
+		return (NULL);
+	len = ft_strlen(s1) + ft_strlen(s2);
+	word = malloc(sizeof(char) * (len + 1));
+	if (!word)
+		return (NULL);
+	ft_memcpy(word, s1, ft_strlen(s1));
+	ft_memcpy(word + ft_strlen(s1), s2, ft_strlen(s2));
+	word[len] = '\0';
+	free(s1);
+	return (word);
 }
