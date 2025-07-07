@@ -3,17 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-<<<<<<< HEAD
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 12:50:47 by vpushkar         ###   ########.fr       */
-=======
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/06 17:48:10 by omizin           ###   ########.fr       */
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
+/*   Updated: 2025/07/07 12:56:54 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,10 +94,6 @@ void	do_export(char **argv, t_env **env)
 	}
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 void	do_unset(char **argv, t_env **env)
 {
 	int	i;
@@ -117,10 +106,6 @@ void	do_unset(char **argv, t_env **env)
 	}
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 void	do_env(t_env *env)
 {
 	while (env)
@@ -160,8 +145,6 @@ void	do_echo(char **argv)
 		printf("\n");
 }
 
-<<<<<<< HEAD
-=======
 char	*ft_strcpy(char *dest, const char *src)
 {
 	int	i;
@@ -325,7 +308,6 @@ void run_external_command(char **argv, t_env *env)
 	else
 		waitpid(pid, &status, 0);
 }
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 
 void	command_handler(char **argv, t_env **env)
 {
@@ -336,14 +318,10 @@ void	command_handler(char **argv, t_env **env)
 	else if (ft_strncmp(argv[0], "cd", 3) == 0)
 		do_cd(argv, env);
 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
-<<<<<<< HEAD
-		exit(0);
-=======
 	{
 		free_env_list(*env);
 		exit(0);
 	}
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 	else if (ft_strncmp(argv[0], "env", 4) == 0)
 		do_env(*env);
 	else if (ft_strncmp(argv[0], "export", 7) == 0)
@@ -353,12 +331,8 @@ void	command_handler(char **argv, t_env **env)
 	else if (ft_strncmp(argv[0], "echo", 5) == 0)
 		do_echo(argv);
 	else
-<<<<<<< HEAD
-		printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
-=======
 		run_external_command(argv, *env);
 		//printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -372,29 +346,17 @@ int	main(int argc, char **argv, char **envp)
 	env = create_env(envp);
 	while (1)
 	{
-<<<<<<< HEAD
-		// line = readline(BOLDCYAN"SuPuShell$ "RESET);
-=======
 		//line = readline(BOLDCYAN"SuPuShell$ "RESET);
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 		line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
 		if (!line)
 			break ;
 		if (*line)
 			add_history(line);
 		commands = split_args(line);
-<<<<<<< HEAD
-		command_handler(commands, &env);
-		free_args(commands);
-		free(line);
-	}
-	free_env_list(env);
-=======
 		command_handler(commands, &env);;
 		free_args(commands);
 		free(line);
 	}
 	// free_env_list(env);
->>>>>>> e232eafeb2de7f04f2f1a007f9aec3b0c80ad607
 	return (0);
 }
