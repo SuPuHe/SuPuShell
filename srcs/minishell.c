@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 12:56:54 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/07 14:13:50 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,8 +344,10 @@ int	main(int argc, char **argv, char **envp)
 	(void)argc;
 	(void)argv;
 	env = create_env(envp);
+	disable_echoctl();
 	while (1)
 	{
+		setup_signal();
 		//line = readline(BOLDCYAN"SuPuShell$ "RESET);
 		line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
 		if (!line)

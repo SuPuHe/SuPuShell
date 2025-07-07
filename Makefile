@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
+#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/06/30 12:22:41 by omizin           ###   ########.fr        #
+#    Updated: 2025/07/07 13:28:28 by vpushkar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,7 +32,7 @@ LDFLAGS = -lreadline
 
 RM = rm -rf
 
-SRCS = minishell.c helpers.c env_helpers.c
+SRCS = minishell.c helpers.c env_helpers.c signals.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))

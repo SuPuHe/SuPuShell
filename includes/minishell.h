@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/01 11:41:44 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/07 13:42:10 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,4 +95,9 @@ void	update_or_add_env_var(t_env **env, char *key, char *val);
 int		parse_export_argument(char *arg, char **key, char **val);
 void	remove_env_var(t_env **env, const char *key);
 t_env	*create_env(char **envp);
+
+// signals.c
+void	setup_signal(void);
+void	disable_echoctl(void);
+
 #endif
