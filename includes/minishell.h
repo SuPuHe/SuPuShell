@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 14:13:40 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/08 17:10:09 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,12 @@ typedef struct s_input
 	t_env		*env;
 	char		**args;
 	bool		syntax_ok;
+	char		*infile;
+	char		*outfile;
+	bool		append;
+	char		*heredoc;
 }	t_input;
+
 
 //helpers
 void	free_env_list(t_env *env);
