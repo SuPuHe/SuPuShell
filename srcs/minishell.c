@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 18:31:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/08 10:49:28 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+char *parse_word(t_input *in);
 
 void	do_pwd(void)
 {
@@ -25,7 +27,7 @@ char	*get_env_value(t_env *env, const char *key)
 	while (env)
 	{
 		if (ft_strcmp(env->key, key) == 0)
-			return env->value;
+			return (env->value);
 		env = env->next;
 	}
 	return (NULL);
@@ -48,9 +50,6 @@ void	do_cd(char **commands, t_env **env)
 	char		newpwd[512];
 	char		oldpwd[512];
 
-	// for (int i = 0; commands[i]; i++)
-	// 	printf("%s\n", commands[i]);
-	printf("%s\n", commands[2]);
 	if (!getcwd(oldpwd, sizeof(oldpwd)))
 		return ;
 	if (!commands[1])
@@ -133,7 +132,7 @@ void	do_echo(char **argv)
 		while (argv[i][j] == 'n')
 			j++;
 		if (argv[i][j] != '\0')
-			break;
+			break ;
 		new_line_flag = 0;
 		i++;
 	}
@@ -178,7 +177,7 @@ char	*ft_strcat(char *dest, const char *src)
 		j++;
 	}
 	dest[i + j] = '\0';
-	return dest;
+	return (dest);
 }
 
 char	**build_envp(t_env *env)
@@ -213,7 +212,7 @@ char	**build_envp(t_env *env)
 		tmp = tmp->next;
 	}
 	envp[i] = NULL;
-	return envp;
+	return (envp);
 }
 
 char	*ft_strsep(char **str, const char *sep)
@@ -322,6 +321,7 @@ void	command_handler(char **argv, t_env **env)
 		do_cd(argv, env);
 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
 	{
+		rl_clear_history();
 		free_env_list(*env);
 		exit(0);
 	}
@@ -419,6 +419,7 @@ char	*parse_double_quote(t_input *input)
 	char	*result;
 	int		start;
 
+	input->i++;
 	result = ft_strdup("");
 	while (input->line[input->i] && input->line[input->i] != '"')
 	{
@@ -436,6 +437,11 @@ char	*parse_double_quote(t_input *input)
 	}
 	if (input->line[input->i] == '"')
 		input->i++;
+	if (input->line[input->i] != '"' && input->line[input->i] != '\'' && !ft_isspace(input->line[input->i]))
+	{
+		free(result);
+		result = parse_word(input);
+	}
 	return (result);
 }
 
@@ -494,10 +500,11 @@ char	**append_arg(char **args, char *new_arg)
 	}
 	new_args[len] = new_arg;
 	new_args[len + 1] = NULL;
+	while (args && args[i])
+		free(args[i++]);
 	free(args);
 	return (new_args);
 }
-
 
 char	**split_input(char *line, t_env *env)
 {
@@ -511,7 +518,6 @@ char	**split_input(char *line, t_env *env)
 	input.syntax_ok = true;
 	while (input.line[input.i])
 	{
-		printf("SPLUT\n");
 		skip_spaces(&input);
 		if (!input.line[input.i])
 			break ;
@@ -533,7 +539,6 @@ char	**split_input(char *line, t_env *env)
 	return (input.args);
 }
 
-
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
@@ -542,6 +547,7 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argc;
 	(void)argv;
+
 	env = create_env(envp);
 	disable_echoctl();
 	while (1)
@@ -555,12 +561,15 @@ int	main(int argc, char **argv, char **envp)
 			add_history(line);
 		if (!check_for_input(line))
 			continue ;
-		// commands = split_args(line);
+		//commands = split_args(line);
 		commands = split_input(line, env);
 		command_handler(commands, &env);
 		free_args(commands);
 		free(line);
 	}
-	// free_env_list(env);
+	rl_clear_history();
+	free_env_list(env);
 	return (0);
 }
+
+//valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
