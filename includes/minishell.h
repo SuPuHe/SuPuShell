@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 17:20:38 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/08 13:50:58 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,15 @@
 # define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
 # define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 # define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
+
+//# define SHELLNAME "\033[1m\033[32m➜  \033[0m\033[1m\033[36mSuPuShell \033[0m\033[1m\033[34mgit:(\033[0m\033[1m\033[31mmaster\033[0m\033[1m\033[34m)\033[0m\033[1m\033[33m ✗ \033[0m"
+# define SHELLNAME \
+"\033[1m\033[32m➜  \033[0m\
+\033[1m\033[36mSuPuShell  \033[0m \
+\033[1m\033[34m git:( \033[0m \
+\033[1m\033[31m  master \033[0m \
+\033[1m\033[34m ) \033[0m \
+\033[1m\033[33m  ✗  \033[0m"
 //readline + history
 # include <stdio.h>
 # include <readline/readline.h>

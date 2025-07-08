@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:17:53 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/07 14:10:54 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/08 13:19:47 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ void	disable_echoctl(void)
 static void	handle_sigint(int signum)
 {
 	(void)signum;
-
 	write(1, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);
