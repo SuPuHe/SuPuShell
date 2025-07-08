@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 11:13:59 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/08 12:24:31 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,13 +274,14 @@ char	*search_path(const char *cmd, t_env *env)
 	return (NULL);
 }
 
-void run_external_command(char **argv, t_env *env)
+void	run_external_command(char **argv, t_env *env)
 {
 	pid_t	pid;
 	int		status;
-	char	*path;
+	char	*path = NULL;
 	char	**envp;
 	int		i;
+	int		need_free = 0;
 
 	pid = fork();
 	if (pid == 0)
@@ -289,27 +290,39 @@ void run_external_command(char **argv, t_env *env)
 		if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
 			path = argv[0];
 		else
+		{
 			path = search_path(argv[0], env);
-
+			need_free = 1;
+		}
 		if (!path || access(path, X_OK) != 0)
 		{
 			printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
+			if (need_free && path)
+				free(path);
+			i = 0;
+			while (envp[i])
+				free(envp[i++]);
+			free(envp);
+			free_args(argv);
+			free_env_list(env);
+			rl_clear_history();
 			exit(1);
 		}
+
 		execve(path, argv, envp);
+		perror("execve");
+		if (need_free)
+			free(path);
 		i = 0;
 		while (envp[i])
-		{
-			free(envp[i]);
-			i++;
-		}
+			free(envp[i++]);
 		free(envp);
-		perror("execve");
 		exit(1);
 	}
 	else
 		waitpid(pid, &status, 0);
 }
+
 
 void	command_handler(char **argv, t_env **env)
 {
