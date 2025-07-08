@@ -39,3 +39,4 @@ minishell
 objs
 SuPuLib
 *test*
+*.supp
