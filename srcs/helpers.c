@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   helpers.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:38:55 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/07 17:20:29 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/08 13:19:24 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ char	*substr_dup(const char *start, const char *end)
 	len = end - start;
 	s = malloc(len + 1);
 	if (!s)
-		return NULL;
+		return (NULL);
 	ft_memcpy(s, start, len);
 	s[len] = '\0';
 	return (s);
@@ -55,13 +55,13 @@ char	**split_args(const char *input)
 		while (*p && (*p == ' ' || *p == '\t' || *p == '\n'))
 			p++;
 		if (*p == '\0')
-			break;
+			break ;
 		start = p;
 		while (*p && *p != ' ' && *p != '\t' && *p != '\n')
 			p++;
 		args[i++] = substr_dup(start, p);
 		if (i >= 63)
-			break;
+			break ;
 	}
 	args[i] = NULL;
 	return (args);
@@ -82,7 +82,7 @@ void	free_args(char **args)
 
 void	free_env_list(t_env *env)
 {
-	t_env *tmp;
+	t_env	*tmp;
 
 	while (env)
 	{

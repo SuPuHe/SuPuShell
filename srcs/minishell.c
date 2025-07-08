@@ -6,13 +6,13 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 12:24:31 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/08 13:28:29 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char *parse_word(t_input *in);
+char	*parse_word(t_input *in);
 
 void	do_pwd(void)
 {
@@ -69,7 +69,6 @@ void	do_cd(char **commands, t_env **env)
 		update_or_add_env_var(env, "PWD", newpwd);
 	}
 }
-
 
 void	do_export(char **argv, t_env **env)
 {
@@ -158,7 +157,7 @@ char	*ft_strcpy(char *dest, const char *src)
 		i++;
 	}
 	dest[i] = '\0';
-	return dest;
+	return (dest);
 }
 
 char	*ft_strcat(char *dest, const char *src)
@@ -170,7 +169,6 @@ char	*ft_strcat(char *dest, const char *src)
 	j = 0;
 	while (dest[i])
 		i++;
-
 	while (src[j])
 	{
 		dest[i + j] = src[j];
@@ -258,7 +256,8 @@ char	*search_path(const char *cmd, t_env *env)
 		return (NULL);
 	paths = ft_strdup(path_var);
 	save = paths;
-	while ((token = ft_strsep(&paths, ":")) != NULL)
+	token = ft_strsep(&paths, ":");
+	while (token != NULL)
 	{
 		ft_strcpy(full_path, token);
 		ft_strcat(full_path, "/");
@@ -269,6 +268,7 @@ char	*search_path(const char *cmd, t_env *env)
 			free(save);
 			return (result);
 		}
+		token = ft_strsep(&paths, ":");
 	}
 	free(save);
 	return (NULL);
@@ -278,16 +278,19 @@ void	run_external_command(char **argv, t_env *env)
 {
 	pid_t	pid;
 	int		status;
-	char	*path = NULL;
+	char	*path;
 	char	**envp;
 	int		i;
-	int		need_free = 0;
+	int		need_free;
 
+	path = NULL;
+	need_free = 0;
 	pid = fork();
 	if (pid == 0)
 	{
 		envp = build_envp(env);
-		if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
+		if (ft_strncmp(argv[0], "./", 2) == 0
+			|| ft_strncmp(argv[0], "/", 1) == 0)
 			path = argv[0];
 		else
 		{
@@ -308,7 +311,6 @@ void	run_external_command(char **argv, t_env *env)
 			rl_clear_history();
 			exit(1);
 		}
-
 		execve(path, argv, envp);
 		perror("execve");
 		if (need_free)
@@ -322,7 +324,6 @@ void	run_external_command(char **argv, t_env *env)
 	else
 		waitpid(pid, &status, 0);
 }
-
 
 void	command_handler(char **argv, t_env **env)
 {
@@ -467,7 +468,7 @@ char	*parse_double_quote(t_input *input)
 	return (result);
 }
 
-char *parse_word(t_input *in)
+char	*parse_word(t_input *in)
 {
 	char	*result;
 	int		start;
@@ -507,7 +508,9 @@ char *parse_word(t_input *in)
 
 static int	ft_arrlen(char **arr)
 {
-	int i = 0;
+	int	i;
+
+	i = 0;
 	if (!arr)
 		return (0);
 	while (arr[i])
@@ -583,7 +586,8 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		setup_signal();
-		line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
+		//line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
+		line = readline(SHELLNAME);
 		if (!line)
 		{
 			rl_clear_history();
