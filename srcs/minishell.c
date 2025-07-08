@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 13:56:24 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/08 18:08:53 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 char	*parse_word(t_input *in);
+bool	apply_redirections(t_input *input);
 
 void	do_pwd(void)
 {
@@ -274,65 +275,126 @@ char	*search_path(const char *cmd, t_env *env)
 	return (NULL);
 }
 
+// void	run_external_command(char **argv, t_env *env, t_input *input)
+// {
+// 	pid_t	pid;
+// 	int		status;
+// 	char	*path;
+// 	char	**envp;
+// 	int		i;
+// 	int		need_free;
+
+// 	path = NULL;
+// 	need_free = 0;
+// 	printf("HERE");
+// 	pid = fork();
+// 	if (pid == 0)
+// 	{
+// 		if (!apply_redirections(input))
+// 			exit(EXIT_FAILURE);
+// 		envp = build_envp(env);
+// 		if (ft_strncmp(argv[0], "./", 2) == 0
+// 			|| ft_strncmp(argv[0], "/", 1) == 0)
+// 			path = argv[0];
+// 		else
+// 		{
+// 			path = search_path(argv[0], env);
+// 			need_free = 1;
+// 		}
+// 		printf("PATH |%s|\n", path);
+// 		if (!path || access(path, X_OK) != 0)
+// 		{
+// 			printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
+// 			if (need_free && path)
+// 				free(path);
+// 			i = 0;
+// 			while (envp[i])
+// 				free(envp[i++]);
+// 			free(envp);
+// 			free_args(argv);
+// 			free_env_list(env);
+// 			rl_clear_history();
+// 			exit(1);
+// 		}
+// 		printf("PATH |%s|\n", path);
+// 		execve(path, argv, envp);
+// 		perror("execve");
+// 		if (need_free)
+// 			free(path);
+// 		i = 0;
+// 		while (envp[i])
+// 			free(envp[i++]);
+// 		free(envp);
+// 		exit(1);
+// 	}
+// 	else
+// 		waitpid(pid, &status, 0);
+// }
 void	run_external_command(char **argv, t_env *env)
 {
-	pid_t	pid;
-	int		status;
 	char	*path;
 	char	**envp;
-	int		i;
-	int		need_free;
 
-	path = NULL;
-	need_free = 0;
-	pid = fork();
-	if (pid == 0)
-	{
-		envp = build_envp(env);
-		if (ft_strncmp(argv[0], "./", 2) == 0
-			|| ft_strncmp(argv[0], "/", 1) == 0)
-			path = argv[0];
-		else
-		{
-			path = search_path(argv[0], env);
-			need_free = 1;
-		}
-		if (!path || access(path, X_OK) != 0)
-		{
-			printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
-			if (need_free && path)
-				free(path);
-			i = 0;
-			while (envp[i])
-				free(envp[i++]);
-			free(envp);
-			free_args(argv);
-			free_env_list(env);
-			rl_clear_history();
-			exit(1);
-		}
-		execve(path, argv, envp);
-		perror("execve");
-		if (need_free)
-			free(path);
-		i = 0;
-		while (envp[i])
-			free(envp[i++]);
-		free(envp);
-		exit(1);
-	}
+	envp = build_envp(env);
+	if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
+		path = argv[0];
 	else
-		waitpid(pid, &status, 0);
+		path = search_path(argv[0], env);
+
+	if (!path || access(path, X_OK) != 0)
+	{
+		printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
+		// while (envp[i])
+			// free(envp[i++]);
+		exit(127);
+	}
+	execve(path, argv, envp);
+	perror("execve");
+	// free_envp(envp);
+	exit(1);
 }
 
-void	command_handler(char **argv, t_env **env)
+
+// void	command_handler(char **argv, t_env **env, t_input *input)
+// {
+// 	if (!argv || !argv[0])
+// 		return ;
+// 	if (ft_strncmp(argv[0], "pwd", 4) == 0)
+// 		do_pwd();
+// 	else if (ft_strncmp(argv[0], "cd", 3) == 0)
+// 		do_cd(argv, env);
+// 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
+// 	{
+// 		rl_clear_history();
+// 		free_args(argv);
+// 		free_env_list(*env);
+// 		exit(0);
+// 	}
+// 	else if (ft_strncmp(argv[0], "env", 4) == 0)
+// 		do_env(*env);
+// 	else if (ft_strncmp(argv[0], "export", 7) == 0)
+// 		do_export(argv, env);
+// 	else if (ft_strncmp(argv[0], "unset", 6) == 0)
+// 		do_unset(argv, env);
+// 	else if (ft_strncmp(argv[0], "echo", 5) == 0)
+// 		do_echo(argv);
+// 	else
+// 		run_external_command(argv, *env, input);
+// 		//printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
+// }
+
+void	command_handler(char **argv, t_env **env, t_input *input)
 {
 	if (!argv || !argv[0])
 		return ;
-	if (ft_strncmp(argv[0], "pwd", 4) == 0)
-		do_pwd();
-	else if (ft_strncmp(argv[0], "cd", 3) == 0)
+
+	// Выполняем builtin-команды в основном процессе
+	if (ft_strncmp(argv[0], "cd", 3) == 0)
 		do_cd(argv, env);
+	else if (ft_strncmp(argv[0], "export", 7) == 0)
+		do_export(argv, env);
+	else if (ft_strncmp(argv[0], "unset", 6) == 0)
+		do_unset(argv, env);
 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
 	{
 		rl_clear_history();
@@ -340,18 +402,37 @@ void	command_handler(char **argv, t_env **env)
 		free_env_list(*env);
 		exit(0);
 	}
-	else if (ft_strncmp(argv[0], "env", 4) == 0)
-		do_env(*env);
-	else if (ft_strncmp(argv[0], "export", 7) == 0)
-		do_export(argv, env);
-	else if (ft_strncmp(argv[0], "unset", 6) == 0)
-		do_unset(argv, env);
-	else if (ft_strncmp(argv[0], "echo", 5) == 0)
-		do_echo(argv);
 	else
-		run_external_command(argv, *env);
-		//printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
+	{
+		// fork только для echo, env и внешних команд
+		pid_t pid = fork();
+		if (pid == 0)
+		{
+			// в дочернем процессе: применить редиректы
+			if (!apply_redirections(input))
+				exit(1);
+
+			// запустить нужную команду
+			if (ft_strncmp(argv[0], "echo", 5) == 0)
+				do_echo(argv);
+			else if (ft_strncmp(argv[0], "pwd", 4) == 0)
+				do_pwd();
+			else if (ft_strncmp(argv[0], "env", 4) == 0)
+				do_env(*env);
+			else
+				run_external_command(argv, *env);
+
+			// завершаем дочерний процесс
+			exit(0);
+		}
+		else
+		{
+			// родительский процесс ждёт
+			waitpid(pid, NULL, 0);
+		}
+	}
 }
+
 
 int	check_for_input(char *line)
 {
@@ -376,6 +457,11 @@ int	check_for_input(char *line)
 		return (printf("Error input\n"), 0);
 	return (1);
 }
+
+
+// INPUT with double quotes and sing quotes
+// INPUT
+// INPUT
 
 int	ft_isspace(char c)
 {
@@ -540,9 +626,85 @@ char	**append_arg(char **args, char *new_arg)
 	return (new_args);
 }
 
-char	**split_input(char *line, t_env *env)
+bool	parse_redirects(t_input *input)
+{
+	if (input->line[input->i] == '>' && input->line[input->i + 1] == '>')
+	{
+		input->i += 2;
+		skip_spaces(input);
+		input->outfile = parse_word(input);
+		input->append = true;
+	}
+	else if (input->line[input->i] == '>')
+	{
+		input->i++;
+		skip_spaces(input);
+		input->outfile = parse_word(input);
+		input->append = false;
+	}
+	else if (input->line[input->i] == '<' && input->line[input->i + 1] == '<')
+	{
+		input->i += 2;
+		skip_spaces(input);
+		input->heredoc = parse_word(input);
+	}
+	else if (input->line[input->i] == '<')
+	{
+		input->i++;
+		skip_spaces(input);
+		input->infile = parse_word(input);
+		printf("INFILE |%s|\n", input->infile);
+	}
+	else
+	{
+		printf("LINE |%s|\n", input->line);
+		return (false);
+	}
+	return (true);
+}
+
+bool	apply_redirections(t_input *input)
+{
+	int	fd;
+	int	flags;
+
+	printf("APPLy\n");
+	if (input->infile)
+	{
+		printf ("INFILE\n");
+		fd = open(input->infile, O_RDONLY);
+		if (fd < 0)
+		{
+			perror(input->infile);
+			return (false);
+		}
+		dup2(fd, STDIN_FILENO);
+		close(fd);
+	}
+	if (input->outfile)
+	{
+		printf("DAUNFILE\n");
+		flags = O_CREAT | O_WRONLY;
+		if (input->append)
+			flags |= O_APPEND;
+		else
+			flags |= O_TRUNC;
+		fd = open(input->outfile, flags, 0644);
+		if (fd < 0)
+		{
+			perror(input->outfile);
+			return (false);
+		}
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+	}
+	return (true);
+}
+
+t_input	split_input(char *line, t_env *env)
 {
 	t_input	input;
+	t_input	empty;
 	char	*arg;
 
 	input.line = line;
@@ -550,9 +712,15 @@ char	**split_input(char *line, t_env *env)
 	input.env = env;
 	input.args = NULL;
 	input.syntax_ok = true;
+	input.infile = NULL;
+	input.outfile = NULL;
+	input.heredoc = NULL;
 	while (input.line[input.i])
 	{
 		skip_spaces(&input);
+		// if (parse_redirects(&input))
+		// 	continue ;
+		parse_redirects(&input);
 		if (!input.line[input.i])
 			break ;
 		arg = NULL;
@@ -564,20 +732,25 @@ char	**split_input(char *line, t_env *env)
 			arg = parse_word(&input);
 		if (!arg || !input.syntax_ok)
 		{
-			free(arg);
-			free_args(input.args);
-			return (NULL);
+			// free(arg);
+			// free_args(input.args);
+			ft_bzero(&empty, sizeof(t_input));
+			empty.syntax_ok = false;
+			return (empty);
+			// return (NULL);
+
 		}
 		input.args = append_arg(input.args, arg);
 	}
-	return (input.args);
+	return (input);
 }
 
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
-	char	**commands;
+	// char	**commands;
 	t_env	*env;
+	t_input	input;
 
 	(void)argc;
 	(void)argv;
@@ -601,11 +774,16 @@ int	main(int argc, char **argv, char **envp)
 			free(line);
 			continue ;
 		}
-		commands = split_input(line, env);
-		for (int i = 0; commands && commands[i]; i++)
-			printf("|%s|\n", commands[i]);
-		command_handler(commands, &env);
-		free_args(commands);
+		input = split_input(line, env);
+		for (int i = 0; input.args[i]; i++)
+			printf("|%s|\n", input.args[i]);
+		if (!input.syntax_ok)
+		{
+			free(line);
+			continue ;
+		}
+		command_handler(input.args, &env, &input);
+		// free_args(commands);
 		free(line);
 	}
 	return (0);
