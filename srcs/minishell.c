@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 10:49:28 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/08 11:13:59 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,6 +322,7 @@ void	command_handler(char **argv, t_env **env)
 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
 	{
 		rl_clear_history();
+		free_args(argv);
 		free_env_list(*env);
 		exit(0);
 	}
@@ -418,30 +419,38 @@ char	*parse_double_quote(t_input *input)
 {
 	char	*result;
 	int		start;
+	char	*tmp;
+	char	*joined;
 
 	input->i++;
 	result = ft_strdup("");
 	while (input->line[input->i] && input->line[input->i] != '"')
 	{
 		if (input->line[input->i] == '$')
-			result = ft_strjoin_free(result, parse_env_var(input));
+		{
+			tmp = parse_env_var(input);
+			if (!tmp)
+				return (free(result), NULL);
+			result = ft_strjoin_free(result, tmp);
+		}
 		else
 		{
 			start = input->i;
 			while (input->line[input->i] && input->line[input->i] != '$'
 				&& input->line[input->i] != '"')
 				input->i++;
-			result = ft_strjoin_free(result,
-					ft_substr(input->line, start, input->i - start));
+			tmp = ft_substr(input->line, start, input->i - start);
+			if (!tmp)
+				return (free(result), NULL);
+			joined = ft_strjoin_free(result, tmp);
+			free(tmp);
+			if (!joined)
+				return (NULL);
+			result = joined;
 		}
 	}
 	if (input->line[input->i] == '"')
 		input->i++;
-	if (input->line[input->i] != '"' && input->line[input->i] != '\'' && !ft_isspace(input->line[input->i]))
-	{
-		free(result);
-		result = parse_word(input);
-	}
 	return (result);
 }
 
@@ -449,13 +458,20 @@ char *parse_word(t_input *in)
 {
 	char	*result;
 	int		start;
+	char	*tmp;
+	char	*joined;
 
 	result = ft_strdup("");
 	while (in->line[in->i] && !ft_isspace(in->line[in->i])
 		&& in->line[in->i] != '\'' && in->line[in->i] != '"')
 	{
 		if (in->line[in->i] == '$')
-			result = ft_strjoin_free(result, parse_env_var(in));
+		{
+			tmp = parse_env_var(in);
+			if (!tmp)
+				return (free(result), NULL);
+			result = ft_strjoin_free(result, tmp);
+		}
 		else
 		{
 			start = in->i;
@@ -463,8 +479,14 @@ char *parse_word(t_input *in)
 				&& !ft_isspace(in->line[in->i])
 				&& in->line[in->i] != '\'' && in->line[in->i] != '"')
 				in->i++;
-			result = ft_strjoin_free(result,
-					ft_substr(in->line, start, in->i - start));
+			tmp = ft_substr(in->line, start, in->i - start);
+			if (!tmp)
+				return (free(result), NULL);
+			joined = ft_strjoin_free(result, tmp);
+			free(tmp);
+			if (!joined)
+				return (NULL);
+			result = joined;
 		}
 	}
 	return (result);
@@ -472,9 +494,7 @@ char *parse_word(t_input *in)
 
 static int	ft_arrlen(char **arr)
 {
-	int	i;
-
-	i = 0;
+	int i = 0;
 	if (!arr)
 		return (0);
 	while (arr[i])
@@ -484,15 +504,15 @@ static int	ft_arrlen(char **arr)
 
 char	**append_arg(char **args, char *new_arg)
 {
-	int		i;
 	int		len;
-	char	**new_args;
+	char	**new_args ;
+	int		i;
 
 	len = ft_arrlen(args);
 	new_args = malloc(sizeof(char *) * (len + 2));
+	i = 0;
 	if (!new_args)
 		return (NULL);
-	i = 0;
 	while (i < len)
 	{
 		new_args[i] = args[i];
@@ -500,8 +520,6 @@ char	**append_arg(char **args, char *new_arg)
 	}
 	new_args[len] = new_arg;
 	new_args[len + 1] = NULL;
-	while (args && args[i])
-		free(args[i++]);
 	free(args);
 	return (new_args);
 }
@@ -547,28 +565,32 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argc;
 	(void)argv;
-
 	env = create_env(envp);
 	disable_echoctl();
 	while (1)
 	{
 		setup_signal();
-		//line = readline(BOLDCYAN"SuPuShell$ "RESET);
 		line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
 		if (!line)
+		{
+			rl_clear_history();
+			free_env_list(env);
 			break ;
+		}
 		if (*line)
 			add_history(line);
 		if (!check_for_input(line))
+		{
+			free(line);
 			continue ;
-		//commands = split_args(line);
+		}
 		commands = split_input(line, env);
+		for (int i = 0; commands && commands[i]; i++)
+			printf("|%s|\n", commands[i]);
 		command_handler(commands, &env);
 		free_args(commands);
 		free(line);
 	}
-	rl_clear_history();
-	free_env_list(env);
 	return (0);
 }
 
