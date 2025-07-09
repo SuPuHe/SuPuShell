@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 12:55:36 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 13:07:53 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,7 +379,11 @@ t_input	split_input(char *line, t_env *env)
 			free(arg);
 			return (input);
 		}
-
+		if (arg[0] == '\0')
+		{
+			free(arg);
+			continue;
+		}
 		input.args = append_arg(input.args, arg);
 	}
 	return (input);
@@ -419,6 +423,7 @@ int	main(int argc, char **argv, char **envp)
 		{
 			free(line);
 			free_input(&input);
+			printf("ERRR\n");
 			continue ;
 		}
 		for (int i = 0; input.args[i]; i++)
