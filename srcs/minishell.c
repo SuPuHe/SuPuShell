@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 19:56:01 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 20:18:53 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,11 +328,104 @@ t_input	split_input(char *line, t_env *env)
 }
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
 
+void	handle_pipeline(char **pipe_parts, t_env **env)
+{
+	int		in_fd = STDIN_FILENO;
+	int		pipefd[2];
+	pid_t	pids[128];
+	int		pid_index = 0;
+	int		i = 0;
+
+	while (pipe_parts[i])
+	{
+		t_input input = split_input(pipe_parts[i], *env);
+		if (!input.syntax_ok || !input.args)
+		{
+			free_input(&input);
+			i++;
+			continue ;
+		}
+
+		if (pipe_parts[i + 1] != NULL)
+			pipe(pipefd);
+
+		if (!pipe_parts[i + 1] && i == 0 &&
+			(ft_strncmp(input.args[0], "cd", 3) == 0 ||
+			ft_strncmp(input.args[0], "export", 7) == 0 ||
+			ft_strncmp(input.args[0], "unset", 6) == 0 ||
+			ft_strncmp(input.args[0], "exit", 5) == 0 ||
+			ft_strncmp(input.args[0], "q", 2) == 0))
+		{
+			if (ft_strncmp(input.args[0], "cd", 3) == 0)
+				do_cd(input.args, env);
+			else if (ft_strncmp(input.args[0], "export", 7) == 0)
+				do_export(input.args, env);
+			else if (ft_strncmp(input.args[0], "unset", 6) == 0)
+				do_unset(input.args, env);
+			else if (ft_strncmp(input.args[0], "exit", 5) == 0 || ft_strncmp(input.args[0], "q", 2) == 0)
+			{
+				free_at_exit(&input, env);
+				exit(0);
+			}
+			free_input(&input);
+			i++;
+			continue;
+		}
+
+		pid_t pid = fork();
+		if (pid == 0)
+		{
+			if (in_fd != STDIN_FILENO)
+			{
+				dup2(in_fd, STDIN_FILENO);
+				close(in_fd);
+			}
+			if (pipe_parts[i + 1])
+			{
+				dup2(pipefd[1], STDOUT_FILENO);
+				close(pipefd[0]);
+				close(pipefd[1]);
+			}
+
+			if (!apply_redirections(&input))
+				exit(1);
+
+			if (ft_strncmp(input.args[0], "echo", 5) == 0)
+				do_echo(input.args);
+			else if (ft_strncmp(input.args[0], "pwd", 4) == 0)
+				do_pwd();
+			else if (ft_strncmp(input.args[0], "env", 4) == 0)
+				do_env(*env);
+			else
+				run_external_command(input.args, *env, &input);
+
+			free_at_exit(&input, env);
+			exit(0);
+		}
+		else
+		{
+			pids[pid_index++] = pid;
+			if (in_fd != STDIN_FILENO)
+				close(in_fd);
+			if (pipe_parts[i + 1])
+			{
+				close(pipefd[1]);
+				in_fd = pipefd[0];
+			}
+			free_input(&input);
+		}
+		i++;
+	}
+	int	j = 0;
+	while (j < pid_index)
+		waitpid(pids[j++], NULL, 0);
+}
+
+
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
 	t_env	*env;
-	t_input	input;
 	char	**many_lines;
 	int		i;
 
@@ -341,6 +434,7 @@ int	main(int argc, char **argv, char **envp)
 	billy_print();
 	env = create_env(envp);
 	disable_echoctl();
+
 	while (1)
 	{
 		setup_signal();
@@ -358,41 +452,22 @@ int	main(int argc, char **argv, char **envp)
 			free(line);
 			continue ;
 		}
+
 		many_lines = ft_split(line, '\n');
 		i = 0;
-// 		input = split_input(line, env);
-// 		if (!input.syntax_ok || !input.args)
-// 		{
-// 			free(line);
-// 			free_input(&input);
-// 			printf("ERRR\n");
-// 			continue ;
-// 		}
-// 		for (int i = 0; input.args[i]; i++)
-// 			printf("|%s|\n", input.args[i]);
-// 		command_handler(input.args, &env, &input);
-// 		free_input(&input);
-// 		free(line);
 		while (many_lines && many_lines[i])
 		{
 			if (*many_lines[i])
 			{
-				input = split_input(many_lines[i], env);
-				if (!input.syntax_ok || !input.args)
-				{
-					free_input(&input);
-					i++;
-					continue ;
-				}
-				for (int i = 0; input.args[i]; i++)
-					printf("|%s|\n", input.args[i]);
-				command_handler(input.args, &env, &input);
-				free_input(&input);
+				char **pipe_parts = ft_split(many_lines[i], '|');
+				handle_pipeline(pipe_parts, &env);
+				free_args(pipe_parts);
 			}
 			i++;
 		}
-		free_args(many_lines); // or free_split(lines);
+		free_args(many_lines);
 		free(line);
 	}
 	return (0);
 }
+
