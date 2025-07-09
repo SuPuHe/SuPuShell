@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 12:50:20 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 19:55:26 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,5 +148,8 @@ int		check_for_input(char *line);
 int		ft_isspace(char c);
 void	skip_spaces(t_input *input);
 char	**append_arg(char **args, char *new_arg);
+
+//billy
+void	billy_print(void);
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 16:50:16 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/09 19:56:01 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,92 +14,6 @@
 
 char	*parse_word(t_input *in);
 bool	apply_redirections(t_input *input);
-
-// void	run_external_command(char **argv, t_env *env, t_input *input)
-// {
-// 	pid_t	pid;
-// 	int		status;
-// 	char	*path;
-// 	char	**envp;
-// 	int		i;
-// 	int		need_free;
-
-// 	path = NULL;
-// 	need_free = 0;
-// 	printf("HERE");
-// 	pid = fork();
-// 	if (pid == 0)
-// 	{
-// 		if (!apply_redirections(input))
-// 			exit(EXIT_FAILURE);
-// 		envp = build_envp(env);
-// 		if (ft_strncmp(argv[0], "./", 2) == 0
-// 			|| ft_strncmp(argv[0], "/", 1) == 0)
-// 			path = argv[0];
-// 		else
-// 		{
-// 			path = search_path(argv[0], env);
-// 			need_free = 1;
-// 		}
-// 		printf("PATH |%s|\n", path);
-// 		if (!path || access(path, X_OK) != 0)
-// 		{
-// 			printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
-// 			if (need_free && path)
-// 				free(path);
-// 			i = 0;
-// 			while (envp[i])
-// 				free(envp[i++]);
-// 			free(envp);
-// 			free_args(argv);
-// 			free_env_list(env);
-// 			rl_clear_history();
-// 			exit(1);
-// 		}
-// 		printf("PATH |%s|\n", path);
-// 		execve(path, argv, envp);
-// 		perror("execve");
-// 		if (need_free)
-// 			free(path);
-// 		i = 0;
-// 		while (envp[i])
-// 			free(envp[i++]);
-// 		free(envp);
-// 		exit(1);
-// 	}
-// 	else
-// 		waitpid(pid, &status, 0);
-// }
-
-
-
-// void	command_handler(char **argv, t_env **env, t_input *input)
-// {
-// 	if (!argv || !argv[0])
-// 		return ;
-// 	if (ft_strncmp(argv[0], "pwd", 4) == 0)
-// 		do_pwd();
-// 	else if (ft_strncmp(argv[0], "cd", 3) == 0)
-// 		do_cd(argv, env);
-// 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
-// 	{
-// 		rl_clear_history();
-// 		free_args(argv);
-// 		free_env_list(*env);
-// 		exit(0);
-// 	}
-// 	else if (ft_strncmp(argv[0], "env", 4) == 0)
-// 		do_env(*env);
-// 	else if (ft_strncmp(argv[0], "export", 7) == 0)
-// 		do_export(argv, env);
-// 	else if (ft_strncmp(argv[0], "unset", 6) == 0)
-// 		do_unset(argv, env);
-// 	else if (ft_strncmp(argv[0], "echo", 5) == 0)
-// 		do_echo(argv);
-// 	else
-// 		run_external_command(argv, *env, input);
-// 		//printf(BOLDRED"I don't know this command: %s\n"RESET, argv[0]);
-// }
 
 void	command_handler(char **argv, t_env **env, t_input *input)
 {
@@ -125,9 +39,7 @@ void	command_handler(char **argv, t_env **env, t_input *input)
 		{
 			if (!apply_redirections(input))
 			{
-				rl_clear_history();
-				free_args(argv);
-				free_env_list(*env);
+				free_at_exit(input, env);
 				exit(1);
 			}
 			if (ft_strncmp(argv[0], "echo", 5) == 0)
@@ -145,10 +57,6 @@ void	command_handler(char **argv, t_env **env, t_input *input)
 			waitpid(pid, NULL, 0);
 	}
 }
-
-// INPUT with double quotes and sing quotes
-// INPUT
-// INPUT
 
 char	*parse_env_var(t_input *input)
 {
@@ -299,11 +207,41 @@ bool	parse_redirects(t_input *input)
 	return (true);
 }
 
+bool	handle_heredoc(t_input *input)
+{
+	char	*line;
+	int		fd;
+	char	*filename = "/tmp/.minishell_heredoc"; // или с уникальным суффиксом
+
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0)
+		return (perror("heredoc file"), false);
+	while (1)
+	{
+		line = readline("> ");
+		if (!line || ft_strcmp(line, input->heredoc) == 0)
+			break;
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
+		free(line);
+	}
+	free(line);
+	close(fd);
+	input->infile = ft_strdup(filename); // перенаправим stdin позже
+	return (true);
+}
+
+
 bool	apply_redirections(t_input *input)
 {
 	int	fd;
 	int	flags;
 
+	if (input->heredoc)
+	{
+		if (!handle_heredoc(input))
+			return (false);
+	}
 	if (input->infile)
 	{
 		fd = open(input->infile, O_RDONLY);
@@ -400,6 +338,7 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argc;
 	(void)argv;
+	billy_print();
 	env = create_env(envp);
 	disable_echoctl();
 	while (1)
