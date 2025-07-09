@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 12:34:17 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 13:54:16 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,18 +16,21 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 {
 	char	*path;
 	char	**envp;
+	bool	should_free_path = false;
 	int		i;
 
 	envp = build_envp(env);
 	if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
 		path = argv[0];
 	else
+	{
 		path = search_path(argv[0], env);
-
+		should_free_path = true;
+	}
 	if (!path || access(path, X_OK) != 0)
 	{
 		printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
-		if (path)
+		if (should_free_path && path)
 			free(path);
 		i = 0;
 		while (envp[i])
@@ -38,8 +41,16 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 	}
 	execve(path, argv, envp);
 	perror("execve");
+	if (should_free_path && path)
+		free(path);
+	i = 0;
+	while (envp[i])
+		free(envp[i++]);
+	free(envp);
+	free_at_exit(input, &env);
 	exit(1);
 }
+
 
 void	do_echo(char **argv)
 {
