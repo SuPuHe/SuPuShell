@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:01:15 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 11:29:14 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 19:38:50 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,10 @@ void	free_input(t_input *input)
 	if (input->outfile)
 		free(input->outfile);
 	if (input->heredoc)
+	{
 		free(input->heredoc);
+		unlink("/tmp/.minishell_heredoc");
+	}
 	if (input->args)
 		free_args(input->args);
 }
