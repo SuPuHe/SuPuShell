@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 13:07:53 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 16:50:16 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,9 +351,9 @@ t_input	split_input(char *line, t_env *env)
 	while (input.line[input.i])
 	{
 		skip_spaces(&input);
-		// if (parse_redirects(&input))
-		// 	continue ;
-		parse_redirects(&input);
+		if (parse_redirects(&input))
+			continue ;
+		// parse_redirects(&input);
 		if (!input.line[input.i])
 			break ;
 		arg = NULL;
@@ -388,13 +388,15 @@ t_input	split_input(char *line, t_env *env)
 	}
 	return (input);
 }
+//valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
 
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
-	// char	**commands;
 	t_env	*env;
 	t_input	input;
+	char	**many_lines;
+	int		i;
 
 	(void)argc;
 	(void)argv;
@@ -403,7 +405,6 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		setup_signal();
-		//line = readline(BOLDGREEN"➜  "RESET BOLDCYAN"SuPuShell "RESET BOLDBLUE"git:("RESET BOLDRED"master"RESET BOLDBLUE")"RESET BOLDYELLOW" ✗ "RESET);
 		line = readline(SHELLNAME);
 		if (!line)
 		{
@@ -418,21 +419,41 @@ int	main(int argc, char **argv, char **envp)
 			free(line);
 			continue ;
 		}
-		input = split_input(line, env);
-		if (!input.syntax_ok || !input.args)
+		many_lines = ft_split(line, '\n');
+		i = 0;
+// 		input = split_input(line, env);
+// 		if (!input.syntax_ok || !input.args)
+// 		{
+// 			free(line);
+// 			free_input(&input);
+// 			printf("ERRR\n");
+// 			continue ;
+// 		}
+// 		for (int i = 0; input.args[i]; i++)
+// 			printf("|%s|\n", input.args[i]);
+// 		command_handler(input.args, &env, &input);
+// 		free_input(&input);
+// 		free(line);
+		while (many_lines && many_lines[i])
 		{
-			free(line);
-			free_input(&input);
-			printf("ERRR\n");
-			continue ;
+			if (*many_lines[i])
+			{
+				input = split_input(many_lines[i], env);
+				if (!input.syntax_ok || !input.args)
+				{
+					free_input(&input);
+					i++;
+					continue ;
+				}
+				for (int i = 0; input.args[i]; i++)
+					printf("|%s|\n", input.args[i]);
+				command_handler(input.args, &env, &input);
+				free_input(&input);
+			}
+			i++;
 		}
-		for (int i = 0; input.args[i]; i++)
-			printf("|%s|\n", input.args[i]);
-		command_handler(input.args, &env, &input);
-		free_input(&input);
+		free_args(many_lines); // or free_split(lines);
 		free(line);
 	}
 	return (0);
 }
-
-//valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
