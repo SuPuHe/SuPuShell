@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:38:55 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 13:19:24 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 11:04:39 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,38 @@ int	ft_strcmp(const char *s1, const char *s2)
 	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
+char	*ft_strcpy(char *dest, const char *src)
+{
+	int	i;
+
+	i = 0;
+	while (src[i])
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+	return (dest);
+}
+
+char	*ft_strcat(char *dest, const char *src)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = 0;
+	while (dest[i])
+		i++;
+	while (src[j])
+	{
+		dest[i + j] = src[j];
+		j++;
+	}
+	dest[i + j] = '\0';
+	return (dest);
+}
+
 char	*substr_dup(const char *start, const char *end)
 {
 	size_t	len;
@@ -38,60 +70,6 @@ char	*substr_dup(const char *start, const char *end)
 	ft_memcpy(s, start, len);
 	s[len] = '\0';
 	return (s);
-}
-
-char	**split_args(const char *input)
-{
-	char		**args;
-	int			i;
-	const char	*p;
-	const char	*start;
-
-	args = malloc(64 * sizeof(char *));
-	i = 0;
-	p = input;
-	while (*p)
-	{
-		while (*p && (*p == ' ' || *p == '\t' || *p == '\n'))
-			p++;
-		if (*p == '\0')
-			break ;
-		start = p;
-		while (*p && *p != ' ' && *p != '\t' && *p != '\n')
-			p++;
-		args[i++] = substr_dup(start, p);
-		if (i >= 63)
-			break ;
-	}
-	args[i] = NULL;
-	return (args);
-}
-
-void	free_args(char **args)
-{
-	int	i;
-
-	i = 0;
-	while (args[i])
-	{
-		free(args[i]);
-		i++;
-	}
-	free(args);
-}
-
-void	free_env_list(t_env *env)
-{
-	t_env	*tmp;
-
-	while (env)
-	{
-		tmp = env->next;
-		free(env->key);
-		free(env->value);
-		free(env);
-		env = tmp;
-	}
 }
 
 char	*ft_strjoin_free(char *s1, const char *s2)

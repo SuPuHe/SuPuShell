@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/08 13:18:23 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/09 11:43:08 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,4 +93,15 @@ t_env	*create_env(char **envp)
 		i++;
 	}
 	return (head);
+}
+
+char	*get_env_value(t_env *env, const char *key)
+{
+	while (env)
+	{
+		if (ft_strcmp(env->key, key) == 0)
+			return (env->value);
+		env = env->next;
+	}
+	return (NULL);
 }

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
+#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/07/07 13:28:28 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/07/09 12:43:43 by omizin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,14 +32,19 @@ LDFLAGS = -lreadline
 
 RM = rm -rf
 
-SRCS = minishell.c helpers.c env_helpers.c signals.c
+SRCS = minishell.c helpers.c env_helpers.c signals.c free_functions.c commands.c commands_helpers.c commands_second_part.c small_helpers.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))
 
 OBJS = $(SRCS:$(SRCS_DIR)/%.c=$(OBJS_DIR)/%.o)
 
-all: $(SUPULIB_DIR)/SuPuLib.a $(NAME)
+all: $(SUPULIB_DIR)/SuPuLib.a $(NAME) ascii_art
+
+ascii_art:
+	@echo "$(BLUE)"
+	@cat billy.txt
+	@echo "$(RESET_COLOR)"
 
 $(SUPULIB_DIR):
 	@git clone $(SUPULIB_REPO) $(SUPULIB_DIR)
