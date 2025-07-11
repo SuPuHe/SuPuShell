@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 12:46:38 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/11 15:44:56 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
+volatile sig_atomic_t	g_signal_interrupt = 0;
 char	*parse_word(t_input *in);
 bool	apply_redirections(t_input *input);
 
@@ -377,6 +377,8 @@ void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 		pid_t pid = fork();
 		if (pid == 0)
 		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
 			if (in_fd != STDIN_FILENO)
 			{
 				dup2(in_fd, STDIN_FILENO);
@@ -406,6 +408,8 @@ void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 		}
 		else
 		{
+			signal(SIGINT, SIG_IGN);
+			signal(SIGQUIT, SIG_IGN);
 			pids[pid_index++] = pid;
 			if (in_fd != STDIN_FILENO)
 				close(in_fd);
@@ -421,6 +425,7 @@ void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 	int	j = 0;
 	while (j < pid_index)
 		waitpid(pids[j++], NULL, 0);
+	setup_signal();
 }
 
 
@@ -436,11 +441,16 @@ int	main(int argc, char **argv, char **envp)
 	billy_print();
 	env = create_env(envp);
 	disable_echoctl();
-
+	setup_signal();
 	while (1)
 	{
-		setup_signal();
 		line = readline(SHELLNAME);
+		if (g_signal_interrupt)
+		{
+			g_signal_interrupt = 0;
+			free(line);
+			continue ;
+		}
 		if (!line)
 		{
 			rl_clear_history();
