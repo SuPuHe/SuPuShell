@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:17:53 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/08 13:19:47 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/11 13:52:39 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
 
 void	disable_echoctl(void)
 {
@@ -24,6 +25,7 @@ void	disable_echoctl(void)
 static void	handle_sigint(int signum)
 {
 	(void)signum;
+	g_signal_interrupt = 1;
 	write(1, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);

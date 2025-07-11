@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 12:45:00 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/11 13:51:58 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@
 //bool
 # include <stdbool.h>
 
+extern volatile sig_atomic_t	g_signal_interrupt;
+
 typedef struct s_env
 {
 	char			*key;
@@ -107,6 +109,7 @@ typedef struct s_input
 	bool		append;
 	char		*heredoc;
 }	t_input;
+
 
 //free_functions
 void	free_input(t_input *input);
