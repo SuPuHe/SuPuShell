@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:17:53 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/11 13:52:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/11 17:57:26 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,11 @@ void	disable_echoctl(void)
 static void	handle_sigint(int signum)
 {
 	(void)signum;
-	g_signal_interrupt = 1;
 	write(1, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);
 	rl_redisplay();
+	// g_signal_interrupt = 1;
 }
 
 void	setup_signal(void)

@@ -6,12 +6,12 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 15:44:56 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/11 18:13:00 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-volatile sig_atomic_t	g_signal_interrupt = 0;
+// volatile sig_atomic_t	g_signal_interrupt = 0;
 char	*parse_word(t_input *in);
 bool	apply_redirections(t_input *input);
 
@@ -65,11 +65,18 @@ char	*parse_env_var(t_input *input)
 	char	*value;
 
 	start = ++input->i;
+	if (input->line[input->i] == '?')
+	{
+		input->i++;
+		return (ft_itoa(input->shell->last_exit_status));
+	}
 	while (input->line[input->i]
 		&& (ft_isalnum(input->line[input->i]) || input->line[input->i] == '_'))
 		input->i++;
 	if (input->i == start)
+	{
 		return (ft_strdup("$"));
+	}
 	name = ft_substr(input->line, start, input->i - start);
 	value = get_env_value(input->env, name);
 	free(name);
@@ -211,7 +218,7 @@ bool	handle_heredoc(t_input *input)
 {
 	char	*line;
 	int		fd;
-	char	*filename = "/tmp/.minishell_heredoc"; // или с уникальным суффиксом
+	char	*filename = "/tmp/.minishell_heredoc";
 
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
@@ -227,7 +234,7 @@ bool	handle_heredoc(t_input *input)
 	}
 	free(line);
 	close(fd);
-	input->infile = ft_strdup(filename); // перенаправим stdin позже
+	input->infile = ft_strdup(filename);
 	return (true);
 }
 
@@ -272,10 +279,9 @@ bool	apply_redirections(t_input *input)
 	return (true);
 }
 
-t_input	split_input(char *line, t_env *env)
+t_input	split_input(char *line, t_env *env, t_shell *shell)
 {
 	t_input	input;
-//	t_input	empty;
 	char	*arg;
 
 	input.line = line;
@@ -286,12 +292,12 @@ t_input	split_input(char *line, t_env *env)
 	input.infile = NULL;
 	input.outfile = NULL;
 	input.heredoc = NULL;
+	input.shell = shell;
 	while (input.line[input.i])
 	{
 		skip_spaces(&input);
 		if (parse_redirects(&input))
 			continue ;
-		// parse_redirects(&input);
 		if (!input.line[input.i])
 			break ;
 		arg = NULL;
@@ -328,17 +334,18 @@ t_input	split_input(char *line, t_env *env)
 }
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
 
-void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
+void	handle_pipeline(char **pipe_parts, t_shell *shell, char **many_lines)
 {
 	int		in_fd = STDIN_FILENO;
 	int		pipefd[2];
 	pid_t	pids[128];
 	int		pid_index = 0;
 	int		i = 0;
+	int		status;
 
 	while (pipe_parts[i])
 	{
-		t_input input = split_input(pipe_parts[i], *env);
+		t_input input = split_input(pipe_parts[i], shell->env, shell);
 		if (!input.syntax_ok || !input.args)
 		{
 			free_input(&input);
@@ -357,16 +364,16 @@ void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 			ft_strncmp(input.args[0], "q", 2) == 0))
 		{
 			if (ft_strncmp(input.args[0], "cd", 3) == 0)
-				do_cd(input.args, env);
+				do_cd(input.args, &shell->env);
 			else if (ft_strncmp(input.args[0], "export", 7) == 0)
-				do_export(input.args, env);
+				do_export(input.args, &shell->env);
 			else if (ft_strncmp(input.args[0], "unset", 6) == 0)
-				do_unset(input.args, env);
+				do_unset(input.args, &shell->env);
 			else if (ft_strncmp(input.args[0], "exit", 5) == 0 || ft_strncmp(input.args[0], "q", 2) == 0)
 			{
 				free_args(many_lines);
 				free_args(pipe_parts);
-				free_at_exit(&input, env);
+				free_at_exit(&input, &shell->env);
 				exit(0);
 			}
 			free_input(&input);
@@ -399,11 +406,11 @@ void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 			else if (ft_strncmp(input.args[0], "pwd", 4) == 0)
 				do_pwd();
 			else if (ft_strncmp(input.args[0], "env", 4) == 0)
-				do_env(*env);
+				do_env(shell->env);
 			else
-				run_external_command(input.args, *env, &input);
+				run_external_command(input.args, shell->env, &input);
 
-			free_at_exit(&input, env);
+			free_at_exit(&input, &shell->env);
 			exit(0);
 		}
 		else
@@ -424,37 +431,42 @@ void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 	}
 	int	j = 0;
 	while (j < pid_index)
-		waitpid(pids[j++], NULL, 0);
-	setup_signal();
+		waitpid(pids[j++], &status, 0);
+	if (WIFEXITED(status))
+		shell->last_exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		shell->last_exit_status = 128 + WTERMSIG(status);
 }
 
 
 int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
-	t_env	*env;
+	t_shell shell;
 	char	**many_lines;
 	int		i;
 
 	(void)argc;
 	(void)argv;
 	billy_print();
-	env = create_env(envp);
+	shell.env = create_env(envp);
+	shell.last_exit_status = 0;
 	disable_echoctl();
-	setup_signal();
+	// setup_signal();
 	while (1)
 	{
+		setup_signal();
 		line = readline(SHELLNAME);
-		if (g_signal_interrupt)
-		{
-			g_signal_interrupt = 0;
-			free(line);
-			continue ;
-		}
+		// if (g_signal_interrupt)
+		// {
+		// 	g_signal_interrupt = 0;
+		// 	free(line);
+		// 	continue ;
+		// }
 		if (!line)
 		{
 			rl_clear_history();
-			free_env_list(env);
+			free_env_list(shell.env);
 			break ;
 		}
 		if (*line)
@@ -473,7 +485,7 @@ int	main(int argc, char **argv, char **envp)
 			{
 				char **pipe_parts = ft_split(many_lines[i], '|');
 				//free(many_lines[i]);
-				handle_pipeline(pipe_parts, &env, many_lines);
+				handle_pipeline(pipe_parts, &shell, many_lines);
 				free_args(pipe_parts);
 			}
 			i++;
