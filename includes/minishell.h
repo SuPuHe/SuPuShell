@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 13:51:58 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/11 17:57:14 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@
 //bool
 # include <stdbool.h>
 
-extern volatile sig_atomic_t	g_signal_interrupt;
+// extern volatile sig_atomic_t	g_signal_interrupt;
 
 typedef struct s_env
 {
@@ -97,10 +97,17 @@ typedef struct s_env
 	struct s_env	*next;
 }	t_env;
 
+typedef struct s_shell
+{
+	t_env	*env;
+	int		last_exit_status;
+}	t_shell;
+
 typedef struct s_input
 {
 	const char	*line;
 	int			i;
+	t_shell		*shell;
 	t_env		*env;
 	char		**args;
 	bool		syntax_ok;
