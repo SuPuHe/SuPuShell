@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 20:18:53 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/11 12:46:38 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,7 +328,7 @@ t_input	split_input(char *line, t_env *env)
 }
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
 
-void	handle_pipeline(char **pipe_parts, t_env **env)
+void	handle_pipeline(char **pipe_parts, t_env **env, char **many_lines)
 {
 	int		in_fd = STDIN_FILENO;
 	int		pipefd[2];
@@ -364,6 +364,8 @@ void	handle_pipeline(char **pipe_parts, t_env **env)
 				do_unset(input.args, env);
 			else if (ft_strncmp(input.args[0], "exit", 5) == 0 || ft_strncmp(input.args[0], "q", 2) == 0)
 			{
+				free_args(many_lines);
+				free_args(pipe_parts);
 				free_at_exit(&input, env);
 				exit(0);
 			}
@@ -460,7 +462,8 @@ int	main(int argc, char **argv, char **envp)
 			if (*many_lines[i])
 			{
 				char **pipe_parts = ft_split(many_lines[i], '|');
-				handle_pipeline(pipe_parts, &env);
+				//free(many_lines[i]);
+				handle_pipeline(pipe_parts, &env, many_lines);
 				free_args(pipe_parts);
 			}
 			i++;
