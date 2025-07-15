@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_second_part.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/15 14:00:36 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/15 14:39:56 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 	}
 	if (!path || access(path, X_OK) != 0)
 	{
-		//printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
 		print_error(argv[0]);
 		write(2, ": command not found\n"RESET, 25);
 		if (should_free_path && path)
