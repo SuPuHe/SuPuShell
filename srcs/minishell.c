@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/15 14:00:04 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/15 17:02:20 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 // volatile sig_atomic_t	g_signal_interrupt = 0;
 char	*parse_word(t_input *in);
 bool	apply_redirections(t_input *input);
+char	*parse_redirect_word(t_input *input);
 
 void	command_handler(char **argv, t_env **env, t_input *input)
 {
@@ -200,7 +201,7 @@ bool	parse_redirects(t_input *input)
 					printf("syntax error near unexpected token '%c'\n", next_char);
 				return false;
 			}
-			input->outfile = parse_word(input);
+			input->outfile = parse_redirect_word(input);
 			input->append = true;
 		}
 		else
@@ -217,7 +218,7 @@ bool	parse_redirects(t_input *input)
 					printf("syntax error near unexpected token '%c'\n", next_char);
 				return false;
 			}
-			input->outfile = parse_word(input);
+			input->outfile = parse_redirect_word(input);
 			input->append = false;
 		}
 	}
@@ -237,7 +238,7 @@ bool	parse_redirects(t_input *input)
 					printf("syntax error near unexpected token '%c'\n", next_char);
 				return false;
 			}
-			input->heredoc = parse_word(input);
+			input->heredoc = parse_redirect_word(input);
 		}
 		else
 		{
@@ -253,7 +254,7 @@ bool	parse_redirects(t_input *input)
 					printf("syntax error near unexpected token '%c'\n", next_char);
 				return false;
 			}
-			input->infile = parse_word(input);
+			input->infile = parse_redirect_word(input);
 		}
 	}
 	else
@@ -354,16 +355,6 @@ t_input	split_input(char *line, t_env *env, t_shell *shell)
 			arg = parse_double_quote(&input);
 		else
 			arg = parse_word(&input);
-		// if (!arg || !input.syntax_ok)
-		// {
-		// 	// free(arg);
-		// 	// free_args(input.args);
-		// 	ft_bzero(&empty, sizeof(t_input));
-		// 	empty.syntax_ok = false;
-		// 	return (empty);
-		// 	// return (NULL);
-
-		// }
 		if (!arg || !input.syntax_ok)
 		{
 			input.syntax_ok = false;
@@ -377,7 +368,25 @@ t_input	split_input(char *line, t_env *env, t_shell *shell)
 		}
 		input.args = append_arg(input.args, arg);
 	}
+	if ((!input.args || !input.args[0]) && input.heredoc)
+		{
+			input.args = malloc(sizeof(char *) * 2);
+			if (!input.args)
+				return (input.syntax_ok = false, input);
+			input.args[0] = ft_strdup(":");
+			input.args[1] = NULL;
+		}
 	return (input);
+}
+
+char	*parse_redirect_word(t_input *input)
+{
+	if (input->line[input->i] == '\'')
+		return (parse_single_quote(input));
+	else if (input->line[input->i] == '"')
+		return (parse_double_quote(input));
+	else
+		return (parse_word(input));
 }
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
 
@@ -454,6 +463,8 @@ void	handle_pipeline(char **pipe_parts, t_shell *shell, char **many_lines)
 				do_pwd();
 			else if (ft_strncmp(input.args[0], "env", 4) == 0)
 				do_env(shell->env);
+			else if (ft_strncmp(input.args[0], ":", 2) == 0)
+				;
 			else
 				run_external_command(input.args, shell->env, &input);
 
