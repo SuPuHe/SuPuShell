@@ -6,19 +6,30 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 17:58:46 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/15 14:00:36 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void	print_error(char *argv)
+{
+	int i;
+	i = 0;
+	write(2, BOLDRED, 9);
+	while (argv[i] != '\0')
+	{
+		write(2, &argv[i], 1);
+		i++;
+	}
+}
 
 void	run_external_command(char **argv, t_env *env, t_input *input)
 {
 	char	*path;
 	char	**envp;
 	bool	should_free_path = false;
-	int		i;
-
+	int	i;
 	envp = build_envp(env);
 	if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
 		path = argv[0];
@@ -29,7 +40,9 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 	}
 	if (!path || access(path, X_OK) != 0)
 	{
-		printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
+		//printf(BOLDRED"%s: command not found\n"RESET, argv[0]);
+		print_error(argv[0]);
+		write(2, ": command not found\n"RESET, 25);
 		if (should_free_path && path)
 			free(path);
 		i = 0;

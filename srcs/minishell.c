@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 18:13:00 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/15 14:00:04 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,35 +183,82 @@ char	*parse_word(t_input *in)
 
 bool	parse_redirects(t_input *input)
 {
-	if (input->line[input->i] == '>' && input->line[input->i + 1] == '>')
+	char next_char;
+	if (input->line[input->i] == '>')
 	{
-		input->i += 2;
-		skip_spaces(input);
-		input->outfile = parse_word(input);
-		input->append = true;
-	}
-	else if (input->line[input->i] == '>')
-	{
-		input->i++;
-		skip_spaces(input);
-		input->outfile = parse_word(input);
-		input->append = false;
-	}
-	else if (input->line[input->i] == '<' && input->line[input->i + 1] == '<')
-	{
-		input->i += 2;
-		skip_spaces(input);
-		input->heredoc = parse_word(input);
+		if (input->line[input->i + 1] == '>')
+		{
+			input->i += 2;
+			skip_spaces(input);
+			next_char = input->line[input->i];
+			if (!next_char || next_char == '>' || next_char == '<')
+			{
+				input->syntax_ok = false;
+				if (!next_char)
+					printf("syntax error near unexpected token '\\n'\n");
+				else
+					printf("syntax error near unexpected token '%c'\n", next_char);
+				return false;
+			}
+			input->outfile = parse_word(input);
+			input->append = true;
+		}
+		else
+		{
+			input->i++;
+			skip_spaces(input);
+			next_char = input->line[input->i];
+			if (!next_char || next_char == '>' || next_char == '<')
+			{
+				input->syntax_ok = false;
+				if (!next_char)
+					printf("syntax error near unexpected token '\\n'\n");
+				else
+					printf("syntax error near unexpected token '%c'\n", next_char);
+				return false;
+			}
+			input->outfile = parse_word(input);
+			input->append = false;
+		}
 	}
 	else if (input->line[input->i] == '<')
 	{
-		input->i++;
-		skip_spaces(input);
-		input->infile = parse_word(input);
+		if (input->line[input->i + 1] == '<')
+		{
+			input->i += 2;
+			skip_spaces(input);
+			next_char = input->line[input->i];
+			if (!next_char || next_char == '>' || next_char == '<')
+			{
+				input->syntax_ok = false;
+				if (!next_char)
+					printf("syntax error near unexpected token '\\n'\n");
+				else
+					printf("syntax error near unexpected token '%c'\n", next_char);
+				return false;
+			}
+			input->heredoc = parse_word(input);
+		}
+		else
+		{
+			input->i++;
+			skip_spaces(input);
+			next_char = input->line[input->i];
+			if (!next_char || next_char == '>' || next_char == '<')
+			{
+				input->syntax_ok = false;
+				if (!next_char)
+					printf("syntax error near unexpected token '\\n'\n");
+				else
+					printf("syntax error near unexpected token '%c'\n", next_char);
+				return false;
+			}
+			input->infile = parse_word(input);
+		}
 	}
 	else
-		return (false);
-	return (true);
+		return false;
+	return true;
 }
 
 bool	handle_heredoc(t_input *input)
