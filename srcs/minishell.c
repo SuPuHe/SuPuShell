@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/15 17:02:20 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/16 11:15:28 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -466,8 +466,13 @@ void	handle_pipeline(char **pipe_parts, t_shell *shell, char **many_lines)
 			else if (ft_strncmp(input.args[0], ":", 2) == 0)
 				;
 			else
+			{
+				free_args(many_lines);
+				free_args(pipe_parts);
 				run_external_command(input.args, shell->env, &input);
-
+			}
+			free_args(many_lines);
+			free_args(pipe_parts);
 			free_at_exit(&input, &shell->env);
 			exit(0);
 		}
