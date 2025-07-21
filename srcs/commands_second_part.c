@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/15 14:39:56 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/21 11:27:45 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 			free(envp[i++]);
 		free(envp);
 		free_at_exit(input, &env);
+	//	free_ast(ast);
 		exit(127);
 	}
 	execve(path, argv, envp);
@@ -60,6 +61,7 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 		free(envp[i++]);
 	free(envp);
 	free_at_exit(input, &env);
+	//free_ast(ast);
 	exit(1);
 }
 
