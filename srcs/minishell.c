@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 13:07:34 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/21 16:25:28 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -979,6 +979,8 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 	t_input	input;
 	t_token	*current_tok;
 	char	*expanded_value;
+	char	**expanded_wildcards;
+	int		i;
 
 	ft_memset(&input, 0, sizeof(t_input));
 	input.env = env;
@@ -1006,7 +1008,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			}
 			t_token *filename_token = (t_token*)(*current_tokens)->content;
 
-			// --- ВАЖНО: исправленная логика для heredoc delimiter ---
 			if (redir_type == TOKEN_HEREDOC)
 			{
 				if (input.heredoc)
@@ -1063,7 +1064,25 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 				free_token_list(*current_tokens);
 				return (input);
 			}
-			if (ft_strlen(expanded_value) > 0)
+			if (current_tok->type == TOKEN_WORD && ft_strchr(expanded_value, '*'))
+			{
+				expanded_wildcards = expand_wildcards(expanded_value);
+				free(expanded_value);
+				if (!expanded_wildcards)
+				{
+					input.syntax_ok = false;
+					free_token_list(*current_tokens);
+					return (input);
+				}
+				i = 0;
+				while (expanded_wildcards[i])
+				{
+					input.args = append_arg(input.args, expanded_wildcards[i]);
+					i++;
+				}
+				free(expanded_wildcards);
+			}
+			else if (ft_strlen(expanded_value) > 0)
 				input.args = append_arg(input.args, expanded_value);
 			else
 				free(expanded_value);

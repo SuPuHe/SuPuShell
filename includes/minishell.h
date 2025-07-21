@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 11:27:51 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/21 16:03:43 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,6 +205,10 @@ int		check_for_input(char *line);
 int		ft_isspace(char c);
 void	skip_spaces(t_input *input);
 char	**append_arg(char **args, char *new_arg);
+
+// wildcards
+char	**expand_wildcards(const char *pattern);
+void	free_expanded_wildcards(char **expanded);
 
 //billy
 void	billy_print(void);
