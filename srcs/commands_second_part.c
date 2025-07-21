@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 11:27:45 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/21 17:08:04 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,12 @@ void	print_error(char *argv)
 	}
 }
 
-void	run_external_command(char **argv, t_env *env, t_input *input)
+void	run_external_command(char **argv, t_env *env, t_ast_node *ast)
 {
 	char	*path;
 	char	**envp;
 	bool	should_free_path = false;
-	int	i;
+	int		i;
 	envp = build_envp(env);
 	if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
 		path = argv[0];
@@ -48,8 +48,9 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 		while (envp[i])
 			free(envp[i++]);
 		free(envp);
-		free_at_exit(input, &env);
-	//	free_ast(ast);
+		free_ast(ast);
+		free_env_list(env);
+		rl_clear_history();
 		exit(127);
 	}
 	execve(path, argv, envp);
@@ -60,8 +61,9 @@ void	run_external_command(char **argv, t_env *env, t_input *input)
 	while (envp[i])
 		free(envp[i++]);
 	free(envp);
-	free_at_exit(input, &env);
-	//free_ast(ast);
+	free_ast(ast);
+	free_env_list(env);
+	rl_clear_history();
 	exit(1);
 }
 
