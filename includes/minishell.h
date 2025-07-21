@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/11 17:57:14 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/21 11:27:51 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ typedef struct s_shell
 {
 	t_env	*env;
 	int		last_exit_status;
+	int		should_exit;
 }	t_shell;
 
 typedef struct s_input
@@ -117,12 +118,58 @@ typedef struct s_input
 	char		*heredoc;
 }	t_input;
 
+typedef enum e_token_type
+{
+	TOKEN_WORD,
+	TOKEN_SINGLE_QUOTE_WORD,
+	TOKEN_DOUBLE_QUOTE_WORD,
+	TOKEN_PIPE,
+	TOKEN_AND,
+	TOKEN_OR,
+	TOKEN_LPAREN,
+	TOKEN_RPAREN,
+	TOKEN_REDIR_IN,
+	TOKEN_REDIR_OUT,
+	TOKEN_REDIR_APPEND,
+	TOKEN_HEREDOC,
+	TOKEN_END
+}	t_token_type;
+
+typedef struct s_token
+{
+	t_token_type	type;
+	char			*value;
+}	t_token;
+
+typedef enum e_node_type
+{
+	NODE_CMD,
+	NODE_PIPE,
+	NODE_AND,
+	NODE_OR,
+	NODE_SUBSHELL
+}	t_node_type;
+
+typedef struct s_ast_node
+{
+	t_node_type			type;
+	struct s_ast_node	*left;
+	struct s_ast_node	*right;
+	t_input				*command;
+}	t_ast_node;
+
+typedef struct s_string_builder {
+	char	*str;
+	size_t	len;
+	size_t	capacity;
+}	t_string_builder;
 
 //free_functions
 void	free_input(t_input *input);
 void	free_env_list(t_env *env);
 void	free_args(char **args);
 void	free_at_exit(t_input *input, t_env **env);
+void	free_ast(t_ast_node *node);
 //helpers
 char	*substr_dup(const char *start, const char *end);
 int		ft_strcmp(const char *s1, const char *s2);
