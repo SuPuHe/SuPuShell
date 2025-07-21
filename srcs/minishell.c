@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 16:25:28 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/21 17:07:26 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1287,7 +1287,6 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 				do_unset(node->command->args, &shell->env);
 			else if (ft_strncmp(node->command->args[0], "exit", 5) == 0 || ft_strncmp(node->command->args[0], "q", 2) == 0)
 			{
-				//free_input(node->command);
 				shell->should_exit = 1;
 				return (0);
 			}
@@ -1306,7 +1305,11 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 				{
 					signal(SIGINT, SIG_DFL);
 					signal(SIGQUIT, SIG_DFL);
-					run_external_command(node->command->args, shell->env, node->command);
+					t_ast_node *child_ast = node;
+					run_external_command(node->command->args, shell->env, child_ast);
+					free_ast(child_ast);
+					free_env_list(shell->env);
+					rl_clear_history();
 					exit(127);
 				}
 				else if (pid < 0)
@@ -1337,7 +1340,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			dup2(pipefd[1], STDOUT_FILENO);
 			close(pipefd[1]);
 			int status = execute_node(node->left, shell);
-			free_ast(node);
+			t_ast_node *child_ast = node;
+			free_ast(child_ast);
 			free_env_list(shell->env);
 			rl_clear_history();
 			exit(status);
@@ -1350,7 +1354,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			dup2(pipefd[0], STDIN_FILENO);
 			close(pipefd[0]);
 			int status = execute_node(node->right, shell);
-			free_ast(node);
+			t_ast_node *child_ast = node;
+			free_ast(child_ast);
 			free_env_list(shell->env);
 			rl_clear_history();
 			exit(status);
@@ -1384,7 +1389,12 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 		{
 			signal(SIGINT, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
-			exit(execute_node(node->left, shell));
+			int status = execute_node(node->left, shell);
+			t_ast_node *child_ast = node;
+			free_ast(child_ast);
+			free_env_list(shell->env);
+			rl_clear_history();
+			exit(status);
 		}
 		else if (pid < 0)
 		{

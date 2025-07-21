@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 16:03:43 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/21 17:08:49 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,7 @@ char	*ft_strsep(char **str, const char *sep);
 char	*search_path(const char *cmd, t_env *env);
 //commands_second_part
 void	do_echo(char **argv);
-void	run_external_command(char **argv, t_env *env, t_input *input);
+void	run_external_command(char **argv, t_env *env, t_ast_node *ast);
 //small_helpers
 int		check_for_input(char *line);
 int		ft_isspace(char c);
