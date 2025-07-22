@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/22 13:18:33 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/22 14:41:44 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,7 @@ typedef struct s_token
 {
 	t_token_type	type;
 	char			*value;
+	bool			has_space;
 }	t_token;
 
 typedef enum e_node_type

@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/22 13:18:28 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/22 15:43:32 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -762,57 +762,64 @@ t_list	*tokenize(const char *line)
 {
 	t_list	*tokens = NULL;
 	int		i = 0;
+	bool	had_space = false;
+
 	while (line[i])
 	{
+		had_space = false;
 		while (ft_isspace(line[i]))
-				i++;
+		{
+			had_space = true;
+			i++;
+		}
 
 		if (!line[i])
-		break;
+			break;
 
+		t_token *new_token = NULL;
 		if (ft_strncmp(&line[i], "&&", 2) == 0)
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_AND, NULL)));
+			new_token = create_token(TOKEN_AND, NULL);
 			i += 2;
 		}
 		else if (ft_strncmp(&line[i], "||", 2) == 0)
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_OR, NULL)));
+			new_token = create_token(TOKEN_OR, NULL);
 			i += 2;
 		}
 		else if (line[i] == '|')
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_PIPE, NULL)));
+			new_token = create_token(TOKEN_PIPE, NULL);
 			i++;
 		}
 		else if (line[i] == '(')
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_LPAREN, NULL)));
+			new_token = create_token(TOKEN_LPAREN, NULL);
 			i++;
 		}
 		else if (line[i] == ')')
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_RPAREN, NULL)));
+			new_token = create_token(TOKEN_RPAREN, NULL);
 			i++;
 		}
 		else if (ft_strncmp(&line[i], ">>", 2) == 0)
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_REDIR_APPEND, NULL)));
+			new_token = create_token(TOKEN_REDIR_APPEND, NULL);
 			i += 2;
 		}
 		else if (ft_strncmp(&line[i], "<<", 2) == 0)
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_HEREDOC, NULL)));
+			new_token = create_token(TOKEN_HEREDOC, NULL);
 			i += 2;
 		}
 		else if (line[i] == '>')
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_REDIR_OUT, NULL)));
+			new_token = create_token(TOKEN_REDIR_OUT, NULL);
 			i++;
 		}
 		else if (line[i] == '<')
 		{
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_REDIR_IN, NULL)));
+			new_token = create_token(TOKEN_REDIR_IN, NULL);
 			i++;
 		}
 		else if (line[i] == '\'')
@@ -828,7 +835,7 @@ t_list	*tokenize(const char *line)
 				free_token_list(tokens);
 				return (NULL);
 			}
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_SINGLE_QUOTE_WORD, value)));
+			new_token = create_token(TOKEN_SINGLE_QUOTE_WORD, value);
 			free(value);
 		}
 		else if (line[i] == '"')
@@ -844,17 +851,24 @@ t_list	*tokenize(const char *line)
 				free_token_list(tokens);
 				return (NULL);
 			}
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_DOUBLE_QUOTE_WORD, value)));
+			new_token = create_token(TOKEN_DOUBLE_QUOTE_WORD, value);
 			free(value);
 		}
 		else
 		{
 			char *word_str = extract_non_quoted_word(line, &i);
-			ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_WORD, word_str)));
+			new_token = create_token(TOKEN_WORD, word_str);
 			free(word_str);
 		}
+		if (new_token)
+		{
+			new_token->has_space = had_space;
+			ft_lstadd_back(&tokens, ft_lstnew(new_token));
+		}
 	}
-	ft_lstadd_back(&tokens, ft_lstnew(create_token(TOKEN_END, NULL)));
+	t_token *end_token = create_token(TOKEN_END, NULL);
+	end_token->has_space = false;
+	ft_lstadd_back(&tokens, ft_lstnew(end_token));
 	return (tokens);
 }
 
@@ -1055,49 +1069,28 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 				return (input);
 			}
 
-			if (!is_first_word)
-			{
-				// Проверяем следующий токен только для аргументов
-				t_list *next_token = (*current_tokens)->next;
-				while (next_token &&
+			t_list *next_token = (*current_tokens)->next;
+			while (next_token &&
+					!((t_token*)next_token->content)->has_space &&
 					(((t_token*)next_token->content)->type == TOKEN_SINGLE_QUOTE_WORD ||
 					((t_token*)next_token->content)->type == TOKEN_DOUBLE_QUOTE_WORD ||
 					((t_token*)next_token->content)->type == TOKEN_WORD))
+			{
+				char *next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
+				if (next_expanded)
 				{
-					char *next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
-					if (next_expanded)
-					{
-						char *combined = ft_strjoin(expanded_value, next_expanded);
-						free(expanded_value);
-						free(next_expanded);
-						expanded_value = combined;
-						*current_tokens = next_token;
-						next_token = next_token->next;
-					}
-					else
-						break;
+					char *combined = ft_strjoin(expanded_value, next_expanded);
+					free(expanded_value);
+					free(next_expanded);
+					expanded_value = combined;
+					*current_tokens = next_token;
+					next_token = next_token->next;
 				}
+				else
+					break;
 			}
 
-			if (current_tok->type == TOKEN_WORD && ft_strchr(expanded_value, '*'))
-			{
-				expanded_wildcards = expand_wildcards(expanded_value);
-				free(expanded_value);
-				if (!expanded_wildcards)
-				{
-					input.syntax_ok = false;
-					free_token_list(*current_tokens);
-					return (input);
-				}
-				i = 0;
-				while (expanded_wildcards[i])
-				{
-					input.args = append_arg(input.args, expanded_wildcards[i]);
-					i++;
-				}
-				free(expanded_wildcards);
-			}
-			else if (ft_strlen(expanded_value) > 0)
+			if (ft_strlen(expanded_value) > 0)
 				input.args = append_arg(input.args, expanded_value);
 			else
 				free(expanded_value);

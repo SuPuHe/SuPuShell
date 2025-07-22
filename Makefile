@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
+#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/07/21 16:04:35 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/07/22 15:46:36 by omizin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,7 @@ INCS_DIR = includes
 
 INCLUDE = -I$(INCS_DIR) -I$(SUPULIB_DIR)/libft/includes -I$(SUPULIB_DIR)/ft_printf/includes -I$(SUPULIB_DIR)/get_next_line/includes
 CC = cc
-CFLAGS = -Wall -Wextra -Werror $(INCLUDE)
+CFLAGS = -g $(INCLUDE)
 LDFLAGS = -lreadline
 
 RM = rm -rf
@@ -48,7 +48,7 @@ $(SUPULIB_DIR):
 $(SUPULIB_DIR)/SuPuLib.a: | $(SUPULIB_DIR)
 	@$(MAKE) -C $(SUPULIB_DIR)
 
-# Compile push_swap
+# Compile minishell
 $(NAME): $(SUPULIB_DIR)/SuPuLib.a $(OBJS)
 	@$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) $(SUPULIB_DIR)/SuPuLib.a -o $(NAME)
 	@echo "$(GREEN)$(NAME) compiled successfully$(RESET_COLOR)"
