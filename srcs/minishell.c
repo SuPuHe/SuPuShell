@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 17:07:26 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/22 13:18:28 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -981,6 +981,7 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 	char	*expanded_value;
 	char	**expanded_wildcards;
 	int		i;
+	bool	is_first_word = true;
 
 	ft_memset(&input, 0, sizeof(t_input));
 	input.env = env;
@@ -1042,18 +1043,7 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			*current_tokens = (*current_tokens)->next;
 			continue;
 		}
-		if (current_tok->type == TOKEN_WORD && strchr(current_tok->value, '=') &&
-			(*current_tokens)->next &&
-			(((t_token*)(*current_tokens)->next->content)->type == TOKEN_DOUBLE_QUOTE_WORD ||
-			((t_token*)(*current_tokens)->next->content)->type == TOKEN_SINGLE_QUOTE_WORD))
-		{
-			t_token *next_tok = (t_token*)(*current_tokens)->next->content;
-			char *joined = ft_strjoin(current_tok->value, next_tok->value);
-			input.args = append_arg(input.args, joined);
-			*current_tokens = (*current_tokens)->next->next;
-			continue;
-		}
-		if (current_tok->type == TOKEN_WORD ||
+		else if (current_tok->type == TOKEN_WORD ||
 			current_tok->type == TOKEN_SINGLE_QUOTE_WORD ||
 			current_tok->type == TOKEN_DOUBLE_QUOTE_WORD)
 		{
@@ -1064,6 +1054,31 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 				free_token_list(*current_tokens);
 				return (input);
 			}
+
+			if (!is_first_word)
+			{
+				// Проверяем следующий токен только для аргументов
+				t_list *next_token = (*current_tokens)->next;
+				while (next_token &&
+					(((t_token*)next_token->content)->type == TOKEN_SINGLE_QUOTE_WORD ||
+					((t_token*)next_token->content)->type == TOKEN_DOUBLE_QUOTE_WORD ||
+					((t_token*)next_token->content)->type == TOKEN_WORD))
+				{
+					char *next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
+					if (next_expanded)
+					{
+						char *combined = ft_strjoin(expanded_value, next_expanded);
+						free(expanded_value);
+						free(next_expanded);
+						expanded_value = combined;
+						*current_tokens = next_token;
+						next_token = next_token->next;
+					}
+					else
+						break;
+				}
+			}
+
 			if (current_tok->type == TOKEN_WORD && ft_strchr(expanded_value, '*'))
 			{
 				expanded_wildcards = expand_wildcards(expanded_value);
@@ -1087,6 +1102,7 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			else
 				free(expanded_value);
 			*current_tokens = (*current_tokens)->next;
+			is_first_word = false;
 		}
 		else
 		{
@@ -1300,6 +1316,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 				last_status = 0;
 			else
 			{
+				signal(SIGINT, SIG_IGN);
+				signal(SIGQUIT, SIG_IGN);
 				pid = fork();
 				if (pid == 0)
 				{
@@ -1333,9 +1351,14 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 		int pipefd[2];
 		pipe(pipefd);
 
+		signal(SIGINT, SIG_IGN);
+		signal(SIGQUIT, SIG_IGN);
+
 		pid_t left_pid = fork();
 		if (left_pid == 0)
 		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
 			close(pipefd[0]);
 			dup2(pipefd[1], STDOUT_FILENO);
 			close(pipefd[1]);
@@ -1350,6 +1373,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 		pid_t right_pid = fork();
 		if (right_pid == 0)
 		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
 			close(pipefd[1]);
 			dup2(pipefd[0], STDIN_FILENO);
 			close(pipefd[0]);
@@ -1384,6 +1409,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 	}
 	else if (node->type == NODE_SUBSHELL)
 	{
+		signal(SIGINT, SIG_IGN);
+		signal(SIGQUIT, SIG_IGN);
 		pid = fork();
 		if (pid == 0)
 		{
