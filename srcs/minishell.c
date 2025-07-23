@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 17:29:56 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/23 17:39:41 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1081,10 +1081,32 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 					break;
 			}
 
-			if (ft_strlen(expanded_value) > 0)
-				input.args = append_arg(input.args, expanded_value);
-			else
+			// --- Вот тут добавляем обработку wildcard ---
+			if (current_tok->type == TOKEN_WORD &&
+				(ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
+			{
+				char **wildcards = expand_wildcards(expanded_value);
+				if (wildcards)
+				{
+					for (int j = 0; wildcards[j]; j++)
+						input.args = append_arg(input.args, wildcards[j]);
+					free_expanded_wildcards(wildcards);
+				}
+				else
+				{
+					input.args = append_arg(input.args, expanded_value);
+				}
 				cf_free_one(expanded_value);
+			}
+			else if (ft_strlen(expanded_value) > 0)
+			{
+				input.args = append_arg(input.args, expanded_value);
+				cf_free_one(expanded_value);
+			}
+			else
+			{
+				cf_free_one(expanded_value);
+			}
 			*current_tokens = (*current_tokens)->next;
 		}
 		else
