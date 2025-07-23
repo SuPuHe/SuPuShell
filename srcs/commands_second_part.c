@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_second_part.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 13:59:44 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 15:17:48 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 void	print_error(char *argv)
 {
-	int i;
+	int	i;
+
 	i = 0;
 	write(2, BOLDRED, 9);
 	while (argv[i] != '\0')
