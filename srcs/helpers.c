@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:38:55 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 11:04:39 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 14:00:03 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ char	*substr_dup(const char *start, const char *end)
 	char	*s;
 
 	len = end - start;
-	s = malloc(len + 1);
+	s = cf_malloc(len + 1);
 	if (!s)
 		return (NULL);
 	ft_memcpy(s, start, len);
@@ -80,12 +80,12 @@ char	*ft_strjoin_free(char *s1, const char *s2)
 	if (!s1 || !s2)
 		return (NULL);
 	len = ft_strlen(s1) + ft_strlen(s2);
-	word = malloc(sizeof(char) * (len + 1));
+	word = cf_malloc(sizeof(char) * (len + 1));
 	if (!word)
 		return (NULL);
 	ft_memcpy(word, s1, ft_strlen(s1));
 	ft_memcpy(word + ft_strlen(s1), s2, ft_strlen(s2));
 	word[len] = '\0';
-	free(s1);
+	cf_free_one(s1);
 	return (word);
 }

@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/22 14:41:44 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 13:57:39 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 # include "ft_printf.h"
 # include "get_next_line.h"
 # include "libft.h"
+
+# include "cf.h"
 
 # define RESET   "\033[0m"
 # define RED     "\033[31m"
@@ -200,7 +202,7 @@ char	*ft_strsep(char **str, const char *sep);
 char	*search_path(const char *cmd, t_env *env);
 //commands_second_part
 void	do_echo(char **argv);
-void	run_external_command(char **argv, t_env *env, t_ast_node *ast);
+void	run_external_command(char **argv, t_env *env);
 //small_helpers
 int		check_for_input(char *line);
 int		ft_isspace(char c);

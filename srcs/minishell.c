@@ -6,11 +6,12 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/22 15:43:32 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 14:00:51 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
 // volatile sig_atomic_t	g_signal_interrupt = 0;
 char	*parse_word(t_input *in);
 bool	apply_redirections(t_input *input);
@@ -85,9 +86,8 @@ char	*parse_env_var(t_input *input)
 	{
 		return (ft_strdup("$"));
 	}
-	name = ft_substr(input->line, start, input->i - start);
+	name = cf_substr(input->line, start, input->i - start);
 	value = get_env_value(input->env, name);
-	free(name);
 	if (value)
 		return (ft_strdup(value));
 	else
@@ -547,13 +547,13 @@ t_string_builder	*sb_create(void)
 {
 	t_string_builder	*sb;
 
-	sb = malloc(sizeof(t_string_builder));
+	sb = cf_malloc(sizeof(t_string_builder));
 	if (!sb)
 		return (NULL);
-	sb->str = ft_strdup("");
+	sb->str = cf_strdup("");
 	if (!sb->str)
 	{
-		free(sb);
+		cf_free_one(sb);
 		return (NULL);
 	}
 	sb->len = 0;
@@ -569,7 +569,7 @@ void	sb_append_char(t_string_builder *sb, char c)
 	if (sb->len + 1 >= sb->capacity)
 	{
 		new_capacity = sb->capacity * 2;
-		new_str = ft_realloc(sb->str, new_capacity);
+		new_str = cf_realloc(sb->str, new_capacity);
 		if (!new_str)
 			return ;
 		sb->str = new_str;
@@ -591,7 +591,7 @@ void	sb_append(t_string_builder *sb, const char *s)
 	if (sb->len + s_len >= sb->capacity)
 	{
 		new_capacity = (sb->len + s_len) * 2;
-		new_str = ft_realloc(sb->str, new_capacity);
+		new_str = cf_realloc(sb->str, new_capacity);
 		if (!new_str)
 			return ;
 		sb->str = new_str;
@@ -608,7 +608,7 @@ char	*sb_build_and_destroy(t_string_builder *sb)
 	final_str = sb->str;
 	if (!sb)
 		return (NULL);
-	free(sb);
+	cf_free_one(sb);
 	return (final_str);
 }
 
@@ -622,33 +622,33 @@ void	free_ast(t_ast_node *node)
 		free_ast(node->right);
 	if (node->type == NODE_CMD && node->command)
 	{
-		free_input(node->command);
-		free(node->command);
+		cf_free_one(node->command);
 	}
-	free(node);
+	cf_free_one(node);
 }
 
 void	free_token_list(t_list *tokens)
 {
-	t_list	*current;
-	t_token	*token;
-
+	t_list *current;
+	t_token *token;
 	while (tokens)
 	{
 		current = tokens;
-		token = (t_token *)current->content;
-		if (token->value)
-			free(token->value);
-		free(token);
 		tokens = tokens->next;
-		free(current);
+		token = (t_token *)current->content;
+		if (token && token->value)
+			cf_free_one(token->value);
+		if (token)
+			cf_free_one(token);
+		current->next = NULL;
+		cf_free_one(current);
 	}
 }
 
 char	*extract_command_line_from_tokens(t_list **tokens)
 {
 	t_list	*current_token_node = *tokens;
-	char	*command_line_part = ft_strdup("");
+	char	*command_line_part = cf_strdup("");
 	char	*tmp_str;
 
 	while (current_token_node && ((t_token*)current_token_node->content)->type != TOKEN_PIPE
@@ -661,30 +661,30 @@ char	*extract_command_line_from_tokens(t_list **tokens)
 		tmp_str = NULL;
 
 		if (token->type == TOKEN_WORD)
-			tmp_str = ft_strjoin(command_line_part, token->value);
+			tmp_str = ft_strjoin_free(command_line_part, token->value);
 		else if (token->type == TOKEN_REDIR_IN)
-			tmp_str = ft_strjoin(command_line_part, " <");
+			tmp_str = ft_strjoin_free(command_line_part, " <");
 		else if (token->type == TOKEN_REDIR_OUT)
-			tmp_str = ft_strjoin(command_line_part, " >");
+			tmp_str = ft_strjoin_free(command_line_part, " >");
 		else if (token->type == TOKEN_REDIR_APPEND)
-			tmp_str = ft_strjoin(command_line_part, " >>");
+			tmp_str = ft_strjoin_free(command_line_part, " >>");
 		else if (token->type == TOKEN_HEREDOC)
-			tmp_str = ft_strjoin(command_line_part, " <<");
+			tmp_str = ft_strjoin_free(command_line_part, " <<");
 
 		if (command_line_part[0] != '\0' && tmp_str && token->type == TOKEN_WORD)
 		{
-			char *with_space = ft_strjoin(command_line_part, " ");
-			free(command_line_part);
-			command_line_part = ft_strjoin(with_space, token->value);
-			free(with_space);
+			char *with_space = ft_strjoin_free(command_line_part, " ");
+			cf_free_one(command_line_part);
+			command_line_part = ft_strjoin_free(with_space, token->value);
+			cf_free_one(with_space);
 		}
 		else
 		{
 			if ((token->type == TOKEN_REDIR_IN || token->type == TOKEN_REDIR_OUT ||
 				token->type == TOKEN_REDIR_APPEND || token->type == TOKEN_HEREDOC) && command_line_part[0] != '\0')
 			{
-				char *temp_concat = ft_strjoin(command_line_part, " ");
-				free(command_line_part);
+				char *temp_concat = ft_strjoin_free(command_line_part, " ");
+				cf_free_one(command_line_part);
 				char *val_to_add;
 				if (token->value)
 					val_to_add = token->value;
@@ -696,8 +696,8 @@ char	*extract_command_line_from_tokens(t_list **tokens)
 					val_to_add = ">>";
 				else
 					val_to_add = "<<";
-				command_line_part = ft_strjoin(temp_concat, val_to_add);
-				free(temp_concat);
+				command_line_part = ft_strjoin_free(temp_concat, val_to_add);
+				cf_free_one(temp_concat);
 			}
 			else
 			{
@@ -712,8 +712,8 @@ char	*extract_command_line_from_tokens(t_list **tokens)
 					val_to_add = ">>";
 				else
 					val_to_add = "<<";
-				char *new_str = ft_strjoin(command_line_part, val_to_add);
-				free(command_line_part);
+				char *new_str = ft_strjoin_free(command_line_part, val_to_add);
+				cf_free_one(command_line_part);
 				command_line_part = new_str;
 			}
 		}
@@ -727,12 +727,12 @@ t_token	*create_token(t_token_type type, const char *value)
 {
 	t_token	*token;
 
-	token = malloc(sizeof(t_token));
+	token = cf_malloc(sizeof(t_token));
 	if (!token)
 		return (NULL);
 	token->type = type;
 	if (value)
-		token->value = ft_strdup(value);
+		token->value = cf_strdup(value);
 	else
 		token->value = NULL;
 	return (token);
@@ -741,21 +741,21 @@ t_token	*create_token(t_token_type type, const char *value)
 static char *extract_subsegment(const char *line, int *i, char delimiter)
 {
 	int	start;
-
 	start = *i;
 	while (line[*i] && line[*i] != delimiter)
 		(*i)++;
-	return (ft_substr(line, start, *i - start));
+	char *s = cf_substr(line, start, *i - start);
+	return s;
 }
 
 char	*extract_non_quoted_word(const char *line, int *i)
 {
 	int	start;
-
 	start = *i;
 	while (line[*i] && !ft_isspace(line[*i]) && !is_operator(line[*i]) && line[*i] != '\'' && line[*i] != '"')
 		(*i)++;
-	return (ft_substr(line, start, *i - start));
+	char *s = cf_substr(line, start, *i - start);
+	return s;
 }
 
 t_list	*tokenize(const char *line)
@@ -830,13 +830,10 @@ t_list	*tokenize(const char *line)
 				i++;
 			else
 			{
-				if (value)
-					free(value);
 				free_token_list(tokens);
 				return (NULL);
 			}
 			new_token = create_token(TOKEN_SINGLE_QUOTE_WORD, value);
-			free(value);
 		}
 		else if (line[i] == '"')
 		{
@@ -846,29 +843,27 @@ t_list	*tokenize(const char *line)
 				i++;
 			else
 			{
-				if (value)
-					free(value);
 				free_token_list(tokens);
 				return (NULL);
 			}
 			new_token = create_token(TOKEN_DOUBLE_QUOTE_WORD, value);
-			free(value);
 		}
 		else
 		{
 			char *word_str = extract_non_quoted_word(line, &i);
 			new_token = create_token(TOKEN_WORD, word_str);
-			free(word_str);
 		}
 		if (new_token)
 		{
 			new_token->has_space = had_space;
-			ft_lstadd_back(&tokens, ft_lstnew(new_token));
+			t_list *node = cf_lstnew(new_token);
+			ft_lstadd_back(&tokens, node);
 		}
 	}
 	t_token *end_token = create_token(TOKEN_END, NULL);
 	end_token->has_space = false;
-	ft_lstadd_back(&tokens, ft_lstnew(end_token));
+	t_list *end_node = cf_lstnew(end_token);
+	ft_lstadd_back(&tokens, end_node);
 	return (tokens);
 }
 
@@ -901,11 +896,10 @@ char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
 				int var_start = i;
 				while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
 					i++;
-				char *var_name = ft_substr(str, var_start, i - var_start);
+				char *var_name = cf_substr(str, var_start, i - var_start);
 				char *var_value = get_env_value(env, var_name);
 				if (var_value)
 					sb_append(sb, var_value);
-				free(var_name);
 			}
 			else
 			{
@@ -924,11 +918,11 @@ char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
 char	*expand_token_value(t_token *token, t_env *env, t_shell *shell)
 {
 	if (!token || !token->value)
-		return (ft_strdup(""));
+		return (cf_strdup(""));
 
 	if (token->type == TOKEN_SINGLE_QUOTE_WORD)
 	{
-		return (ft_strdup(token->value));
+		return (cf_strdup(token->value));
 	}
 	else if (token->type == TOKEN_DOUBLE_QUOTE_WORD)
 	{
@@ -938,7 +932,7 @@ char	*expand_token_value(t_token *token, t_env *env, t_shell *shell)
 	{
 		return (expand_string_variables(token->value, env, shell));
 	}
-	return (ft_strdup(""));
+	return (cf_strdup(""));
 }
 
 bool	is_operator(char c)
@@ -950,7 +944,7 @@ t_ast_node	*create_cmd_node(t_input *cmd)
 {
 	t_ast_node	*node;
 
-	node = malloc(sizeof(t_ast_node));
+	node = cf_malloc(sizeof(t_ast_node));
 	if (!node)
 		return (NULL);
 	node->type = NODE_CMD;
@@ -964,7 +958,7 @@ t_ast_node	*create_binary_node(t_node_type type, t_ast_node *left, t_ast_node *r
 {
 	t_ast_node	*node;
 
-	node = malloc(sizeof(t_ast_node));
+	node = cf_malloc(sizeof(t_ast_node));
 	if (!node)
 		return (NULL);
 	node->type = type;
@@ -978,7 +972,7 @@ t_ast_node	*create_subshell_node(t_ast_node *child)
 {
 	t_ast_node	*node;
 
-	node = malloc(sizeof(t_ast_node));
+	node = cf_malloc(sizeof(t_ast_node));
 	if (!node)
 		return NULL;
 	node->type = NODE_SUBSHELL;
@@ -993,9 +987,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 	t_input	input;
 	t_token	*current_tok;
 	char	*expanded_value;
-	char	**expanded_wildcards;
-	int		i;
-	bool	is_first_word = true;
 
 	ft_memset(&input, 0, sizeof(t_input));
 	input.env = env;
@@ -1026,32 +1017,32 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			if (redir_type == TOKEN_HEREDOC)
 			{
 				if (input.heredoc)
-					free(input.heredoc);
-				input.heredoc = ft_strdup(filename_token->value);
+					cf_free_one(input.heredoc);
+				input.heredoc = cf_strdup(filename_token->value);
 			}
 			else if (filename_token->type == TOKEN_SINGLE_QUOTE_WORD)
-				expanded_value = ft_strdup(filename_token->value);
+				expanded_value = cf_strdup(filename_token->value);
 			else
 				expanded_value = expand_string_variables(filename_token->value, env, shell);
 
 			if (redir_type == TOKEN_REDIR_OUT)
 			{
 				if (input.outfile)
-					free(input.outfile);
+					cf_free_one(input.outfile);
 				input.outfile = expanded_value;
 				input.append = false;
 			}
 			else if (redir_type == TOKEN_REDIR_APPEND)
 			{
 				if (input.outfile)
-					free(input.outfile);
+					cf_free_one(input.outfile);
 				input.outfile = expanded_value;
 				input.append = true;
 			}
 			else if (redir_type == TOKEN_REDIR_IN)
 			{
 				if (input.infile)
-					free(input.infile);
+					cf_free_one(input.infile);
 				input.infile = expanded_value;
 			}
 			*current_tokens = (*current_tokens)->next;
@@ -1079,9 +1070,9 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 				char *next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
 				if (next_expanded)
 				{
-					char *combined = ft_strjoin(expanded_value, next_expanded);
-					free(expanded_value);
-					free(next_expanded);
+					char *combined = ft_strjoin_free(expanded_value, next_expanded);
+					cf_free_one(expanded_value);
+					cf_free_one(next_expanded);
 					expanded_value = combined;
 					*current_tokens = next_token;
 					next_token = next_token->next;
@@ -1093,9 +1084,8 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			if (ft_strlen(expanded_value) > 0)
 				input.args = append_arg(input.args, expanded_value);
 			else
-				free(expanded_value);
+				cf_free_one(expanded_value);
 			*current_tokens = (*current_tokens)->next;
-			is_first_word = false;
 		}
 		else
 		{
@@ -1106,13 +1096,13 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 	}
 	if ((!input.args || !input.args[0]) && input.heredoc)
 	{
-		input.args = malloc(sizeof(char *) * 2);
+		input.args = cf_malloc(sizeof(char *) * 2);
 		if (!input.args)
 		{
 			free_token_list(*current_tokens);
 			return (input.syntax_ok = false, input);
 		}
-		input.args[0] = ft_strdup(":");
+		input.args[0] = cf_strdup(":");
 		input.args[1] = NULL;
 	}
 	return (input);
@@ -1153,7 +1143,7 @@ t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 			current_token->type == TOKEN_REDIR_APPEND ||
 			current_token->type == TOKEN_HEREDOC)
 	{
-		cmd_data = malloc(sizeof(t_input));
+		cmd_data = cf_malloc(sizeof(t_input));
 		if (!cmd_data)
 			return (NULL);
 
@@ -1163,8 +1153,7 @@ t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 
 		if (!cmd_data->syntax_ok)
 		{
-			free_input(cmd_data);
-			free(cmd_data);
+			cf_free_one(cmd_data);
 			shell->last_exit_status = 2;
 			return (NULL);
 		}
@@ -1251,13 +1240,13 @@ t_ast_node	*parse_expression(t_list **tokens, t_shell *shell)
 t_ast_node	*parse(const char *line, t_shell *shell)
 {
 	t_list		*tokens;
-	t_list		*tokens_head;
+	// t_list		*tokens_head;
 	t_ast_node	*ast;
 
 	tokens = tokenize(line);
 	if (!tokens)
 		return (NULL);
-	tokens_head = tokens;
+	// tokens_head = tokens;
 	ast = parse_expression(&tokens, shell);
 
 	if (ast && ((t_token*)tokens->content)->type == TOKEN_END)
@@ -1267,7 +1256,9 @@ t_ast_node	*parse(const char *line, t_shell *shell)
 		free_ast(ast);
 		ast = NULL;
 	}
-	free_token_list(tokens_head);
+	if (tokens)
+		free_token_list(tokens);
+	tokens = NULL;
 	return (ast);
 }
 
@@ -1316,11 +1307,9 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 				{
 					signal(SIGINT, SIG_DFL);
 					signal(SIGQUIT, SIG_DFL);
-					t_ast_node *child_ast = node;
-					run_external_command(node->command->args, shell->env, child_ast);
-					free_ast(child_ast);
-					free_env_list(shell->env);
+					run_external_command(node->command->args, shell->env);
 					rl_clear_history();
+					cf_free_all();
 					exit(127);
 				}
 				else if (pid < 0)
@@ -1358,8 +1347,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			int status = execute_node(node->left, shell);
 			t_ast_node *child_ast = node;
 			free_ast(child_ast);
-			free_env_list(shell->env);
 			rl_clear_history();
+			cf_free_all();
 			exit(status);
 		}
 
@@ -1374,8 +1363,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			int status = execute_node(node->right, shell);
 			t_ast_node *child_ast = node;
 			free_ast(child_ast);
-			free_env_list(shell->env);
 			rl_clear_history();
+			cf_free_all();
 			exit(status);
 		}
 
@@ -1412,8 +1401,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			int status = execute_node(node->left, shell);
 			t_ast_node *child_ast = node;
 			free_ast(child_ast);
-			free_env_list(shell->env);
 			rl_clear_history();
+			cf_free_all();
 			exit(status);
 		}
 		else if (pid < 0)
@@ -1464,9 +1453,7 @@ int	main(int argc, char **argv, char **envp)
 		if (!line)
 		{
 			rl_clear_history();
-			free_env_list(shell.env);
-			if (ast)
-				free_ast(ast);
+			cf_free_all();
 			break ;
 		}
 		if (*line)
@@ -1490,12 +1477,23 @@ int	main(int argc, char **argv, char **envp)
 		if (shell.should_exit)
 		{
 			rl_clear_history();
-			free_env_list(shell.env);
-			free_ast(ast);
+			cf_free_all();
 			break ;
 		}
 	}
+	shell.env = NULL;
+	if (ast)
+		free_ast(ast);
+	ast = NULL;
+	cf_free_all();
 	return (0);
 }
 
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
+// ➜  SuPuShell git:(master) ✗ echo hi >> out.txt
+// ➜  SuPuShell git:(master) ✗ export FILE=test.txt
+// ➜  SuPuShell git:(master) ✗ echo "$FILE" > $FILE
+// ➜  SuPuShell git:(master) ✗ echo "$FILE" >> "$FILE"
+// ➜  SuPuShell git:(master) ✗ echo "$FILE 'asda'" >> " $FILE"
+// ➜  SuPuShell git:(master) ✗ echo '"$FILE 'asda'"' >> " $FILE"
+// ➜  SuPuShell git:(master) ✗ q

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   wildcards.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/21 14:00:00 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/21 16:10:46 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/23 14:01:01 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ static char	**handle_no_wildcards(const char *pattern)
 	result[0] = ft_strdup(pattern);
 	if (!result[0])
 	{
-		free(result);
+		cf_free_one(result);
 		return (NULL);
 	}
 	result[1] = NULL;
@@ -89,8 +89,8 @@ static char	**handle_no_wildcards(const char *pattern)
 static void	cleanup_on_error(char **result, int i, DIR *dir)
 {
 	while (--i >= 0)
-		free(result[i]);
-	free(result);
+		cf_free_one(result[i]);
+	cf_free_one(result);
 	if (dir)
 		closedir(dir);
 }
@@ -172,8 +172,8 @@ void	free_expanded_wildcards(char **expanded)
 	i = 0;
 	while (expanded[i])
 	{
-		free(expanded[i]);
+		cf_free_one(expanded[i]);
 		i++;
 	}
-	free(expanded);
+	cf_free_one(expanded);
 }

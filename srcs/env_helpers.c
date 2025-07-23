@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 11:43:08 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 13:59:54 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ void	update_or_add_env_var(t_env **env, char *key, char *val)
 		}
 		cur = cur->next;
 	}
-	new = malloc(sizeof(t_env));
-	new->key = ft_strdup(key);
-	new->value = ft_strdup(val);
+	new = cf_malloc(sizeof(t_env));
+	new->key = cf_strdup(key);
+	new->value = cf_strdup(val);
 	new->next = *env;
 	*env = new;
 }
@@ -63,9 +63,6 @@ void	remove_env_var(t_env **env, const char *key)
 				prev->next = cur->next;
 			else
 				*env = cur->next;
-			free(cur->key);
-			free(cur->value);
-			free(cur);
 			return ;
 		}
 		prev = cur;
@@ -84,10 +81,10 @@ t_env	*create_env(char **envp)
 	i = 0;
 	while (envp[i])
 	{
-		node = malloc(sizeof(t_env));
+		node = cf_malloc(sizeof(t_env));
 		equal = ft_strchr(envp[i], '=');
 		node->key = substr_dup(envp[i], equal);
-		node->value = ft_strdup(equal + 1);
+		node->value = cf_strdup(equal + 1);
 		node->next = head;
 		head = node;
 		i++;
