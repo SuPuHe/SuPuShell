@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   small_helpers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 14:00:56 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 17:48:07 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ char	**append_arg(char **args, char *new_arg)
 		new_args[i] = args[i];
 		i++;
 	}
-	new_args[len] = new_arg;
+	new_args[len] = cf_strdup(new_arg);
 	new_args[len + 1] = NULL;
 	return (new_args);
 }

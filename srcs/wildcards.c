@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   wildcards.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/21 14:00:00 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/23 14:01:01 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 17:42:46 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ static char	**create_result_array(int size)
 {
 	char	**result;
 
-	result = malloc(sizeof(char *) * (size + 1));
+	result = cf_malloc(sizeof(char *) * (size + 1));
 	if (!result)
 		return (NULL);
 	return (result);
@@ -76,7 +76,7 @@ static char	**handle_no_wildcards(const char *pattern)
 	result = create_result_array(1);
 	if (!result)
 		return (NULL);
-	result[0] = ft_strdup(pattern);
+	result[0] = cf_strdup(pattern);
 	if (!result[0])
 	{
 		cf_free_one(result);
@@ -116,7 +116,7 @@ static int	init_wildcards(const char *pattern, char ***result, DIR **dir)
 	*dir = opendir(".");
 	if (!*dir)
 	{
-		free(*result);
+		cf_free_one(*result);
 		return (-1);
 	}
 	return (0);
@@ -127,7 +127,7 @@ static int	process_entry(char **result, int i, struct dirent *entry,
 {
 	if (entry->d_name[0] != '.' && matches_pattern(entry->d_name, pattern))
 	{
-		result[i] = ft_strdup(entry->d_name);
+		result[i] = cf_strdup(entry->d_name);
 		if (!result[i])
 			return (-1);
 		return (1);
