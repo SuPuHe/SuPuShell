@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 13:59:48 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 16:38:52 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,21 @@ void	do_export(char **argv, t_env **env)
 	char	*key;
 	char	*val;
 	char	*tmp;
+	t_env	*cur;
 
+	if (!argv[1])
+	{
+		cur = *env;
+		while (cur)
+		{
+			printf("declare -x %s", cur->key);
+			if (cur->value)
+				printf("=\"%s\"", cur->value);
+			printf("\n");
+			cur = cur->next;
+		}
+		return ;
+	}
 	i = 1;
 	while (argv[i])
 	{
