@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_helpers.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 13:59:54 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 17:06:11 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@ void	update_or_add_env_var(t_env **env, char *key, char *val)
 	{
 		if (ft_strcmp(cur->key, key) == 0)
 		{
-			free(cur->value);
-			cur->value = ft_strdup(val);
+			cf_free_one(cur->value);
+			cur->value = cf_strdup(val);
 			return ;
 		}
 		cur = cur->next;
