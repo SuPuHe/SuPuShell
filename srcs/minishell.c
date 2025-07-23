@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 14:00:51 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 17:29:56 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,14 +84,14 @@ char	*parse_env_var(t_input *input)
 		input->i++;
 	if (input->i == start)
 	{
-		return (ft_strdup("$"));
+		return (cf_strdup("$"));
 	}
 	name = cf_substr(input->line, start, input->i - start);
 	value = get_env_value(input->env, name);
 	if (value)
-		return (ft_strdup(value));
+		return (cf_strdup(value));
 	else
-		return (ft_strdup(""));
+		return (cf_strdup(""));
 }
 
 // char	*parse_single_quote(t_input *input)
@@ -289,7 +289,7 @@ bool	handle_heredoc(t_input *input)
 	}
 	free(line);
 	close(fd);
-	input->infile = ft_strdup(filename);
+	input->infile = cf_strdup(filename);
 	return (true);
 }
 
