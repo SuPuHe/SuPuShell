@@ -6,7 +6,7 @@
 #    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/07/22 15:46:36 by omizin           ###   ########.fr        #
+#    Updated: 2025/07/23 13:40:08 by omizin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,12 +27,12 @@ INCS_DIR = includes
 
 INCLUDE = -I$(INCS_DIR) -I$(SUPULIB_DIR)/libft/includes -I$(SUPULIB_DIR)/ft_printf/includes -I$(SUPULIB_DIR)/get_next_line/includes
 CC = cc
-CFLAGS = -g $(INCLUDE)
+CFLAGS = -Wall -Wextra -Werror $(INCLUDE)
 LDFLAGS = -lreadline
 
 RM = rm -rf
 
-SRCS = minishell.c helpers.c env_helpers.c signals.c free_functions.c commands.c commands_helpers.c commands_second_part.c small_helpers.c billy.c wildcards.c
+SRCS = minishell.c helpers.c env_helpers.c signals.c free_functions.c commands.c commands_helpers.c commands_second_part.c small_helpers.c billy.c wildcards.c centralized_free.c cf_libft.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))

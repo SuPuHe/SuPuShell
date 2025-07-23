@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:42:14 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 12:35:20 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 13:59:33 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,14 @@ char	**build_envp(t_env *env)
 			count++;
 		tmp = tmp->next;
 	}
-	envp = malloc(sizeof(char *) * (count + 1));
+	envp = cf_malloc(sizeof(char *) * (count + 1));
 	i = 0;
 	tmp = env;
 	while (tmp)
 	{
 		if (tmp->key && tmp->value)
 		{
-			entry = malloc(ft_strlen(tmp->key) + ft_strlen(tmp->value) + 2);
+			entry = cf_malloc(ft_strlen(tmp->key) + ft_strlen(tmp->value) + 2);
 			ft_strcpy(entry, tmp->key);
 			ft_strcat(entry, "=");
 			ft_strcat(entry, tmp->value);

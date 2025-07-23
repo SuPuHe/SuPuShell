@@ -1,0 +1,33 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cf.h                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/23 13:40:47 by omizin            #+#    #+#             */
+/*   Updated: 2025/07/23 13:57:39 by omizin           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef CF_H
+# define CF_H
+
+# include <stdlib.h>
+# include "libft.h"
+
+typedef struct s_cf_node
+{
+	void				*ptr;
+	struct	s_cf_node	*next;
+}	t_cf_node;
+
+void	*cf_malloc(size_t size);
+char	*cf_strdup(const char *s);
+void	cf_add(void *ptr);
+void	cf_free_one(void *ptr);
+void	cf_free_all(void);
+void	*cf_realloc(void *ptr, size_t new_size);
+char	*cf_substr(const char *s, unsigned int start, size_t len);
+t_list	*cf_lstnew(void *content);
+#endif

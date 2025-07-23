@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/09 12:50:14 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 14:00:56 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ char	**append_arg(char **args, char *new_arg)
 	int		i;
 
 	len = ft_arrlen(args);
-	new_args = malloc(sizeof(char *) * (len + 2));
+	new_args = cf_malloc(sizeof(char *) * (len + 2));
 	i = 0;
 	if (!new_args)
 		return (NULL);
@@ -79,6 +79,5 @@ char	**append_arg(char **args, char *new_arg)
 	}
 	new_args[len] = new_arg;
 	new_args[len + 1] = NULL;
-	free(args);
 	return (new_args);
 }

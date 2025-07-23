@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/16 13:31:09 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 13:59:48 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ void	do_export(char **argv, t_env **env)
 	i = 1;
 	while (argv[i])
 	{
-		tmp = ft_strdup(argv[i]);
+		tmp = cf_strdup(argv[i]);
 		if (!tmp)
 			return ;
 		if (!parse_export_argument(tmp, &key, &val))
@@ -66,7 +66,6 @@ void	do_export(char **argv, t_env **env)
 			continue ;
 		}
 		update_or_add_env_var(env, key, val);
-		free(tmp);
 		i++;
 	}
 }

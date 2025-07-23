@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/21 17:08:04 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/23 13:59:44 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,46 +24,30 @@ void	print_error(char *argv)
 	}
 }
 
-void	run_external_command(char **argv, t_env *env, t_ast_node *ast)
+void	run_external_command(char **argv, t_env *env)
 {
 	char	*path;
 	char	**envp;
-	bool	should_free_path = false;
-	int		i;
+
 	envp = build_envp(env);
 	if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
 		path = argv[0];
 	else
 	{
 		path = search_path(argv[0], env);
-		should_free_path = true;
 	}
 	if (!path || access(path, X_OK) != 0)
 	{
 		print_error(argv[0]);
 		write(2, ": command not found\n"RESET, 25);
-		if (should_free_path && path)
-			free(path);
-		i = 0;
-		while (envp[i])
-			free(envp[i++]);
-		free(envp);
-		free_ast(ast);
-		free_env_list(env);
 		rl_clear_history();
+		cf_free_all();
 		exit(127);
 	}
 	execve(path, argv, envp);
 	perror("execve");
-	if (should_free_path && path)
-		free(path);
-	i = 0;
-	while (envp[i])
-		free(envp[i++]);
-	free(envp);
-	free_ast(ast);
-	free_env_list(env);
 	rl_clear_history();
+	cf_free_all();
 	exit(1);
 }
 
