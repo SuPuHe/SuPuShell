@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 17:39:41 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/25 15:52:03 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1009,7 +1009,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			if (!*current_tokens)
 			{
 				input.syntax_ok = false;
-				free_token_list(*current_tokens);
 				return (input);
 			}
 			t_token *filename_token = (t_token*)(*current_tokens)->content;
@@ -1056,7 +1055,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			if (!expanded_value)
 			{
 				input.syntax_ok = false;
-				free_token_list(*current_tokens);
 				return (input);
 			}
 
@@ -1112,7 +1110,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 		else
 		{
 			input.syntax_ok = false;
-			free_token_list(*current_tokens);
 			return (input);
 		}
 	}
@@ -1121,7 +1118,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 		input.args = cf_malloc(sizeof(char *) * 2);
 		if (!input.args)
 		{
-			free_token_list(*current_tokens);
 			return (input.syntax_ok = false, input);
 		}
 		input.args[0] = cf_strdup(":");
