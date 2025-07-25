@@ -1466,6 +1466,11 @@ int	main(int argc, char **argv, char **envp)
 	{
 		setup_signal();
 		line = readline(SHELLNAME);
+		if (g_sigint_exit_status == 1)
+		{
+			shell.last_exit_status = 1;
+			g_sigint_exit_status = 0;
+		}
 		if (line)
 			ast = parse(line, &shell);
 		if (!line)
