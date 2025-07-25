@@ -39,6 +39,7 @@ minishell
 objs
 SuPuLib
 *test*
+test_shell
 out.txt
 *.supp
 to_do
