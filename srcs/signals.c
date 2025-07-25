@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:17:53 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/23 15:18:14 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/25 16:24:50 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ volatile sig_atomic_t g_sigint_exit_status = 0;
 void	disable_echoctl(void)
 {
 	struct termios	term;
+
+	ft_memset(&term, 0, sizeof(term));
 
 	tcgetattr(STDIN_FILENO, &term);
 	term.c_lflag &= ~ECHOCTL;
