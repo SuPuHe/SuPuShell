@@ -12,6 +12,7 @@
 
 #include "minishell.h"
 
+volatile sig_atomic_t g_sigint_exit_status = 0;
 
 void	disable_echoctl(void)
 {
@@ -29,10 +30,12 @@ static void	handle_sigint(int signum)
 	rl_on_new_line();
 	rl_replace_line("", 0);
 	rl_redisplay();
+	g_sigint_exit_status = 1;
 }
 
 void	setup_signal(void)
 {
 	signal(SIGINT, handle_sigint);
 	signal(SIGQUIT, SIG_IGN);
+	g_sigint_exit_status = 0;
 }

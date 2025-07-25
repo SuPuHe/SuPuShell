@@ -90,7 +90,7 @@
 //bool
 # include <stdbool.h>
 
-// extern volatile sig_atomic_t	g_signal_interrupt;
+extern volatile sig_atomic_t	g_sigint_exit_status;
 
 typedef struct s_env
 {
