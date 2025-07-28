@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 17:48:07 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/28 15:19:34 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,6 @@ int	ft_isspace(char c)
 {
 	return (c == ' ' || c == '\t' || c == '\n'
 		|| c == '\v' || c == '\f' || c == '\r');
-}
-
-void	skip_spaces(t_input *input)
-{
-	while (input->line[input->i]
-		&& (input->line[input->i] == ' ' || input->line[input->i] == '\t'))
-		input->i++;
 }
 
 int	check_for_input(char *line)
