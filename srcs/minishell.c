@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/25 16:20:50 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/28 10:36:12 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1363,8 +1363,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			dup2(pipefd[1], STDOUT_FILENO);
 			close(pipefd[1]);
 			int status = execute_node(node->left, shell);
-			t_ast_node *child_ast = node;
-			free_ast(child_ast);
+			//t_ast_node *child_ast = node;
+			//free_ast(child_ast);
 			rl_clear_history();
 			cf_free_all();
 			exit(status);
@@ -1379,8 +1379,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			dup2(pipefd[0], STDIN_FILENO);
 			close(pipefd[0]);
 			int status = execute_node(node->right, shell);
-			t_ast_node *child_ast = node;
-			free_ast(child_ast);
+			//t_ast_node *child_ast = node;
+			//free_ast(child_ast);
 			rl_clear_history();
 			cf_free_all();
 			exit(status);
@@ -1417,8 +1417,8 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			signal(SIGINT, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
 			int status = execute_node(node->left, shell);
-			t_ast_node *child_ast = node;
-			free_ast(child_ast);
+			//t_ast_node *child_ast = node;
+			//free_ast(child_ast);
 			rl_clear_history();
 			cf_free_all();
 			exit(status);
