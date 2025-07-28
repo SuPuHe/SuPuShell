@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 15:19:53 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/28 16:38:54 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ int		ft_strcmp(const char *s1, const char *s2);
 char	*ft_strjoin_free(char *s1, const char *s2);
 char	*ft_strcpy(char *dest, const char *src);
 char	*ft_strcat(char *dest, const char *src);
-//env heplerrs
+//env_helpers
 void	update_or_add_env_var(t_env **env, char *key, char *val);
 int		parse_export_argument(char *arg, char **key, char **val);
 void	remove_env_var(t_env **env, const char *key);
@@ -194,24 +194,23 @@ void	do_pwd(void);
 void	do_cd(char **commands, t_env **env);
 void	do_export(char **argv, t_env **env);
 void	do_unset(char **argv, t_env **env);
-void	do_env(t_env *env);
 //commands_helpers
 void	goto_prev_dir(t_env **env);
 char	**build_envp(t_env *env);
+//path_helpers
 char	*ft_strsep(char **str, const char *sep);
 char	*search_path(const char *cmd, t_env *env);
 //commands_second_part
 void	do_echo(char **argv);
 void	run_external_command(char **argv, t_env *env);
+void	do_env(t_env *env);
 //small_helpers
 int		check_for_input(char *line);
 int		ft_isspace(char c);
 char	**append_arg(char **args, char *new_arg);
-
 // wildcards
 char	**expand_wildcards(const char *pattern);
 void	free_expanded_wildcards(char **expanded);
-
 //billy
 void	billy_print(void);
 

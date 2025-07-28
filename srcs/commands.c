@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 16:38:52 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/28 16:34:29 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,25 +46,32 @@ void	do_cd(char **commands, t_env **env)
 	}
 }
 
+// Вспомогательная функция для вывода всех переменных окружения
+static void	print_all_env_vars(t_env *env)
+{
+	t_env	*cur;
+
+	cur = env;
+	while (cur)
+	{
+		printf("declare -x %s", cur->key);
+		if (cur->value)
+			printf("=\"%s\"", cur->value);
+		printf("\n");
+		cur = cur->next;
+	}
+}
+
 void	do_export(char **argv, t_env **env)
 {
 	int		i;
 	char	*key;
 	char	*val;
 	char	*tmp;
-	t_env	*cur;
 
 	if (!argv[1])
 	{
-		cur = *env;
-		while (cur)
-		{
-			printf("declare -x %s", cur->key);
-			if (cur->value)
-				printf("=\"%s\"", cur->value);
-			printf("\n");
-			cur = cur->next;
-		}
+		print_all_env_vars(*env);
 		return ;
 	}
 	i = 1;
@@ -93,15 +100,5 @@ void	do_unset(char **argv, t_env **env)
 	{
 		remove_env_var(env, argv[i]);
 		i++;
-	}
-}
-
-void	do_env(t_env *env)
-{
-	while (env)
-	{
-		if (env->value)
-			printf("%s=%s\n", env->key, env->value);
-		env = env->next;
 	}
 }

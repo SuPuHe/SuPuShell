@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 15:17:48 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/28 16:37:21 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,14 @@ void	do_echo(char **argv)
 	}
 	if (new_line_flag)
 		printf("\n");
+}
+
+void	do_env(t_env *env)
+{
+	while (env)
+	{
+		if (env->value)
+			printf("%s=%s\n", env->key, env->value);
+		env = env->next;
+	}
 }
