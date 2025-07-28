@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 10:39:53 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/28 15:19:53 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@
 # define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 # define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
 
-//# define SHELLNAME "\033[1m\033[32m➜  \033[0m\033[1m\033[36mSuPuShell \033[0m\033[1m\033[34mgit:(\033[0m\033[1m\033[31mmaster\033[0m\033[1m\033[34m)\033[0m\033[1m\033[33m ✗ \033[0m"
 # define SHELLNAME \
 "\001\033[1m\033[32m\002➜  \001\033[0m\002" \
 "\001\033[1m\033[36m\002SuPuShell\001\033[0m\002" \
@@ -161,7 +160,8 @@ typedef struct s_ast_node
 	t_input				*command;
 }	t_ast_node;
 
-typedef struct s_string_builder {
+typedef struct s_string_builder
+{
 	char	*str;
 	size_t	len;
 	size_t	capacity;
@@ -206,7 +206,6 @@ void	run_external_command(char **argv, t_env *env);
 //small_helpers
 int		check_for_input(char *line);
 int		ft_isspace(char c);
-void	skip_spaces(t_input *input);
 char	**append_arg(char **args, char *new_arg);
 
 // wildcards

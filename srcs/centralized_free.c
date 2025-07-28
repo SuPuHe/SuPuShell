@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 13:39:15 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 15:04:59 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/28 15:06:56 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,20 +57,6 @@ char	*cf_strdup(const char *s)
 	node->next = *get_cf_head();
 	*get_cf_head() = node;
 	return (dup);
-}
-
-void	cf_add(void *ptr)
-{
-	t_cf_node	*node;
-
-	if (!ptr)
-		return ;
-	node = malloc(sizeof(t_cf_node));
-	if (!node)
-		return ;
-	node->ptr = ptr;
-	node->next = *get_cf_head();
-	*get_cf_head() = node;
 }
 
 void	cf_free_one(void *ptr)

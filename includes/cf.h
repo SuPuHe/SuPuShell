@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cf.h                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 13:40:47 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 13:57:39 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/28 15:06:38 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ typedef struct s_cf_node
 
 void	*cf_malloc(size_t size);
 char	*cf_strdup(const char *s);
-void	cf_add(void *ptr);
 void	cf_free_one(void *ptr);
 void	cf_free_all(void);
 void	*cf_realloc(void *ptr, size_t new_size);

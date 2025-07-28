@@ -3,271 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 10:36:12 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/28 15:23:13 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// volatile sig_atomic_t	g_signal_interrupt = 0;
-char	*parse_word(t_input *in);
 bool	apply_redirections(t_input *input);
-char	*parse_redirect_word(t_input *input);
 
 bool	is_operator(char c);
 t_ast_node	*parse_expression(t_list **tokens, t_shell *shell);
-char	*extract_command_line_from_tokens(t_list **tokens);
 void	free_ast(t_ast_node *node);
 void	free_token_list(t_list *tokens);
-const char	*get_token_type_str(t_token_type type);
-
-// void	command_handler(char **argv, t_env **env, t_input *input)
-// {
-// 	pid_t	pid;
-
-// 	if (!argv || !argv[0])
-// 		return ;
-// 	if (ft_strncmp(argv[0], "cd", 3) == 0)
-// 		do_cd(argv, env);
-// 	else if (ft_strncmp(argv[0], "export", 7) == 0)
-// 		do_export(argv, env);
-// 	else if (ft_strncmp(argv[0], "unset", 6) == 0)
-// 		do_unset(argv, env);
-// 	else if (ft_strncmp(argv[0], "exit", 5) == 0 || ft_strncmp(argv[0], "q", 2) == 0)
-// 	{
-// 		free_at_exit(input, env);
-// 		exit(0);
-// 	}
-// 	else
-// 	{
-// 		pid = fork();
-// 		if (pid == 0)
-// 		{
-// 			if (!apply_redirections(input))
-// 			{
-// 				free_at_exit(input, env);
-// 				exit(1);
-// 			}
-// 			if (ft_strncmp(argv[0], "echo", 5) == 0)
-// 				do_echo(argv);
-// 			else if (ft_strncmp(argv[0], "pwd", 4) == 0)
-// 				do_pwd();
-// 			else if (ft_strncmp(argv[0], "env", 4) == 0)
-// 				do_env(*env);
-// 			else
-// 				run_external_command(argv, *env, input);
-// 			free_at_exit(input, env);
-// 			exit(0);
-// 		}
-// 		else
-// 			waitpid(pid, NULL, 0);
-// 	}
-// }
-
-char	*parse_env_var(t_input *input)
-{
-	int		start;
-	char	*name;
-	char	*value;
-
-	start = ++input->i;
-	if (input->line[input->i] == '?')
-	{
-		input->i++;
-		return (ft_itoa(input->shell->last_exit_status));
-	}
-	while (input->line[input->i]
-		&& (ft_isalnum(input->line[input->i]) || input->line[input->i] == '_'))
-		input->i++;
-	if (input->i == start)
-	{
-		return (cf_strdup("$"));
-	}
-	name = cf_substr(input->line, start, input->i - start);
-	value = get_env_value(input->env, name);
-	if (value)
-		return (cf_strdup(value));
-	else
-		return (cf_strdup(""));
-}
-
-// char	*parse_single_quote(t_input *input)
-// {
-// 	int		start;
-// 	char	*result;
-
-// 	start = ++input->i;
-// 	while (input->line[input->i] && input->line[input->i] != '\'')
-// 		input->i++;
-// 	if (input->line[input->i] != '\'')
-// 	{
-// 		input->syntax_ok = false;
-// 		return (NULL);
-// 	}
-// 	result = ft_substr(input->line, start, input->i - start);
-// 	input->i++;
-// 	return (result);
-// }
-
-// char	*parse_double_quote(t_input *input)
-// {
-// 	char	*result;
-// 	int		start;
-// 	char	*tmp;
-// 	char	*joined;
-
-// 	input->i++;
-// 	result = ft_strdup("");
-// 	while (input->line[input->i] && input->line[input->i] != '"')
-// 	{
-// 		if (input->line[input->i] == '$')
-// 		{
-// 			tmp = parse_env_var(input);
-// 			if (!tmp)
-// 				return (free(result), NULL);
-// 			result = ft_strjoin_free(result, tmp);
-// 		}
-// 		else
-// 		{
-// 			start = input->i;
-// 			while (input->line[input->i] && input->line[input->i] != '$'
-// 				&& input->line[input->i] != '"')
-// 				input->i++;
-// 			tmp = ft_substr(input->line, start, input->i - start);
-// 			if (!tmp)
-// 				return (free(result), NULL);
-// 			joined = ft_strjoin_free(result, tmp);
-// 			free(tmp);
-// 			if (!joined)
-// 				return (NULL);
-// 			result = joined;
-// 		}
-// 	}
-// 	if (input->line[input->i] == '"')
-// 		input->i++;
-// 	return (result);
-// }
-
-// char	*parse_word(t_input *in)
-// {
-// 	char	*result;
-// 	int		start;
-// 	char	*tmp;
-// 	char	*joined;
-
-// 	result = ft_strdup("");
-// 	while (in->line[in->i] && !ft_isspace(in->line[in->i])
-// 		&& in->line[in->i] != '\'' && in->line[in->i] != '"')
-// 	{
-// 		if (in->line[in->i] == '$')
-// 		{
-// 			tmp = parse_env_var(in);
-// 			if (!tmp)
-// 				return (free(result), NULL);
-// 			result = ft_strjoin_free(result, tmp);
-// 		}
-// 		else
-// 		{
-// 			start = in->i;
-// 			while (in->line[in->i] && in->line[in->i] != '$'
-// 				&& !ft_isspace(in->line[in->i])
-// 				&& in->line[in->i] != '\'' && in->line[in->i] != '"')
-// 				in->i++;
-// 			tmp = ft_substr(in->line, start, in->i - start);
-// 			if (!tmp)
-// 				return (free(result), NULL);
-// 			joined = ft_strjoin_free(result, tmp);
-// 			free(tmp);
-// 			if (!joined)
-// 				return (NULL);
-// 			result = joined;
-// 		}
-// 	}
-// 	return (result);
-// }
-
-// bool	parse_redirects(t_input *input)
-// {
-// 	char next_char;
-// 	if (input->line[input->i] == '>')
-// 	{
-// 		if (input->line[input->i + 1] == '>')
-// 		{
-// 			input->i += 2;
-// 			skip_spaces(input);
-// 			next_char = input->line[input->i];
-// 			if (!next_char || next_char == '>' || next_char == '<')
-// 			{
-// 				input->syntax_ok = false;
-// 				if (!next_char)
-// 					printf("syntax error near unexpected token '\\n'\n");
-// 				else
-// 					printf("syntax error near unexpected token '%c'\n", next_char);
-// 				return false;
-// 			}
-// 			input->outfile = parse_redirect_word(input);
-// 			input->append = true;
-// 		}
-// 		else
-// 		{
-// 			input->i++;
-// 			skip_spaces(input);
-// 			next_char = input->line[input->i];
-// 			if (!next_char || next_char == '>' || next_char == '<')
-// 			{
-// 				input->syntax_ok = false;
-// 				if (!next_char)
-// 					printf("syntax error near unexpected token '\\n'\n");
-// 				else
-// 					printf("syntax error near unexpected token '%c'\n", next_char);
-// 				return false;
-// 			}
-// 			input->outfile = parse_redirect_word(input);
-// 			input->append = false;
-// 		}
-// 	}
-// 	else if (input->line[input->i] == '<')
-// 	{
-// 		if (input->line[input->i + 1] == '<')
-// 		{
-// 			input->i += 2;
-// 			skip_spaces(input);
-// 			next_char = input->line[input->i];
-// 			if (!next_char || next_char == '>' || next_char == '<')
-// 			{
-// 				input->syntax_ok = false;
-// 				if (!next_char)
-// 					printf("syntax error near unexpected token '\\n'\n");
-// 				else
-// 					printf("syntax error near unexpected token '%c'\n", next_char);
-// 				return false;
-// 			}
-// 			input->heredoc = parse_redirect_word(input);
-// 		}
-// 		else
-// 		{
-// 			input->i++;
-// 			skip_spaces(input);
-// 			next_char = input->line[input->i];
-// 			if (!next_char || next_char == '>' || next_char == '<')
-// 			{
-// 				input->syntax_ok = false;
-// 				if (!next_char)
-// 					printf("syntax error near unexpected token '\\n'\n");
-// 				else
-// 					printf("syntax error near unexpected token '%c'\n", next_char);
-// 				return false;
-// 			}
-// 			input->infile = parse_redirect_word(input);
-// 		}
-// 	}
-// 	else
-// 		return false;
-// 	return true;
-// }
 
 bool	handle_heredoc(t_input *input)
 {
@@ -292,7 +42,6 @@ bool	handle_heredoc(t_input *input)
 	input->infile = cf_strdup(filename);
 	return (true);
 }
-
 
 bool	apply_redirections(t_input *input)
 {
@@ -332,215 +81,6 @@ bool	apply_redirections(t_input *input)
 		close(fd);
 	}
 	return (true);
-}
-
-// t_input	split_input(char *line, t_env *env, t_shell *shell)
-// {
-// 	t_input	input;
-// 	char	*arg;
-
-// 	input.line = line;
-// 	input.i = 0;
-// 	input.env = env;
-// 	input.args = NULL;
-// 	input.syntax_ok = true;
-// 	input.infile = NULL;
-// 	input.outfile = NULL;
-// 	input.heredoc = NULL;
-// 	input.shell = shell;
-// 	while (input.line[input.i])
-// 	{
-// 		skip_spaces(&input);
-// 		if (parse_redirects(&input))
-// 			continue ;
-// 		if (!input.line[input.i])
-// 			break ;
-// 		arg = NULL;
-// 		if (input.line[input.i] == '\'')
-// 			arg = parse_single_quote(&input);
-// 		else if (input.line[input.i] == '"')
-// 			arg = parse_double_quote(&input);
-// 		else
-// 			arg = parse_word(&input);
-// 		if (!arg || !input.syntax_ok)
-// 		{
-// 			input.syntax_ok = false;
-// 			free(arg);
-// 			return (input);
-// 		}
-// 		if (arg[0] == '\0')
-// 		{
-// 			free(arg);
-// 			continue;
-// 		}
-// 		input.args = append_arg(input.args, arg);
-// 	}
-// 	if ((!input.args || !input.args[0]) && input.heredoc)
-// 		{
-// 			input.args = malloc(sizeof(char *) * 2);
-// 			if (!input.args)
-// 				return (input.syntax_ok = false, input);
-// 			input.args[0] = ft_strdup(":");
-// 			input.args[1] = NULL;
-// 		}
-// 	return (input);
-// }
-
-// char	*parse_redirect_word(t_input *input)
-// {
-// 	if (input->line[input->i] == '\'')
-// 		return (parse_single_quote(input));
-// 	else if (input->line[input->i] == '"')
-// 		return (parse_double_quote(input));
-// 	else
-// 		return (parse_word(input));
-// }
-//valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
-
-// void	handle_pipeline(char **pipe_parts, t_shell *shell, char **many_lines)
-// {
-// 	int		in_fd = STDIN_FILENO;
-// 	int		pipefd[2];
-// 	pid_t	pids[128];
-// 	int		pid_index = 0;
-// 	int		i = 0;
-// 	int		status;
-
-// 	while (pipe_parts[i])
-// 	{
-// 		t_input input = split_input(pipe_parts[i], shell->env, shell);
-// 		if (!input.syntax_ok || !input.args)
-// 		{
-// 			free_input(&input);
-// 			i++;
-// 			continue ;
-// 		}
-
-// 		if (pipe_parts[i + 1] != NULL)
-// 			pipe(pipefd);
-
-// 		if (!pipe_parts[i + 1] && i == 0 &&
-// 			(ft_strncmp(input.args[0], "cd", 3) == 0 ||
-// 			ft_strncmp(input.args[0], "export", 7) == 0 ||
-// 			ft_strncmp(input.args[0], "unset", 6) == 0 ||
-// 			ft_strncmp(input.args[0], "exit", 5) == 0 ||
-// 			ft_strncmp(input.args[0], "q", 2) == 0))
-// 		{
-// 			if (ft_strncmp(input.args[0], "cd", 3) == 0)
-// 				do_cd(input.args, &shell->env);
-// 			else if (ft_strncmp(input.args[0], "export", 7) == 0)
-// 				do_export(input.args, &shell->env);
-// 			else if (ft_strncmp(input.args[0], "unset", 6) == 0)
-// 				do_unset(input.args, &shell->env);
-// 			else if (ft_strncmp(input.args[0], "exit", 5) == 0 || ft_strncmp(input.args[0], "q", 2) == 0)
-// 			{
-// 				free_args(many_lines);
-// 				free_args(pipe_parts);
-// 				free_at_exit(&input, &shell->env);
-// 				exit(0);
-// 			}
-// 			free_input(&input);
-// 			i++;
-// 			continue;
-// 		}
-
-// 		pid_t pid = fork();
-// 		if (pid == 0)
-// 		{
-// 			signal(SIGINT, SIG_DFL);
-// 			signal(SIGQUIT, SIG_DFL);
-// 			if (in_fd != STDIN_FILENO)
-// 			{
-// 				dup2(in_fd, STDIN_FILENO);
-// 				close(in_fd);
-// 			}
-// 			if (pipe_parts[i + 1])
-// 			{
-// 				dup2(pipefd[1], STDOUT_FILENO);
-// 				close(pipefd[0]);
-// 				close(pipefd[1]);
-// 			}
-
-// 			if (!apply_redirections(&input))
-// 				exit(1);
-
-// 			if (ft_strncmp(input.args[0], "echo", 5) == 0)
-// 				do_echo(input.args);
-// 			else if (ft_strncmp(input.args[0], "pwd", 4) == 0)
-// 				do_pwd();
-// 			else if (ft_strncmp(input.args[0], "env", 4) == 0)
-// 				do_env(shell->env);
-// 			else if (ft_strncmp(input.args[0], ":", 2) == 0)
-// 				;
-// 			else
-// 			{
-// 				free_args(many_lines);
-// 				free_args(pipe_parts);
-// 				run_external_command(input.args, shell->env, &input);
-// 			}
-// 			free_args(many_lines);
-// 			free_args(pipe_parts);
-// 			free_at_exit(&input, &shell->env);
-// 			exit(0);
-// 		}
-// 		else
-// 		{
-// 			signal(SIGINT, SIG_IGN);
-// 			signal(SIGQUIT, SIG_IGN);
-// 			pids[pid_index++] = pid;
-// 			if (in_fd != STDIN_FILENO)
-// 				close(in_fd);
-// 			if (pipe_parts[i + 1])
-// 			{
-// 				close(pipefd[1]);
-// 				in_fd = pipefd[0];
-// 			}
-// 			free_input(&input);
-// 		}
-// 		i++;
-// 	}
-// 	int	j = 0;
-// 	while (j < pid_index)
-// 		waitpid(pids[j++], &status, 0);
-// 	if (WIFEXITED(status))
-// 		shell->last_exit_status = WEXITSTATUS(status);
-// 	else if (WIFSIGNALED(status))
-// 		shell->last_exit_status = 128 + WTERMSIG(status);
-// }
-
-void	*ft_realloc(void *ptr, size_t new_size)
-{
-	void	*new_ptr;
-	size_t	old_content_len;
-
-	if (ptr == NULL)
-	{
-		return (malloc(new_size));
-	}
-
-	if (new_size == 0)
-	{
-		free(ptr);
-		return (NULL);
-	}
-
-	new_ptr = malloc(new_size);
-	if (new_ptr == NULL)
-	{
-		return (NULL);
-	}
-	old_content_len = ft_strlen((char *)ptr) + 1;
-
-	if (old_content_len < new_size)
-	{
-		ft_memcpy(new_ptr, ptr, old_content_len);
-	}
-	else
-	{
-		ft_memcpy(new_ptr, ptr, new_size);
-	}
-	free(ptr);
-	return (new_ptr);
 }
 
 t_string_builder	*sb_create(void)
@@ -643,84 +183,6 @@ void	free_token_list(t_list *tokens)
 		current->next = NULL;
 		cf_free_one(current);
 	}
-}
-
-char	*extract_command_line_from_tokens(t_list **tokens)
-{
-	t_list	*current_token_node = *tokens;
-	char	*command_line_part = cf_strdup("");
-	char	*tmp_str;
-
-	while (current_token_node && ((t_token*)current_token_node->content)->type != TOKEN_PIPE
-			&& ((t_token*)current_token_node->content)->type != TOKEN_AND
-			&& ((t_token*)current_token_node->content)->type != TOKEN_OR
-			&& ((t_token*)current_token_node->content)->type != TOKEN_RPAREN
-			&& ((t_token*)current_token_node->content)->type != TOKEN_END)
-	{
-		t_token *token = (t_token *)current_token_node->content;
-		tmp_str = NULL;
-
-		if (token->type == TOKEN_WORD)
-			tmp_str = ft_strjoin_free(command_line_part, token->value);
-		else if (token->type == TOKEN_REDIR_IN)
-			tmp_str = ft_strjoin_free(command_line_part, " <");
-		else if (token->type == TOKEN_REDIR_OUT)
-			tmp_str = ft_strjoin_free(command_line_part, " >");
-		else if (token->type == TOKEN_REDIR_APPEND)
-			tmp_str = ft_strjoin_free(command_line_part, " >>");
-		else if (token->type == TOKEN_HEREDOC)
-			tmp_str = ft_strjoin_free(command_line_part, " <<");
-
-		if (command_line_part[0] != '\0' && tmp_str && token->type == TOKEN_WORD)
-		{
-			char *with_space = ft_strjoin_free(command_line_part, " ");
-			cf_free_one(command_line_part);
-			command_line_part = ft_strjoin_free(with_space, token->value);
-			cf_free_one(with_space);
-		}
-		else
-		{
-			if ((token->type == TOKEN_REDIR_IN || token->type == TOKEN_REDIR_OUT ||
-				token->type == TOKEN_REDIR_APPEND || token->type == TOKEN_HEREDOC) && command_line_part[0] != '\0')
-			{
-				char *temp_concat = ft_strjoin_free(command_line_part, " ");
-				cf_free_one(command_line_part);
-				char *val_to_add;
-				if (token->value)
-					val_to_add = token->value;
-				else if (token->type == TOKEN_REDIR_IN)
-					val_to_add = "<";
-				else if (token->type == TOKEN_REDIR_OUT)
-					val_to_add = ">";
-				else if (token->type == TOKEN_REDIR_APPEND)
-					val_to_add = ">>";
-				else
-					val_to_add = "<<";
-				command_line_part = ft_strjoin_free(temp_concat, val_to_add);
-				cf_free_one(temp_concat);
-			}
-			else
-			{
-				char *val_to_add;
-				if (token->value)
-					val_to_add = token->value;
-				else if (token->type == TOKEN_REDIR_IN)
-					val_to_add = "<";
-				else if (token->type == TOKEN_REDIR_OUT)
-					val_to_add = ">";
-				else if (token->type == TOKEN_REDIR_APPEND)
-					val_to_add = ">>";
-				else
-					val_to_add = "<<";
-				char *new_str = ft_strjoin_free(command_line_part, val_to_add);
-				cf_free_one(command_line_part);
-				command_line_part = new_str;
-			}
-		}
-		*tokens = current_token_node->next;
-		current_token_node = *tokens;
-	}
-	return (command_line_part);
 }
 
 t_token	*create_token(t_token_type type, const char *value)
@@ -974,7 +436,7 @@ t_ast_node	*create_subshell_node(t_ast_node *child)
 
 	node = cf_malloc(sizeof(t_ast_node));
 	if (!node)
-		return NULL;
+		return (NULL);
 	node->type = NODE_SUBSHELL;
 	node->left = child;
 	node->right = NULL;
@@ -1045,7 +507,7 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 				input.infile = expanded_value;
 			}
 			*current_tokens = (*current_tokens)->next;
-			continue;
+			continue ;
 		}
 		else if (current_tok->type == TOKEN_WORD ||
 			current_tok->type == TOKEN_SINGLE_QUOTE_WORD ||
@@ -1078,8 +540,6 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 				else
 					break;
 			}
-
-			// --- Вот тут добавляем обработку wildcard ---
 			if (current_tok->type == TOKEN_WORD &&
 				(ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
 			{
@@ -1185,31 +645,6 @@ t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 	return (node);
 }
 
-const char	*get_token_type_str(t_token_type type)
-{
-	if (type == TOKEN_PIPE)
-		return ("|");
-	if (type == TOKEN_AND)
-		return ("&&");
-	if (type == TOKEN_OR)
-		return ("||");
-	if (type == TOKEN_LPAREN)
-		return ("(");
-	if (type == TOKEN_RPAREN)
-		return (")");
-	if (type == TOKEN_REDIR_IN)
-		return ("<");
-	if (type == TOKEN_REDIR_OUT)
-		return (">");
-	if (type == TOKEN_REDIR_APPEND)
-		return (">>");
-	if (type == TOKEN_HEREDOC)
-		return ("<<");
-	if (type == TOKEN_END)
-		return ("newline");
-	return ("unknown");
-}
-
 t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
 {
 	t_ast_node	*left = parse_primary(tokens, shell);
@@ -1258,13 +693,11 @@ t_ast_node	*parse_expression(t_list **tokens, t_shell *shell)
 t_ast_node	*parse(const char *line, t_shell *shell)
 {
 	t_list		*tokens;
-	// t_list		*tokens_head;
 	t_ast_node	*ast;
 
 	tokens = tokenize(line);
 	if (!tokens)
 		return (NULL);
-	// tokens_head = tokens;
 	ast = parse_expression(&tokens, shell);
 
 	if (ast && ((t_token*)tokens->content)->type == TOKEN_END)
@@ -1363,8 +796,6 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			dup2(pipefd[1], STDOUT_FILENO);
 			close(pipefd[1]);
 			int status = execute_node(node->left, shell);
-			//t_ast_node *child_ast = node;
-			//free_ast(child_ast);
 			rl_clear_history();
 			cf_free_all();
 			exit(status);
@@ -1379,13 +810,10 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			dup2(pipefd[0], STDIN_FILENO);
 			close(pipefd[0]);
 			int status = execute_node(node->right, shell);
-			//t_ast_node *child_ast = node;
-			//free_ast(child_ast);
 			rl_clear_history();
 			cf_free_all();
 			exit(status);
 		}
-
 		close(pipefd[0]);
 		close(pipefd[1]);
 		waitpid(left_pid, &status, 0);
@@ -1417,8 +845,6 @@ int	execute_node(t_ast_node *node, t_shell *shell)
 			signal(SIGINT, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
 			int status = execute_node(node->left, shell);
-			//t_ast_node *child_ast = node;
-			//free_ast(child_ast);
 			rl_clear_history();
 			cf_free_all();
 			exit(status);
@@ -1461,7 +887,6 @@ int	main(int argc, char **argv, char **envp)
 	disable_echoctl();
 	int interactive = 0;
 	t_ast_node *ast = NULL;
-
 	while (1)
 	{
 		setup_signal();
@@ -1492,10 +917,6 @@ int	main(int argc, char **argv, char **envp)
 			free(line);
 			continue ;
 		}
-
-
-		//t_ast_node *ast = parse(line, &shell);
-
 		if (ast)
 		{
 			execute_node(ast, &shell);
@@ -1519,10 +940,3 @@ int	main(int argc, char **argv, char **envp)
 }
 
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
-// ➜  SuPuShell git:(master) ✗ echo hi >> out.txt
-// ➜  SuPuShell git:(master) ✗ export FILE=test.txt
-// ➜  SuPuShell git:(master) ✗ echo "$FILE" > $FILE
-// ➜  SuPuShell git:(master) ✗ echo "$FILE" >> "$FILE"
-// ➜  SuPuShell git:(master) ✗ echo "$FILE 'asda'" >> " $FILE"
-// ➜  SuPuShell git:(master) ✗ echo '"$FILE 'asda'"' >> " $FILE"
-// ➜  SuPuShell git:(master) ✗ q
