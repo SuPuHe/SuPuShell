@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_second_part.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 16:37:21 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 11:54:28 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,6 @@ void	run_external_command(char **argv, t_env *env)
 	cf_free_all();
 	exit(1);
 }
-
 
 void	do_echo(char **argv)
 {

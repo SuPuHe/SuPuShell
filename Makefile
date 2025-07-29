@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
+#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/07/28 16:44:26 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/07/29 11:46:45 by omizin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,7 +68,7 @@ clean:
 	@echo "$(GREEN)Clean sucessfully$(RESET_COLOR)"
 
 fclean: clean
-	@$(RM) $(NAME) $(CHEKER_NAME)
+	@$(RM) $(NAME)
 	@$(MAKE) -C $(SUPULIB_DIR) fclean
 	@echo "$(GREEN)Fclean sucessfully$(RESET_COLOR)"
 

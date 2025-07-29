@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:17:53 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/28 15:18:34 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 11:54:43 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-volatile sig_atomic_t g_sigint_exit_status = 0;
+volatile sig_atomic_t	g_sigint_exit_status = 0;
 
 void	disable_echoctl(void)
 {
