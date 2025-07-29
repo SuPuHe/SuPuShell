@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 11:46:13 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/29 13:17:31 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,6 +168,15 @@ typedef struct s_string_builder
 	size_t	len;
 	size_t	capacity;
 }	t_string_builder;
+
+typedef struct s_expand_ctx
+{
+	t_string_builder	*sb;
+	const char			*str;
+	t_env				*env;
+	t_shell				*shell;
+	int					*i;
+}	t_expand_ctx;
 
 //free_functions
 void	free_input(t_input *input);

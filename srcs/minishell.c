@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 12:18:15 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/29 13:21:54 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ bool	handle_heredoc(t_input *input)
 	return (true);
 }
 
+//part of apply_redirections
 bool	apply_input_redirections(t_input *input)
 {
 	int	fd;
@@ -66,6 +67,7 @@ bool	apply_input_redirections(t_input *input)
 	return (true);
 }
 
+//part of apply_redirections
 bool	apply_output_redirections(t_input *input)
 {
 	int	fd;
@@ -345,51 +347,98 @@ t_list	*tokenize(const char *line)
 	return (tokens);
 }
 
-char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
+//part of expand_string_variables
+static void	expand_status(t_string_builder *sb, t_shell *shell, int *i)
 {
-	t_string_builder	*sb = sb_create();
-	if (!sb)
-		return (NULL);
-	int i = 0;
-	while (str[i])
+	char	*status_str;
+
+	status_str = ft_itoa(shell->last_exit_status);
+	sb_append(sb, status_str);
+	free(status_str);
+	(*i)++;
+}
+
+//part of expand_string_variables
+static void	expand_digit(t_string_builder *sb, const char *str, int *i)
+{
+	if (str[*i] == '0')
+		sb_append(sb, "SuPuShell");
+	(*i)++;
+}
+
+//part of expand_string_variables
+static void	expand_env_var(t_string_builder *sb, const char *str, t_env *env, int *i)
+{
+	int		var_start;
+	char	*var_name;
+	char	*var_value;
+
+	var_start = *i;
+	while (str[*i] && (ft_isalnum(str[*i]) || str[*i] == '_'))
+		(*i)++;
+	var_name = cf_substr(str, var_start, *i - var_start);
+	var_value = get_env_value(env, var_name);
+	if (var_value)
+		sb_append(sb, var_value);
+	free(var_name);
+}
+
+//part of expand_string_variables
+static void	expand_other(t_string_builder *sb)
+{
+	sb_append_char(sb, '$');
+}
+
+//part of expand_string_variables
+static void	expand_hub(t_expand_ctx *ctx)
+{
+	if (ctx->str[*ctx->i] == '?')
+		expand_status(ctx->sb, ctx->shell, ctx->i);
+	else if (ft_isdigit(ctx->str[*ctx->i]))
+		expand_digit(ctx->sb, ctx->str, ctx->i);
+	else if (ctx->str[*ctx->i] == '_' || ft_isalpha(ctx->str[*ctx->i]))
+		expand_env_var(ctx->sb, ctx->str, ctx->env, ctx->i);
+	else
+		expand_other(ctx->sb);
+}
+
+//part of expand_string_variables
+static void	expand_loop(const char *str, t_expand_ctx *ctx)
+{
+	int	*i;
+
+	i = ctx->i;
+	while (str[*i])
 	{
-		if (str[i] == '$')
+		if (str[*i] == '$')
 		{
-			i++;
-			if (str[i] == '?')
-			{
-				char *status_str = ft_itoa(shell->last_exit_status);
-				sb_append(sb, status_str);
-				free(status_str);
-				i++;
-			}
-			else if (ft_isdigit(str[i]))
-			{
-				if (str[i] == '0')
-					sb_append(sb, "SuPuShell");
-				i++;
-			}
-			else if (str[i] == '_' || ft_isalpha(str[i]))
-			{
-				int var_start = i;
-				while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
-					i++;
-				char *var_name = cf_substr(str, var_start, i - var_start);
-				char *var_value = get_env_value(env, var_name);
-				if (var_value)
-					sb_append(sb, var_value);
-			}
-			else
-			{
-				sb_append_char(sb, '$');
-			}
+			(*i)++;
+			expand_hub(ctx);
 		}
 		else
 		{
-			sb_append_char(sb, str[i]);
-			i++;
+			sb_append_char(ctx->sb, str[*i]);
+			(*i)++;
 		}
 	}
+}
+
+char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
+{
+	t_string_builder	*sb;
+	int					i;
+	t_expand_ctx		ctx;
+
+	sb = sb_create();
+	if (!sb)
+		return (NULL);
+	i = 0;
+	ctx.sb = sb;
+	ctx.str = str;
+	ctx.env = env;
+	ctx.shell = shell;
+	ctx.i = &i;
+	expand_loop(str, &ctx);
 	return (sb_build_and_destroy(sb));
 }
 
