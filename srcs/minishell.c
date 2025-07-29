@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 15:23:13 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 12:08:55 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -886,7 +886,7 @@ int	main(int argc, char **argv, char **envp)
 	shell.should_exit = 0;
 	disable_echoctl();
 	int interactive = 0;
-	t_ast_node *ast = NULL;
+	t_ast_node	*ast = NULL;
 	while (1)
 	{
 		setup_signal();
