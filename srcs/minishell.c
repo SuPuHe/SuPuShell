@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 16:54:48 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 17:45:02 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -889,23 +889,33 @@ static int	execute_command_node(t_ast_node *node, t_shell *shell)
 // Helpers for execute_node: handle left child process of a pipe
 static void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd)
 {
+	int	status;
+
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	close(pipefd[0]);
 	dup2(pipefd[1], STDOUT_FILENO);
 	close(pipefd[1]);
-	exit(execute_node(node->left, shell));
+	status = execute_node(node->left, shell);
+	rl_clear_history();
+	cf_free_all();
+	exit(status);
 }
 
 // Helpers for execute_node: handle right child process of a pipe
 static void	execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd)
 {
+	int	status;
+
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	close(pipefd[1]);
 	dup2(pipefd[0], STDIN_FILENO);
 	close(pipefd[0]);
-	exit(execute_node(node->right, shell));
+	status = execute_node(node->right, shell);
+	rl_clear_history();
+	cf_free_all();
+	exit(status);
 }
 
 // Helpers for execute_node: handle pipe AST nodes
