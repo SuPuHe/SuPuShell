@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 13:21:54 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/29 14:10:44 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,6 +300,11 @@ t_list	*tokenize(const char *line)
 		else if (line[i] == '<')
 		{
 			new_token = create_token(TOKEN_REDIR_IN, NULL);
+			i++;
+		}
+		else if (line[i] == '&')
+		{
+			new_token = create_token(TOKEN_AMPERSAND, NULL);
 			i++;
 		}
 		else if (line[i] == '\'')
@@ -651,63 +656,71 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 	return (input);
 }
 
+// part of parse_primary
+static t_ast_node	*parse_primary_subshell(t_list **tokens, t_shell *shell)
+{
+	t_ast_node	*sub_expr;
+	t_ast_node	*node;
+
+	*tokens = (*tokens)->next;
+	sub_expr = parse_expression(tokens, shell);
+	if (!sub_expr)
+		return (NULL);
+	if (!*tokens || ((t_token*)(*tokens)->content)->type != TOKEN_RPAREN)
+	{
+		shell->last_exit_status = 2;
+		free_ast(sub_expr);
+		return (NULL);
+	}
+	*tokens = (*tokens)->next;
+	node = create_subshell_node(sub_expr);
+	return (node);
+}
+
+// part of parse_primary
+static t_ast_node	*parse_primary_command(t_list **tokens, t_shell *shell)
+{
+	t_input		*cmd_data;
+	t_ast_node	*node;
+
+	cmd_data = cf_malloc(sizeof(t_input));
+	if (!cmd_data)
+		return (NULL);
+	ft_memset(cmd_data, 0, sizeof(t_input));
+	*cmd_data = parse_command_from_tokens(tokens, shell->env, shell);
+	if (!cmd_data->syntax_ok)
+	{
+		cf_free_one(cmd_data);
+		shell->last_exit_status = 2;
+		return (NULL);
+	}
+	node = create_cmd_node(cmd_data);
+	return (node);
+}
+
 t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 {
 	t_token		*current_token;
-	t_ast_node	*node = NULL;
-	t_input		*cmd_data = NULL;
 
 	if (!*tokens)
 		return (NULL);
-
 	current_token = (t_token*)(*tokens)->content;
-
 	if (current_token->type == TOKEN_LPAREN)
-	{
-		*tokens = (*tokens)->next;
-
-		t_ast_node *sub_expr = parse_expression(tokens, shell);
-		if (!sub_expr)
-			return (NULL);
-
-		if (!*tokens || ((t_token*)(*tokens)->content)->type != TOKEN_RPAREN)
-		{
-			shell->last_exit_status = 2;
-			free_ast(sub_expr);
-			return (NULL);
-		}
-
-		*tokens = (*tokens)->next;
-		node = create_subshell_node(sub_expr);
-	}
+		return (parse_primary_subshell(tokens, shell));
 	else if (current_token->type == TOKEN_WORD ||
 			current_token->type == TOKEN_REDIR_IN ||
 			current_token->type == TOKEN_REDIR_OUT ||
 			current_token->type == TOKEN_REDIR_APPEND ||
 			current_token->type == TOKEN_HEREDOC)
+		return (parse_primary_command(tokens, shell));
+	else if (current_token->type == TOKEN_AMPERSAND)
 	{
-		cmd_data = cf_malloc(sizeof(t_input));
-		if (!cmd_data)
-			return (NULL);
-
-		ft_memset(cmd_data, 0, sizeof(t_input));
-
-		*cmd_data = parse_command_from_tokens(tokens, shell->env, shell);
-
-		if (!cmd_data->syntax_ok)
-		{
-			cf_free_one(cmd_data);
-			shell->last_exit_status = 2;
-			return (NULL);
-		}
-		node = create_cmd_node(cmd_data);
-	}
-	else
-	{
-		shell->last_exit_status = 0;
+		shell->last_exit_status = 2;
+		ft_printf("SuPuShell: syntax error near unexpected token '&'\n");
 		return (NULL);
 	}
-	return (node);
+	shell->last_exit_status = 0;
+	return (NULL);
 }
 
 t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
