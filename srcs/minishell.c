@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 12:08:55 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/29 12:18:15 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,9 @@ bool	handle_heredoc(t_input *input)
 	return (true);
 }
 
-bool	apply_redirections(t_input *input)
+bool	apply_input_redirections(t_input *input)
 {
 	int	fd;
-	int	flags;
 
 	if (input->heredoc)
 	{
@@ -64,6 +63,14 @@ bool	apply_redirections(t_input *input)
 		dup2(fd, STDIN_FILENO);
 		close(fd);
 	}
+	return (true);
+}
+
+bool	apply_output_redirections(t_input *input)
+{
+	int	fd;
+	int	flags;
+
 	if (input->outfile)
 	{
 		flags = O_CREAT | O_WRONLY;
@@ -80,6 +87,15 @@ bool	apply_redirections(t_input *input)
 		dup2(fd, STDOUT_FILENO);
 		close(fd);
 	}
+	return (true);
+}
+
+bool	apply_redirections(t_input *input)
+{
+	if (!apply_input_redirections(input))
+		return (false);
+	if (!apply_output_redirections(input))
+		return (false);
 	return (true);
 }
 
