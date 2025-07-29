@@ -3,14 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 14:10:44 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/29 16:54:48 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+// Prototypes for helper functions
+static int  execute_builtin_command(t_input *command, t_shell *shell);
+static int  execute_external_command(t_input *command, t_shell *shell);
+static int  execute_command_node(t_ast_node *node, t_shell *shell);
+static int  execute_pipe_node(t_ast_node *node, t_shell *shell);
+static void execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd);
+static void execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd);
+static int  execute_subshell_node(t_ast_node *node, t_shell *shell);
+static void execute_subshell_child(t_ast_node *node, t_shell *shell);
+static int  execute_and_node(t_ast_node *node, t_shell *shell);
+static int  execute_or_node(t_ast_node *node, t_shell *shell);
+static bool is_builtin_command(const char *command);
+int	execute_node(t_ast_node *node, t_shell *shell);
 
 bool	apply_redirections(t_input *input);
 
@@ -728,7 +742,6 @@ t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
 	t_ast_node	*left = parse_primary(tokens, shell);
 	if (!left)
 		return NULL;
-
 	while ((*tokens)->content && ((t_token*)(*tokens)->content)->type == TOKEN_PIPE)
 	{
 		*tokens = (*tokens)->next;
@@ -745,7 +758,6 @@ t_ast_node	*parse_and_or(t_list **tokens, t_shell *shell)
 	t_ast_node	*left = parse_pipeline(tokens, shell);
 	if (!left)
 		return (NULL);
-
 	while ((*tokens)->content && (((t_token*)(*tokens)->content)->type == TOKEN_AND || ((t_token*)(*tokens)->content)->type == TOKEN_OR))
 	{
 		t_token_type op_type = ((t_token*)(*tokens)->content)->type;
@@ -791,162 +803,245 @@ t_ast_node	*parse(const char *line, t_shell *shell)
 	return (ast);
 }
 
-int	execute_node(t_ast_node *node, t_shell *shell)
+// Helpers for execute_node: handle built-in shell commands
+static int	execute_builtin_command(t_input *command, t_shell *shell)
 {
-	int		last_status = 0;
+	int	last_status;
+
+	last_status = 0;
+	if (ft_strncmp(command->args[0], "cd", 3) == 0)
+		do_cd(command->args, &shell->env);
+	else if (ft_strncmp(command->args[0], "export", 7) == 0)
+		do_export(command->args, &shell->env);
+	else if (ft_strncmp(command->args[0], "unset", 6) == 0)
+		do_unset(command->args, &shell->env);
+	else if (ft_strncmp(command->args[0], "exit", 5) == 0 ||
+			ft_strncmp(command->args[0], "q", 2) == 0)
+	{
+		shell->should_exit = 1;
+		return (0);
+	}
+	else if (ft_strncmp(command->args[0], "echo", 5) == 0)
+		do_echo(command->args);
+	else if (ft_strncmp(command->args[0], "env", 4) == 0)
+		do_env(shell->env);
+	else if (ft_strncmp(command->args[0], "pwd", 4) == 0)
+		do_pwd();
+	else if (ft_strncmp(command->args[0], ":", 2) == 0)
+		last_status = 0;
+	return (last_status);
+}
+
+// Helpers for execute_node: handle external (non-built-in) commands
+static int	execute_external_command(t_input *command, t_shell *shell)
+{
 	pid_t	pid;
 	int		status;
-	int		original_stdin = dup(STDIN_FILENO);
-	int		original_stdout = dup(STDOUT_FILENO);
+	int		last_status;
 
-	if (!node)
-		return (1);
-
-	if (node->type == NODE_CMD)
+	last_status = 0;
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	pid = fork();
+	if (pid == 0)
 	{
-		if (!apply_redirections(node->command))
-			last_status = 1;
-		else if (node->command->args && node->command->args[0])
-		{
-			if (ft_strncmp(node->command->args[0], "cd", 3) == 0)
-				do_cd(node->command->args, &shell->env);
-			else if (ft_strncmp(node->command->args[0], "export", 7) == 0)
-				do_export(node->command->args, &shell->env);
-			else if (ft_strncmp(node->command->args[0], "unset", 6) == 0)
-				do_unset(node->command->args, &shell->env);
-			else if (ft_strncmp(node->command->args[0], "exit", 5) == 0 || ft_strncmp(node->command->args[0], "q", 2) == 0)
-			{
-				shell->should_exit = 1;
-				return (0);
-			}
-			else if (ft_strncmp(node->command->args[0], "echo", 5) == 0)
-				do_echo(node->command->args);
-			else if (ft_strncmp(node->command->args[0], "env", 4) == 0)
-				do_env(shell->env);
-			else if (ft_strncmp(node->command->args[0], "pwd", 4) == 0)
-				do_pwd();
-			else if (ft_strncmp(node->command->args[0], ":", 2) == 0)
-				last_status = 0;
-			else
-			{
-				signal(SIGINT, SIG_IGN);
-				signal(SIGQUIT, SIG_IGN);
-				pid = fork();
-				if (pid == 0)
-				{
-					signal(SIGINT, SIG_DFL);
-					signal(SIGQUIT, SIG_DFL);
-					run_external_command(node->command->args, shell->env);
-					rl_clear_history();
-					cf_free_all();
-					exit(127);
-				}
-				else if (pid < 0)
-				{
-					perror("fork");
-					last_status = 1;
-				}
-				else
-				{
-					waitpid(pid, &status, 0);
-					if (WIFEXITED(status))
-						last_status = WEXITSTATUS(status);
-					else if (WIFSIGNALED(status))
-						last_status = 128 + WTERMSIG(status);
-				}
-			}
-		}
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		run_external_command(command->args, shell->env);
+		rl_clear_history();
+		cf_free_all();
+		exit(127);
 	}
-	else if (node->type == NODE_PIPE)
+	else if (pid < 0)
 	{
-		int pipefd[2];
-		pipe(pipefd);
-
-		signal(SIGINT, SIG_IGN);
-		signal(SIGQUIT, SIG_IGN);
-
-		pid_t left_pid = fork();
-		if (left_pid == 0)
-		{
-			signal(SIGINT, SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
-			close(pipefd[0]);
-			dup2(pipefd[1], STDOUT_FILENO);
-			close(pipefd[1]);
-			int status = execute_node(node->left, shell);
-			rl_clear_history();
-			cf_free_all();
-			exit(status);
-		}
-
-		pid_t right_pid = fork();
-		if (right_pid == 0)
-		{
-			signal(SIGINT, SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
-			close(pipefd[1]);
-			dup2(pipefd[0], STDIN_FILENO);
-			close(pipefd[0]);
-			int status = execute_node(node->right, shell);
-			rl_clear_history();
-			cf_free_all();
-			exit(status);
-		}
-		close(pipefd[0]);
-		close(pipefd[1]);
-		waitpid(left_pid, &status, 0);
-		waitpid(right_pid, &status, 0);
+		perror("fork");
+		last_status = 1;
+	}
+	else
+	{
+		waitpid(pid, &status, 0);
 		if (WIFEXITED(status))
 			last_status = WEXITSTATUS(status);
 		else if (WIFSIGNALED(status))
 			last_status = 128 + WTERMSIG(status);
 	}
-	else if (node->type == NODE_AND)
-	{
-		last_status = execute_node(node->left, shell);
-		if (last_status == 0)
-			last_status = execute_node(node->right, shell);
-	}
-	else if (node->type == NODE_OR)
-	{
-		last_status = execute_node(node->left, shell);
-		if (last_status != 0)
-			last_status = execute_node(node->right, shell);
-	}
-	else if (node->type == NODE_SUBSHELL)
-	{
-		signal(SIGINT, SIG_IGN);
-		signal(SIGQUIT, SIG_IGN);
-		pid = fork();
-		if (pid == 0)
-		{
-			signal(SIGINT, SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
-			int status = execute_node(node->left, shell);
-			rl_clear_history();
-			cf_free_all();
-			exit(status);
-		}
-		else if (pid < 0)
-		{
-			perror("fork subshell");
-			last_status = 1;
-		}
-		else
-		{
-			waitpid(pid, &status, 0);
-			if (WIFEXITED(status))
-				last_status = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-				last_status = 128 + WTERMSIG(status);
-		}
-	}
+	return (last_status);
+}
 
+// Helpers for execute_node: handle command AST nodes (built-in or external)
+static int	execute_command_node(t_ast_node *node, t_shell *shell)
+{
+	int		last_status;
+
+	last_status = 0;
+	if (!apply_redirections(node->command))
+		last_status = 1;
+	else if (node->command->args && node->command->args[0])
+	{
+		if (is_builtin_command(node->command->args[0]))
+			last_status = execute_builtin_command(node->command, shell);
+		else
+			last_status = execute_external_command(node->command, shell);
+	}
+	return (last_status);
+}
+
+// Helpers for execute_node: handle left child process of a pipe
+static void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd)
+{
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	close(pipefd[0]);
+	dup2(pipefd[1], STDOUT_FILENO);
+	close(pipefd[1]);
+	exit(execute_node(node->left, shell));
+}
+
+// Helpers for execute_node: handle right child process of a pipe
+static void	execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd)
+{
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	close(pipefd[1]);
+	dup2(pipefd[0], STDIN_FILENO);
+	close(pipefd[0]);
+	exit(execute_node(node->right, shell));
+}
+
+// Helpers for execute_node: handle pipe AST nodes
+static int	execute_pipe_node(t_ast_node *node, t_shell *shell)
+{
+	int		pipefd[2];
+	pid_t	left_pid;
+	pid_t	right_pid;
+	int		status;
+	int		last_status;
+
+	last_status = 0;
+	pipe(pipefd);
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	left_pid = fork();
+	if (left_pid == 0)
+		execute_pipe_child_left(node, shell, pipefd);
+	right_pid = fork();
+	if (right_pid == 0)
+		execute_pipe_child_right(node, shell, pipefd);
+	close(pipefd[0]);
+	close(pipefd[1]);
+	waitpid(left_pid, &status, 0);
+	waitpid(right_pid, &status, 0);
+	if (WIFEXITED(status))
+		last_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		last_status = 128 + WTERMSIG(status);
+	return (last_status);
+}
+
+// Helpers for execute_node: handle subshell child process
+static void	execute_subshell_child(t_ast_node *node, t_shell *shell)
+{
+	int	status;
+
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	status = execute_node(node->left, shell);
+	rl_clear_history();
+	cf_free_all();
+	exit(status);
+}
+
+// Helpers for execute_node: handle subshell AST nodes
+static int	execute_subshell_node(t_ast_node *node, t_shell *shell)
+{
+	pid_t	pid;
+	int		status;
+	int		last_status;
+
+	last_status = 0;
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	pid = fork();
+	if (pid == 0)
+		execute_subshell_child(node, shell);
+	else if (pid < 0)
+	{
+		perror("fork subshell");
+		last_status = 1;
+	}
+	else
+	{
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			last_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			last_status = 128 + WTERMSIG(status);
+	}
+	return (last_status);
+}
+
+// Helpers for execute_node: check if command is a built-in
+static bool	is_builtin_command(const char *command)
+{
+	return (ft_strncmp(command, "cd", 3) == 0
+		|| ft_strncmp(command, "export", 7) == 0
+		|| ft_strncmp(command, "unset", 6) == 0
+		|| ft_strncmp(command, "exit", 5) == 0
+		|| ft_strncmp(command, "q", 2) == 0
+		|| ft_strncmp(command, "echo", 5) == 0
+		|| ft_strncmp(command, "env", 4) == 0
+		|| ft_strncmp(command, "pwd", 4) == 0
+		|| ft_strncmp(command, ":", 2) == 0);
+}
+
+// Helpers for execute_node: handle AND (&&) AST nodes
+static int	execute_and_node(t_ast_node *node, t_shell *shell)
+{
+	int	last_status;
+
+	last_status = execute_node(node->left, shell);
+	if (last_status == 0)
+		last_status = execute_node(node->right, shell);
+	return (last_status);
+}
+
+// Helpers for execute_node: handle OR (||) AST nodes
+static int	execute_or_node(t_ast_node *node, t_shell *shell)
+{
+	int	last_status;
+
+	last_status = execute_node(node->left, shell);
+	if (last_status != 0)
+		last_status = execute_node(node->right, shell);
+	return (last_status);
+}
+
+// Main dispatcher for AST execution
+int	execute_node(t_ast_node *node, t_shell *shell)
+{
+	int	last_status;
+	int	original_stdin;
+	int	original_stdout;
+
+	last_status = 0;
+	original_stdin = dup(STDIN_FILENO);
+	original_stdout = dup(STDOUT_FILENO);
+	if (!node)
+		return (1);
+	if (node->type == NODE_CMD)
+		last_status = execute_command_node(node, shell);
+	else if (node->type == NODE_PIPE)
+		last_status = execute_pipe_node(node, shell);
+	else if (node->type == NODE_AND)
+		last_status = execute_and_node(node, shell);
+	else if (node->type == NODE_OR)
+		last_status = execute_or_node(node, shell);
+	else if (node->type == NODE_SUBSHELL)
+		last_status = execute_subshell_node(node, shell);
 	dup2(original_stdin, STDIN_FILENO);
 	dup2(original_stdout, STDOUT_FILENO);
 	close(original_stdin);
 	close(original_stdout);
-
 	shell->last_exit_status = last_status;
 	return (last_status);
 }
