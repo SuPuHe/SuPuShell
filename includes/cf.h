@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cf.h                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 13:40:47 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 15:48:55 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 11:44:12 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 typedef struct s_cf_node
 {
 	void				*ptr;
-	struct	s_cf_node	*next;
+	struct s_cf_node	*next;
 }	t_cf_node;
 
 t_cf_node	**get_cf_head(void);

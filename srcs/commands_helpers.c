@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_helpers.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:42:14 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 16:27:57 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 11:54:18 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,4 +67,3 @@ char	**build_envp(t_env *env)
 	envp[i] = NULL;
 	return (envp);
 }
-

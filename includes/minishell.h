@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 16:38:54 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 11:46:13 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@
 # include <unistd.h>
 //bool
 # include <stdbool.h>
+
+#include <dirent.h>
 
 extern volatile sig_atomic_t	g_sigint_exit_status;
 
@@ -211,6 +213,11 @@ char	**append_arg(char **args, char *new_arg);
 // wildcards
 char	**expand_wildcards(const char *pattern);
 void	free_expanded_wildcards(char **expanded);
+// wildcars_second_part
+int		matches_pattern(const char *str, const char *pattern);
+int		count_matches(const char *pattern);
+char	**create_result_array(int size);
+char	**handle_no_wildcards(const char *pattern);
 //billy
 void	billy_print(void);
 

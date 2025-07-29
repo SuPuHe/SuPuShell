@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   centralized_free.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 13:39:15 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 15:48:23 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/29 11:54:08 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,5 +54,3 @@ void	cf_free_all(void)
 	}
 	*get_cf_head() = NULL;
 }
-
-
