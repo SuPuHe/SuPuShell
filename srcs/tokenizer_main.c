@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 11:58:51 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:47:02 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 15:02:54 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,32 +70,24 @@ t_token	*create_token(t_token_type type, const char *value)
 	return (token);
 }
 
+// Main tokenization function
 t_list	*tokenize(const char *line)
 {
 	t_list	*tokens;
 	int		i;
 	bool	had_space;
 	t_token	*new_token;
-	char	*word_str;
 
 	tokens = NULL;
 	i = 0;
 	while (line[i])
 	{
-		skip_whitespace(line, &i, &had_space);
-		if (!line[i])
+		new_token = process_next_token(line, &i, &tokens, &had_space);
+		if (!new_token && !line[i])
 			break ;
-		new_token = handle_operator_tokens(line, &i);
-		if (!new_token)
-			new_token = handle_redirection_tokens(line, &i);
-		if (!new_token)
-			new_token = handle_quote_tokens(line, &i, &tokens);
-		if (!new_token)
-		{
-			word_str = extract_non_quoted_word(line, &i);
-			new_token = create_token(TOKEN_WORD, word_str);
-		}
-		add_token_to_list(new_token, had_space, &tokens);
+		if (new_token)
+			add_token_to_list(new_token, had_space, &tokens);
 	}
-	return (add_end_token(&tokens), tokens);
+	add_end_token(&tokens);
+	return (tokens);
 }
