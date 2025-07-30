@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 10:19:13 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/30 11:47:33 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,21 @@ static int  execute_and_node(t_ast_node *node, t_shell *shell);
 static int  execute_or_node(t_ast_node *node, t_shell *shell);
 static bool is_builtin_command(const char *command);
 int	execute_node(t_ast_node *node, t_shell *shell);
+static void	init_input_structure(t_input *input, t_env *env, t_shell *shell);
+static bool	is_command_terminator(t_token *token);
+static bool	validate_redirection_tokens(t_list **current_tokens, t_input *input);
+static void	handle_heredoc_redirection(t_input *input, t_token *filename_token);
+static char	*expand_filename_token(t_token *filename_token, t_env *env, t_shell *shell);
+static void	apply_output_redirection(t_input *input, t_token_type redir_type, char *expanded_value);
+static void	apply_input_redirection(t_input *input, char *expanded_value);
+static bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+static bool	is_adjacent_word_token(t_token *token);
+static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value, t_env *env, t_shell *shell);
+static void	handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value);
+static void	handle_regular_word(t_input *input, char *expanded_value);
+static void	handle_heredoc_fallback(t_input *input);
+static bool	handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+
 
 bool	apply_redirections(t_input *input);
 
@@ -37,8 +52,9 @@ bool	handle_heredoc(t_input *input)
 {
 	char	*line;
 	int		fd;
-	char	*filename = "/tmp/.minishell_heredoc";
+	char	*filename;
 
+	filename = "/tmp/.minishell_heredoc";
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
 		return (perror("heredoc file"), false);
@@ -46,7 +62,7 @@ bool	handle_heredoc(t_input *input)
 	{
 		line = readline("> ");
 		if (!line || ft_strcmp(line, input->heredoc) == 0)
-			break;
+			break ;
 		write(fd, line, ft_strlen(line));
 		write(fd, "\n", 1);
 		free(line);
@@ -267,35 +283,17 @@ static void	skip_whitespace(const char *line, int *i, bool *had_space)
 static t_token	*handle_operator_tokens(const char *line, int *i)
 {
 	if (ft_strncmp(&line[*i], "&&", 2) == 0)
-	{
-		*i += 2;
-		return (create_token(TOKEN_AND, NULL));
-	}
+		return (*i += 2, create_token(TOKEN_AND, NULL));
 	else if (ft_strncmp(&line[*i], "||", 2) == 0)
-	{
-		*i += 2;
-		return (create_token(TOKEN_OR, NULL));
-	}
+		return (*i += 2, create_token(TOKEN_OR, NULL));
 	else if (line[*i] == '|')
-	{
-		(*i)++;
-		return (create_token(TOKEN_PIPE, NULL));
-	}
+		return ((*i)++, create_token(TOKEN_PIPE, NULL));
 	else if (line[*i] == '(')
-	{
-		(*i)++;
-		return (create_token(TOKEN_LPAREN, NULL));
-	}
+		return ((*i)++, create_token(TOKEN_LPAREN, NULL));
 	else if (line[*i] == ')')
-	{
-		(*i)++;
-		return (create_token(TOKEN_RPAREN, NULL));
-	}
+		return ((*i)++, create_token(TOKEN_RPAREN, NULL));
 	else if (line[*i] == '&')
-	{
-		(*i)++;
-		return (create_token(TOKEN_AMPERSAND, NULL));
-	}
+		return ((*i)++, create_token(TOKEN_AMPERSAND, NULL));
 	return (NULL);
 }
 
@@ -337,10 +335,7 @@ static t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens)
 		if (line[*i] == '\'')
 			(*i)++;
 		else
-		{
-			free_token_list(*tokens);
-			return (NULL);
-		}
+			return (free_token_list(*tokens), NULL);
 		return (create_token(TOKEN_SINGLE_QUOTE_WORD, value));
 	}
 	else if (line[*i] == '"')
@@ -350,10 +345,7 @@ static t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens)
 		if (line[*i] == '"')
 			(*i)++;
 		else
-		{
-			free_token_list(*tokens);
-			return (NULL);
-		}
+			return (free_token_list(*tokens), NULL);
 		return (create_token(TOKEN_DOUBLE_QUOTE_WORD, value));
 	}
 	return (NULL);
@@ -390,6 +382,7 @@ t_list	*tokenize(const char *line)
 	int		i;
 	bool	had_space;
 	t_token	*new_token;
+	char	*word_str;
 
 	tokens = NULL;
 	i = 0;
@@ -397,8 +390,7 @@ t_list	*tokenize(const char *line)
 	{
 		skip_whitespace(line, &i, &had_space);
 		if (!line[i])
-			break;
-
+			break ;
 		new_token = handle_operator_tokens(line, &i);
 		if (!new_token)
 			new_token = handle_redirection_tokens(line, &i);
@@ -406,13 +398,12 @@ t_list	*tokenize(const char *line)
 			new_token = handle_quote_tokens(line, &i, &tokens);
 		if (!new_token)
 		{
-			char *word_str = extract_non_quoted_word(line, &i);
+			word_str = extract_non_quoted_word(line, &i);
 			new_token = create_token(TOKEN_WORD, word_str);
 		}
 		add_token_to_list(new_token, had_space, &tokens);
 	}
-	add_end_token(&tokens);
-	return (tokens);
+	return (add_end_token(&tokens), tokens);
 }
 
 //part of expand_string_variables
@@ -577,23 +568,6 @@ t_ast_node	*create_subshell_node(t_ast_node *child)
 	return (node);
 }
 
-static void	init_input_structure(t_input *input, t_env *env, t_shell *shell);
-static bool	is_command_terminator(t_token *token);
-static bool	validate_redirection_tokens(t_list **current_tokens, t_input *input);
-static void	handle_heredoc_redirection(t_input *input, t_token *filename_token);
-static char	*expand_filename_token(t_token *filename_token, t_env *env, t_shell *shell);
-static void	apply_output_redirection(t_input *input, t_token_type redir_type, char *expanded_value);
-static void	apply_input_redirection(t_input *input, char *expanded_value);
-static bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
-static bool	is_adjacent_word_token(t_token *token);
-static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value, t_env *env, t_shell *shell);
-static void	handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value);
-static void	handle_regular_word(t_input *input, char *expanded_value);
-static void	handle_heredoc_fallback(t_input *input);
-static bool	handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
-
-
-
 // Helper function to initialize input structure
 static void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
 {
@@ -606,9 +580,9 @@ static void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
 // Helper function to check if token is a command terminator
 static bool	is_command_terminator(t_token *token)
 {
-	return (token->type == TOKEN_PIPE || token->type == TOKEN_AND ||
-			token->type == TOKEN_OR || token->type == TOKEN_RPAREN ||
-			token->type == TOKEN_END);
+	return (token->type == TOKEN_PIPE || token->type == TOKEN_AND
+		|| token->type == TOKEN_OR || token->type == TOKEN_RPAREN
+		|| token->type == TOKEN_END);
 }
 
 // Helper function to handle redirection tokens
@@ -660,18 +634,18 @@ static void	apply_input_redirection(t_input *input, char *expanded_value)
 
 static bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell)
 {
-	t_token		*current_tok;
-	t_token		*filename_token;
+	t_token			*current_tok;
+	t_token			*filename_token;
 	t_token_type	redir_type;
-	char		*expanded_value;
+	char			*expanded_value;
 
-	current_tok = (t_token*)(*current_tokens)->content;
+	current_tok = (t_token *)(*current_tokens)->content;
 	redir_type = current_tok->type;
 
 	if (!validate_redirection_tokens(current_tokens, input))
 		return (false);
 
-	filename_token = (t_token*)(*current_tokens)->content;
+	filename_token = (t_token *)(*current_tokens)->content;
 
 	if (redir_type == TOKEN_HEREDOC)
 		handle_heredoc_redirection(input, filename_token);
@@ -690,9 +664,9 @@ static bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_
 // Helper function to check if token is an adjacent word token
 static bool	is_adjacent_word_token(t_token *token)
 {
-	return (token->type == TOKEN_SINGLE_QUOTE_WORD ||
-			token->type == TOKEN_DOUBLE_QUOTE_WORD ||
-			token->type == TOKEN_WORD);
+	return (token->type == TOKEN_SINGLE_QUOTE_WORD
+		|| token->type == TOKEN_DOUBLE_QUOTE_WORD
+		|| token->type == TOKEN_WORD);
 }
 
 // Helper function to concatenate adjacent tokens
@@ -703,10 +677,11 @@ static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded
 	char	*combined;
 
 	next_token = (*current_tokens)->next;
-	while (next_token && !((t_token*)next_token->content)->has_space &&
-			is_adjacent_word_token((t_token*)next_token->content))
+	while (next_token && !((t_token *)next_token->content)->has_space
+		&& is_adjacent_word_token((t_token *)next_token->content))
 	{
-		next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
+		next_expanded = expand_token_value((t_token *)next_token->content,
+				env, shell);
 		if (next_expanded)
 		{
 			combined = ft_strjoin_free(expanded_value, next_expanded);
@@ -717,7 +692,7 @@ static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded
 			next_token = next_token->next;
 		}
 		else
-			break;
+			break ;
 	}
 	return (expanded_value);
 }
@@ -726,16 +701,20 @@ static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded
 static void	handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value)
 {
 	char	**wildcards;
-	int		j;
+	int		i;
 
-	if (current_tok->type == TOKEN_WORD &&
-		(ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
+	if (current_tok->type == TOKEN_WORD
+		&& (ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
 	{
 		wildcards = expand_wildcards(expanded_value);
 		if (wildcards)
 		{
-			for (j = 0; wildcards[j]; j++)
-				input->args = append_arg(input->args, wildcards[j]);
+			i = 0;
+			while (wildcards[i])
+			{
+				input->args = append_arg(input->args, wildcards[i]);
+				i++;
+			}
 			free_expanded_wildcards(wildcards);
 		}
 		else
@@ -763,14 +742,13 @@ static bool	handle_word_token(t_input *input, t_list **current_tokens, t_env *en
 	t_token	*current_tok;
 	char	*expanded_value;
 
-	current_tok = (t_token*)(*current_tokens)->content;
+	current_tok = (t_token *)(*current_tokens)->content;
 	expanded_value = expand_token_value(current_tok, env, shell);
 	if (!expanded_value)
 		return (input->syntax_ok = false, false);
-
-	expanded_value = concatenate_adjacent_tokens(current_tokens, expanded_value, env, shell);
+	expanded_value = concatenate_adjacent_tokens(current_tokens,
+			expanded_value, env, shell);
 	handle_wildcard_expansion(input, current_tok, expanded_value);
-
 	*current_tokens = (*current_tokens)->next;
 	return (true);
 }
@@ -797,30 +775,27 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 	t_token	*current_tok;
 
 	init_input_structure(&input, env, shell);
-
-	while (*current_tokens && !is_command_terminator((t_token*)(*current_tokens)->content))
+	while (*current_tokens
+		&& !is_command_terminator((t_token *)(*current_tokens)->content))
 	{
-		current_tok = (t_token*)(*current_tokens)->content;
-		if (current_tok->type >= TOKEN_REDIR_IN && current_tok->type <= TOKEN_HEREDOC)
+		current_tok = (t_token *)(*current_tokens)->content;
+		if (current_tok->type >= TOKEN_REDIR_IN
+			&& current_tok->type <= TOKEN_HEREDOC)
 		{
 			if (!handle_redirection_token(&input, current_tokens, env, shell))
 				return (input);
 		}
-		else if (current_tok->type == TOKEN_WORD ||
-			current_tok->type == TOKEN_SINGLE_QUOTE_WORD ||
-			current_tok->type == TOKEN_DOUBLE_QUOTE_WORD)
+		else if (current_tok->type == TOKEN_WORD
+			|| current_tok->type == TOKEN_SINGLE_QUOTE_WORD
+			|| current_tok->type == TOKEN_DOUBLE_QUOTE_WORD)
 		{
 			if (!handle_word_token(&input, current_tokens, env, shell))
 				return (input);
 		}
 		else
-		{
-			input.syntax_ok = false;
-			return (input);
-		}
+			return (input.syntax_ok = false, input);
 	}
-	handle_heredoc_fallback(&input);
-	return (input);
+	return (handle_heredoc_fallback(&input), input);
 }
 
 // part of parse_primary
@@ -833,7 +808,7 @@ static t_ast_node	*parse_primary_subshell(t_list **tokens, t_shell *shell)
 	sub_expr = parse_expression(tokens, shell);
 	if (!sub_expr)
 		return (NULL);
-	if (!*tokens || ((t_token*)(*tokens)->content)->type != TOKEN_RPAREN)
+	if (!*tokens || ((t_token *)(*tokens)->content)->type != TOKEN_RPAREN)
 	{
 		shell->last_exit_status = 2;
 		free_ast(sub_expr);
@@ -867,18 +842,18 @@ static t_ast_node	*parse_primary_command(t_list **tokens, t_shell *shell)
 
 t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 {
-	t_token		*current_token;
+	t_token	*current_token;
 
 	if (!*tokens)
 		return (NULL);
-	current_token = (t_token*)(*tokens)->content;
+	current_token = (t_token *)(*tokens)->content;
 	if (current_token->type == TOKEN_LPAREN)
 		return (parse_primary_subshell(tokens, shell));
-	else if (current_token->type == TOKEN_WORD ||
-			current_token->type == TOKEN_REDIR_IN ||
-			current_token->type == TOKEN_REDIR_OUT ||
-			current_token->type == TOKEN_REDIR_APPEND ||
-			current_token->type == TOKEN_HEREDOC)
+	else if (current_token->type == TOKEN_WORD
+		|| current_token->type == TOKEN_REDIR_IN
+		|| current_token->type == TOKEN_REDIR_OUT
+		|| current_token->type == TOKEN_REDIR_APPEND
+		|| current_token->type == TOKEN_HEREDOC)
 		return (parse_primary_command(tokens, shell));
 	else if (current_token->type == TOKEN_AMPERSAND)
 	{
@@ -892,13 +867,17 @@ t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 
 t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
 {
-	t_ast_node	*left = parse_primary(tokens, shell);
+	t_ast_node	*left;
+	t_ast_node	*right;
+
+	left = parse_primary(tokens, shell);
 	if (!left)
-		return NULL;
-	while ((*tokens)->content && ((t_token*)(*tokens)->content)->type == TOKEN_PIPE)
+		return (NULL);
+	while ((*tokens)->content
+		&& ((t_token *)(*tokens)->content)->type == TOKEN_PIPE)
 	{
 		*tokens = (*tokens)->next;
-		t_ast_node *right = parse_primary(tokens, shell);
+		right = parse_primary(tokens, shell);
 		if (!right)
 			return (NULL);
 		left = create_binary_node(NODE_PIPE, left, right);
@@ -908,17 +887,23 @@ t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
 
 t_ast_node	*parse_and_or(t_list **tokens, t_shell *shell)
 {
-	t_ast_node	*left = parse_pipeline(tokens, shell);
+	t_ast_node		*left;
+	t_token_type	op_type;
+	t_ast_node		*right;
+	t_node_type		node_type;
+
+	left = parse_pipeline(tokens, shell);
 	if (!left)
 		return (NULL);
-	while ((*tokens)->content && (((t_token*)(*tokens)->content)->type == TOKEN_AND || ((t_token*)(*tokens)->content)->type == TOKEN_OR))
+	while ((*tokens)->content
+		&& (((t_token *)(*tokens)->content)->type == TOKEN_AND
+		|| ((t_token *)(*tokens)->content)->type == TOKEN_OR))
 	{
-		t_token_type op_type = ((t_token*)(*tokens)->content)->type;
+		op_type = ((t_token *)(*tokens)->content)->type;
 		*tokens = (*tokens)->next;
-		t_ast_node *right = parse_pipeline(tokens, shell);
+		right = parse_pipeline(tokens, shell);
 		if (!right)
-			return NULL;
-		t_node_type node_type;
+			return (NULL);
 		if (op_type == TOKEN_AND)
 			node_type = NODE_AND;
 		else
@@ -943,7 +928,7 @@ t_ast_node	*parse(const char *line, t_shell *shell)
 		return (NULL);
 	ast = parse_expression(&tokens, shell);
 
-	if (ast && ((t_token*)tokens->content)->type == TOKEN_END)
+	if (ast && ((t_token *)tokens->content)->type == TOKEN_END)
 		;
 	else
 	{
@@ -985,6 +970,16 @@ static int	execute_builtin_command(t_input *command, t_shell *shell)
 	return (last_status);
 }
 
+static void	execute_external_child(t_input *command, t_shell *shell)
+{
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	run_external_command(command->args, shell->env);
+	rl_clear_history();
+	cf_free_all();
+	exit(127);
+}
+
 // Helpers for execute_node: handle external (non-built-in) commands
 static int	execute_external_command(t_input *command, t_shell *shell)
 {
@@ -997,14 +992,7 @@ static int	execute_external_command(t_input *command, t_shell *shell)
 	signal(SIGQUIT, SIG_IGN);
 	pid = fork();
 	if (pid == 0)
-	{
-		signal(SIGINT, SIG_DFL);
-		signal(SIGQUIT, SIG_DFL);
-		run_external_command(command->args, shell->env);
-		rl_clear_history();
-		cf_free_all();
-		exit(127);
-	}
+		execute_external_child(command, shell);
 	else if (pid < 0)
 	{
 		perror("fork");
