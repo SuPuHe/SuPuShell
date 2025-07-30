@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
+#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/07/30 13:39:07 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/07/30 15:27:38 by omizin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,7 +40,7 @@ executor_other.c executor_pipe.c expander_utils.c expander.c parser_command.c \
 parser_main.c parser_redirection_handlers.c string_builder.c ast.c \
 parser_redirection.c parser_word_second_part.c parser_word.c \
 tokenizer_handlers.c tokenizer_main.c tokenizer_main_second_part.c \
-
+input_checker.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))
