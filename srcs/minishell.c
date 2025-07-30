@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 12:48:57 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 15:28:47 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,24 +51,27 @@ int	main(int argc, char **argv, char **envp)
 {
 	char	*line;
 	t_shell	shell;
+	int		interactive;
 
-	(void)argc;
+	interactive = 0;
 	(void)argv;
-	billy_print();
+	if (argc != 1)
+		return (1);
 	shell.env = create_env(envp);
 	shell.last_exit_status = 0;
 	shell.should_exit = 0;
 	disable_echoctl();
-	int interactive = 0;
+	if (isatty(STDIN_FILENO))
+	{
+		interactive = 1;
+		billy_print();
+	}
 	t_ast_node	*ast = NULL;
 	while (1)
 	{
 		setup_signal();
 		if (isatty(STDIN_FILENO))
-		{
 			line = readline(SHELLNAME);
-			interactive = 1;
-		}
 		else
 			line = get_next_line(STDIN_FILENO);
 		if (g_sigint_exit_status == 1)
