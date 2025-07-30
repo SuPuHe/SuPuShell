@@ -1,26 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cf.h                                               :+:      :+:    :+:   */
+/*   string_builder.h                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/23 13:40:47 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 17:42:40 by vpushkar         ###   ########.fr       */
+/*   Created: 2025/07/30 17:26:21 by vpushkar          #+#    #+#             */
+/*   Updated: 2025/07/30 17:33:58 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CF_H
-# define CF_H
+#ifndef STRING_BUILDER_H
+# define STRING_BUILDER_H
 
 # include "types.h"
 
-t_cf_node	**get_cf_head(void);
-void		*cf_malloc(size_t size);
-char		*cf_strdup(const char *s);
-void		cf_free_one(void *ptr);
-void		cf_free_all(void);
-void		*cf_realloc(void *ptr, size_t new_size);
-char		*cf_substr(const char *s, unsigned int start, size_t len);
-t_list		*cf_lstnew(void *content);
+t_string_builder	*sb_create(void);
+void				sb_append_char(t_string_builder *sb, char c);
+void				sb_append(t_string_builder *sb, const char *s);
+char				*sb_build_and_destroy(t_string_builder *sb);
+
 #endif
