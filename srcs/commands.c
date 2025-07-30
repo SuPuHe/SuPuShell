@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 16:17:40 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 17:03:29 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ void	do_cd(char **commands, t_env **env)
 	}
 }
 
-// Вспомогательная функция для вывода всех переменных окружения
 static void	print_all_env_vars(t_env *env)
 {
 	t_env	*cur;

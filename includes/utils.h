@@ -1,26 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cf.h                                               :+:      :+:    :+:   */
+/*   utils.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/23 13:40:47 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 17:42:40 by vpushkar         ###   ########.fr       */
+/*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
+/*   Updated: 2025/07/30 17:34:55 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CF_H
-# define CF_H
+#ifndef UTILS_H
+# define UTILS_H
 
-# include "types.h"
+// billy.c
+void	billy_print(void);
 
-t_cf_node	**get_cf_head(void);
-void		*cf_malloc(size_t size);
-char		*cf_strdup(const char *s);
-void		cf_free_one(void *ptr);
-void		cf_free_all(void);
-void		*cf_realloc(void *ptr, size_t new_size);
-char		*cf_substr(const char *s, unsigned int start, size_t len);
-t_list		*cf_lstnew(void *content);
 #endif

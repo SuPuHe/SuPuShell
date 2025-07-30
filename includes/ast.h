@@ -1,26 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cf.h                                               :+:      :+:    :+:   */
+/*   ast.h                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/23 13:40:47 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 17:42:40 by vpushkar         ###   ########.fr       */
+/*   Created: 2025/07/30 17:24:19 by vpushkar          #+#    #+#             */
+/*   Updated: 2025/07/30 17:30:55 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CF_H
-# define CF_H
+#ifndef AST_H
+# define AST_H
 
 # include "types.h"
 
-t_cf_node	**get_cf_head(void);
-void		*cf_malloc(size_t size);
-char		*cf_strdup(const char *s);
-void		cf_free_one(void *ptr);
-void		cf_free_all(void);
-void		*cf_realloc(void *ptr, size_t new_size);
-char		*cf_substr(const char *s, unsigned int start, size_t len);
-t_list		*cf_lstnew(void *content);
+//ast.c
+t_ast_node		*create_cmd_node(t_input *cmd);
+t_ast_node		*create_binary_node(t_node_type type,
+					t_ast_node *left, t_ast_node *right);
+t_ast_node		*create_subshell_node(t_ast_node *child);
+void			free_ast(t_ast_node *node);
+
 #endif
