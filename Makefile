@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
+#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/07/29 11:46:45 by omizin           ###   ########.fr        #
+#    Updated: 2025/07/30 13:39:07 by vpushkar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,7 +32,15 @@ LDFLAGS = -lreadline
 
 RM = rm -rf
 
-SRCS = minishell.c helpers.c env_helpers.c signals.c commands.c commands_helpers.c commands_second_part.c small_helpers.c billy.c wildcards.c centralized_free.c cf_libft.c centralized_alloc.c path_helpers.c wildcards_second_part.c
+SRCS = minishell.c helpers.c env_helpers.c signals.c commands.c \
+commands_helpers.c commands_second_part.c small_helpers.c billy.c \
+wildcards.c centralized_free.c cf_libft.c centralized_alloc.c path_helpers.c \
+wildcards_second_part.c executor_main_second_part.c executor_main.c \
+executor_other.c executor_pipe.c expander_utils.c expander.c parser_command.c \
+parser_main.c parser_redirection_handlers.c string_builder.c ast.c \
+parser_redirection.c parser_word_second_part.c parser_word.c \
+tokenizer_handlers.c tokenizer_main.c tokenizer_main_second_part.c \
+
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))
