@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 15:44:09 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 16:40:39 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,16 @@ int	main(int argc, char **argv, char **envp)
 			break ;
 		process_command(line, &ast, &shell, interactive);
 		free(line);
+		if (shell.should_exit)
+		{
+			rl_clear_history();
+			cf_free_all();
+			break ;
+		}
 	}
 	rl_clear_history();
 	cf_free_all();
-	return (0);
+	return (shell.last_exit_status);
 }
 
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell

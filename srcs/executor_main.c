@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:25:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:50:45 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 16:25:39 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,18 @@ int	execute_builtin_command(t_input *command, t_shell *shell)
 	else if (ft_strncmp(command->args[0], "exit", 5) == 0)
 	{
 		shell->should_exit = 1;
-		return (0);
+		if (command->args[1])
+		{
+			last_status = ft_atoi(command->args[1]);
+			if (last_status < 0 || last_status > 255)
+			{
+				printf("exit: %s: numeric argument required\n", command->args[1]);
+				last_status = 2;
+			}
+		}
+		else
+			last_status = shell->last_exit_status;
+		return (last_status);
 	}
 	else if (ft_strncmp(command->args[0], "echo", 5) == 0)
 		do_echo(command->args);
