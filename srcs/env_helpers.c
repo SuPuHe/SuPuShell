@@ -6,12 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/28 16:37:13 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:22:48 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Updates or adds an environment variable in the list.
+ *
+ * If the key exists, updates its value. Otherwise, adds a new variable
+ * to the environment list.
+ *
+ * @param env Pointer to environment variable list.
+ * @param key Variable name.
+ * @param val Variable value.
+ */
 void	update_or_add_env_var(t_env **env, char *key, char *val)
 {
 	t_env	*cur;
@@ -35,6 +45,17 @@ void	update_or_add_env_var(t_env **env, char *key, char *val)
 	*env = new;
 }
 
+/**
+ * @brief Parses an export argument into key and value.
+ *
+ * Splits the argument at '=' and sets key and value pointers.
+ * Returns 1 on success, 0 if '=' not found.
+ *
+ * @param arg Argument string to parse.
+ * @param key Pointer to key output.
+ * @param val Pointer to value output.
+ * @return 1 if parsed, 0 if invalid.
+ */
 int	parse_export_argument(char *arg, char **key, char **val)
 {
 	char	*eq;
@@ -48,6 +69,15 @@ int	parse_export_argument(char *arg, char **key, char **val)
 	return (1);
 }
 
+/**
+ * @brief Removes an environment variable from the list by key.
+ *
+ * Searches for the key and removes the corresponding node from the
+ * environment list.
+ *
+ * @param env Pointer to environment variable list.
+ * @param key Variable name to remove.
+ */
 void	remove_env_var(t_env **env, const char *key)
 {
 	t_env	*cur;
@@ -70,6 +100,15 @@ void	remove_env_var(t_env **env, const char *key)
 	}
 }
 
+/**
+ * @brief Creates an environment list from envp array.
+ *
+ * Allocates and fills a linked list of t_env nodes from envp strings.
+ * Each node contains key and value.
+ *
+ * @param envp Array of environment strings.
+ * @return Pointer to head of environment list.
+ */
 t_env	*create_env(char **envp)
 {
 	t_env	*head;
@@ -92,6 +131,16 @@ t_env	*create_env(char **envp)
 	return (head);
 }
 
+/**
+ * @brief Gets the value of an environment variable by key.
+ *
+ * Searches the environment list for the key and returns its value,
+ * or NULL if not found.
+ *
+ * @param env Pointer to environment variable list.
+ * @param key Variable name to search for.
+ * @return Value string, or NULL if not found.
+ */
 char	*get_env_value(t_env *env, const char *key)
 {
 	while (env)

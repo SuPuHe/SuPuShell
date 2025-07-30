@@ -3,15 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   helpers.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:38:55 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/23 14:00:03 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:14 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Compares two strings lexicographically.
+ *
+ * Returns the difference between the first pair of differing characters,
+ * or zero if the strings are equal.
+ *
+ * @param s1 First string.
+ * @param s2 Second string.
+ * @return Difference between first differing characters, or zero.
+ */
 int	ft_strcmp(const char *s1, const char *s2)
 {
 	size_t	i;
@@ -26,6 +36,15 @@ int	ft_strcmp(const char *s1, const char *s2)
 	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
+/**
+ * @brief Copies a string to the destination buffer.
+ *
+ * Copies src to dest, including the null terminator.
+ *
+ * @param dest Destination buffer.
+ * @param src Source string.
+ * @return Pointer to destination buffer.
+ */
 char	*ft_strcpy(char *dest, const char *src)
 {
 	int	i;
@@ -40,6 +59,15 @@ char	*ft_strcpy(char *dest, const char *src)
 	return (dest);
 }
 
+/**
+ * @brief Concatenates two strings.
+ *
+ * Appends src to the end of dest, including the null terminator.
+ *
+ * @param dest Destination buffer.
+ * @param src Source string.
+ * @return Pointer to destination buffer.
+ */
 char	*ft_strcat(char *dest, const char *src)
 {
 	int	i;
@@ -58,6 +86,15 @@ char	*ft_strcat(char *dest, const char *src)
 	return (dest);
 }
 
+/**
+ * @brief Duplicates a substring between two pointers.
+ *
+ * Allocates and copies the substring from start to end (exclusive).
+ *
+ * @param start Pointer to start of substring.
+ * @param end Pointer to end of substring.
+ * @return Pointer to allocated substring, or NULL on error.
+ */
 char	*substr_dup(const char *start, const char *end)
 {
 	size_t	len;
@@ -72,6 +109,15 @@ char	*substr_dup(const char *start, const char *end)
 	return (s);
 }
 
+/**
+ * @brief Joins two strings and frees the first.
+ *
+ * Allocates and concatenates s1 and s2, frees s1, and returns the result.
+ *
+ * @param s1 First string (will be freed).
+ * @param s2 Second string.
+ * @return Pointer to joined string, or NULL on error.
+ */
 char	*ft_strjoin_free(char *s1, const char *s2)
 {
 	char	*word;

@@ -6,13 +6,20 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:42:08 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:33:16 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helper function to handle heredoc fallback
+/**
+ * @brief Handles fallback for heredoc if no arguments are present.
+ *
+ * Sets a default argument ':' if heredoc is used without any command
+ * arguments, ensuring valid command execution.
+ *
+ * @param input Pointer to the input structure.
+ */
 void	handle_heredoc_fallback(t_input *input)
 {
 	if ((!input->args || !input->args[0]) && input->heredoc)
@@ -28,7 +35,15 @@ void	handle_heredoc_fallback(t_input *input)
 	}
 }
 
-// Helper function to handle regular word
+/**
+ * @brief Handles a regular word token, adding it to command arguments.
+ *
+ * Adds the expanded word to the input arguments if not empty.
+ * Frees the expanded value after use.
+ *
+ * @param input Pointer to the input structure.
+ * @param expanded_value Expanded word string.
+ */
 void	handle_regular_word(t_input *input, char *expanded_value)
 {
 	if (ft_strlen(expanded_value) > 0)
@@ -40,7 +55,16 @@ void	handle_regular_word(t_input *input, char *expanded_value)
 		cf_free_one(expanded_value);
 }
 
-// Helper function to handle wildcard expansion
+/**
+ * @brief Handles wildcard expansion for word tokens.
+ *
+ * Expands wildcards in the word and adds all matches to command arguments.
+ * If no matches, adds the original word. Frees memory after use.
+ *
+ * @param input Pointer to the input structure.
+ * @param current_tok Pointer to the current token.
+ * @param expanded_value Expanded word string.
+ */
 void	handle_wildcard_expansion(t_input *input,
 	t_token *current_tok, char *expanded_value)
 {
@@ -69,7 +93,18 @@ void	handle_wildcard_expansion(t_input *input,
 		handle_regular_word(input, expanded_value);
 }
 
-// Helper function to concatenate adjacent tokens
+/**
+ * @brief Concatenates adjacent word tokens into a single string.
+ *
+ * Combines adjacent tokens without spaces, expanding each and joining
+ * them into one argument string for the command.
+ *
+ * @param current_tokens Pointer to the token list pointer.
+ * @param expanded_value Initial expanded value string.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return Combined expanded string (must be freed).
+ */
 char	*concatenate_adjacent_tokens(t_list **current_tokens,
 	char *expanded_value, t_env *env, t_shell *shell)
 {
@@ -98,8 +133,20 @@ char	*concatenate_adjacent_tokens(t_list **current_tokens,
 	return (expanded_value);
 }
 
+/**
+ * @brief Handles a word token, expanding and adding to command arguments.
+ *
+ * Expands the token value, concatenates adjacent tokens, handles wildcards,
+ * and advances the token list pointer.
+ *
+ * @param input Pointer to the input structure.
+ * @param current_tokens Pointer to the token list pointer.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return true if successful, false otherwise.
+ */
 bool	handle_word_token(t_input *input,
-	t_list **current_tokens, t_env *env, t_shell *shell)
+	t_list	**current_tokens, t_env *env, t_shell *shell)
 {
 	t_token	*current_tok;
 	char	*expanded_value;

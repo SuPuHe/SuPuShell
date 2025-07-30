@@ -6,12 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:02:06 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 15:22:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:14 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Handles quote characters in input for syntax checking.
+ *
+ * Updates quote state and counters for single and double quotes.
+ *
+ * @param c Current character.
+ * @param check Pointer to input check structure.
+ * @param in_squote Pointer to single quote state.
+ * @param in_dquote Pointer to double quote state.
+ */
 void	handle_quote_char(char c,
 	t_input_check *check, bool *in_squote, bool *in_dquote)
 {
@@ -27,6 +37,17 @@ void	handle_quote_char(char c,
 	}
 }
 
+/**
+ * @brief Handles non-quote syntax characters in input.
+ *
+ * Checks for unsupported characters and updates parentheses counters.
+ *
+ * @param c Current character.
+ * @param check Pointer to input check structure.
+ * @param in_squote Single quote state.
+ * @param in_dquote Double quote state.
+ * @return true if syntax is valid, false otherwise.
+ */
 bool	handle_non_quote_syntax(char c,
 	t_input_check *check, bool in_squote, bool in_dquote)
 {
@@ -43,6 +64,18 @@ bool	handle_non_quote_syntax(char c,
 	return (true);
 }
 
+/**
+ * @brief Processes a line for syntax errors.
+ *
+ * Iterates through the line, updating quote and parentheses state,
+ * and checks for syntax errors.
+ *
+ * @param line Input line to check.
+ * @param check Pointer to input check structure.
+ * @param in_squote Pointer to single quote state.
+ * @param in_dquote Pointer to double quote state.
+ * @return true if no errors, false otherwise.
+ */
 bool	process_line_for_syntax_errors(const char *line,
 	t_input_check *check, bool *in_squote, bool *in_dquote)
 {
@@ -59,7 +92,15 @@ bool	process_line_for_syntax_errors(const char *line,
 	return (true);
 }
 
-// Main function to check for input errors
+/**
+ * @brief Main function to check for input errors.
+ *
+ * Checks for unsupported characters, unclosed quotes, and unbalanced
+ * parentheses in the input line.
+ *
+ * @param line Input line to check.
+ * @return 1 if input is valid, 0 if errors found.
+ */
 int	check_for_input(char *line)
 {
 	t_input_check	check;

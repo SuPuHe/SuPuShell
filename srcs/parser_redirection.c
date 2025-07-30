@@ -6,13 +6,23 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:44:46 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:10:26 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helper function to expand filename token
+/**
+ * @brief Expands a filename token, handling quotes and variables.
+ *
+ * Returns the expanded filename string for redirection, handling
+ * single quotes and variable expansion.
+ *
+ * @param filename_token Pointer to the filename token.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return Expanded filename string (must be freed).
+ */
 char	*expand_filename_token(t_token *filename_token,
 	t_env *env, t_shell *shell)
 {
@@ -22,7 +32,14 @@ char	*expand_filename_token(t_token *filename_token,
 		return (expand_string_variables(filename_token->value, env, shell));
 }
 
-// Helper function to handle heredoc redirection
+/**
+ * @brief Handles heredoc redirection by storing the delimiter.
+ *
+ * Sets the heredoc field in the input structure to the delimiter value.
+ *
+ * @param input Pointer to the input structure.
+ * @param filename_token Pointer to the heredoc delimiter token.
+ */
 void	handle_heredoc_redirection(t_input *input, t_token *filename_token)
 {
 	if (input->heredoc)
@@ -30,8 +47,15 @@ void	handle_heredoc_redirection(t_input *input, t_token *filename_token)
 	input->heredoc = cf_strdup(filename_token->value);
 }
 
-// Helper function to handle redirection tokens
-// Helper function to validate redirection tokens
+/**
+ * @brief Validates redirection tokens and advances the token list.
+ *
+ * Moves to the next token and checks for syntax errors.
+ *
+ * @param current_tokens Pointer to the token list pointer.
+ * @param input Pointer to the input structure.
+ * @return true if valid, false otherwise.
+ */
 bool	validate_redirection_tokens(t_list **current_tokens, t_input *input)
 {
 	*current_tokens = (*current_tokens)->next;
@@ -40,6 +64,18 @@ bool	validate_redirection_tokens(t_list **current_tokens, t_input *input)
 	return (true);
 }
 
+/**
+ * @brief Handles a redirection token, updating the input structure.
+ *
+ * Processes heredoc, input, and output redirections, expanding filenames
+ * and updating the input structure accordingly.
+ *
+ * @param input Pointer to the input structure.
+ * @param current_tokens Pointer to the token list pointer.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return true if successful, false otherwise.
+ */
 bool	handle_redirection_token(t_input *input,
 	t_list **current_tokens, t_env *env, t_shell *shell)
 {
@@ -67,6 +103,15 @@ bool	handle_redirection_token(t_input *input,
 	return (true);
 }
 
+/**
+ * @brief Handles heredoc input, writing lines to a temporary file.
+ *
+ * Reads lines from the user until the heredoc delimiter is found,
+ * writes them to a temp file, and sets the input file for the command.
+ *
+ * @param input Pointer to the input structure.
+ * @return true on success, false on error.
+ */
 bool	handle_heredoc(t_input *input)
 {
 	char	*line;

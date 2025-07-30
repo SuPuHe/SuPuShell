@@ -6,12 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:05:42 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:44:20 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:12:08 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Parses a primary expression (command or subshell).
+ *
+ * Handles parsing of a single command, subshell, or error token.
+ * Returns the corresponding AST node or NULL on error.
+ *
+ * @param tokens Pointer to the token list.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the parsed AST node, or NULL on error.
+ */
 t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 {
 	t_token	*current_token;
@@ -37,6 +47,16 @@ t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 	return (NULL);
 }
 
+/**
+ * @brief Parses a pipeline of commands separated by '|'.
+ *
+ * Builds an AST for a sequence of commands connected by pipes.
+ * Returns the root AST node for the pipeline.
+ *
+ * @param tokens Pointer to the token list.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the root AST node of the pipeline.
+ */
 t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
 {
 	t_ast_node	*left;
@@ -57,6 +77,16 @@ t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell)
 	return (left);
 }
 
+/**
+ * @brief Parses logical AND/OR expressions in the command line.
+ *
+ * Handles parsing of '&&' and '||' operators, building the AST
+ * for logical expressions. Returns the root AST node.
+ *
+ * @param tokens Pointer to the token list.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the root AST node for the logical expression.
+ */
 t_ast_node	*parse_and_or(t_list **tokens, t_shell *shell)
 {
 	t_ast_node		*left;
@@ -85,11 +115,32 @@ t_ast_node	*parse_and_or(t_list **tokens, t_shell *shell)
 	return (left);
 }
 
+/**
+ * @brief Parses a complete command expression from tokens.
+ *
+ * This function is the main entry point for parsing a command line.
+ * It handles the entire parsing process, including primary commands,
+ * pipelines, and logical expressions.
+ *
+ * @param tokens Pointer to the token list.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the root AST node of the parsed expression.
+ */
 t_ast_node	*parse_expression(t_list **tokens, t_shell *shell)
 {
 	return (parse_and_or(tokens, shell));
 }
 
+/**
+ * @brief Parses a command line string into an AST.
+ *
+ * Tokenizes the input line, parses it into an AST structure,
+ * and returns the root node of the AST.
+ *
+ * @param line Input command line string.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the root AST node, or NULL on error.
+ */
 t_ast_node	*parse(const char *line, t_shell *shell)
 {
 	t_list		*tokens;

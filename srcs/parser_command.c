@@ -6,13 +6,21 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:08:27 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:41:09 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:10:45 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helper function to check if token is a command terminator
+/**
+ * @brief Checks if a token is a command terminator.
+ *
+ * Returns true if the token is a pipe, AND, OR, right parenthesis,
+ * or end token.
+ *
+ * @param token Pointer to the token to check.
+ * @return true if token is a terminator, false otherwise.
+ */
 bool	is_command_terminator(t_token *token)
 {
 	return (token->type == TOKEN_PIPE || token->type == TOKEN_AND
@@ -20,7 +28,15 @@ bool	is_command_terminator(t_token *token)
 		|| token->type == TOKEN_END);
 }
 
-// Helper function to initialize input structure
+/**
+ * @brief Initializes the input structure for a command.
+ *
+ * Sets environment, syntax flag, and shell pointer in the input struct.
+ *
+ * @param input Pointer to the input structure to initialize.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ */
 void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
 {
 	ft_memset(input, 0, sizeof(t_input));
@@ -29,7 +45,16 @@ void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
 	input->shell = shell;
 }
 
-// part of parse_primary
+/**
+ * @brief Parses a subshell expression from tokens.
+ *
+ * Advances tokens, parses the subshell, and returns the AST node.
+ * Returns NULL on error or syntax issues.
+ *
+ * @param tokens Pointer to the token list.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the subshell AST node, or NULL on error.
+ */
 t_ast_node	*parse_primary_subshell(t_list **tokens, t_shell *shell)
 {
 	t_ast_node	*sub_expr;
@@ -50,7 +75,16 @@ t_ast_node	*parse_primary_subshell(t_list **tokens, t_shell *shell)
 	return (node);
 }
 
-// part of parse_primary
+/**
+ * @brief Parses a command expression from tokens.
+ *
+ * Allocates and fills the input structure, parses the command,
+ * and returns the AST node. Returns NULL on error.
+ *
+ * @param tokens Pointer to the token list.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the command AST node, or NULL on error.
+ */
 t_ast_node	*parse_primary_command(t_list **tokens, t_shell *shell)
 {
 	t_input		*cmd_data;
@@ -71,6 +105,17 @@ t_ast_node	*parse_primary_command(t_list **tokens, t_shell *shell)
 	return (node);
 }
 
+/**
+ * @brief Parses a command from tokens and fills the input structure.
+ *
+ * Iterates through tokens, handling redirections, words, and ampersands.
+ * Sets flags and arguments in the input structure.
+ *
+ * @param current_tokens Pointer to the token list pointer.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return Filled input structure for the command.
+ */
 t_input	parse_command_from_tokens(t_list **current_tokens,
 	t_env *env, t_shell *shell)
 {

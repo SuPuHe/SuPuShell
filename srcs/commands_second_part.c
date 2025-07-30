@@ -6,12 +6,19 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 16:07:04 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:22:44 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Prints an error message for a command to stderr in red color.
+ *
+ * Writes the command name in red to stderr using write().
+ *
+ * @param argv Command name to print.
+ */
 void	print_error(char *argv)
 {
 	int	i;
@@ -25,6 +32,15 @@ void	print_error(char *argv)
 	}
 }
 
+/**
+ * @brief Executes an external command using execve.
+ *
+ * Searches for the command in PATH, builds environment, and calls execve.
+ * Handles errors and exits with appropriate code if execution fails.
+ *
+ * @param argv Array of command arguments.
+ * @param env Pointer to environment variable list.
+ */
 void	run_external_command(char **argv, t_env *env)
 {
 	char	*path;
@@ -52,6 +68,14 @@ void	run_external_command(char **argv, t_env *env)
 	exit(1);
 }
 
+/**
+ * @brief Implements the echo command with -n option support.
+ *
+ * Prints arguments separated by spaces. Handles multiple -n options
+ * to suppress the trailing newline.
+ *
+ * @param argv Array of arguments to echo.
+ */
 void	do_echo(char **argv)
 {
 	int	i;
@@ -81,6 +105,14 @@ void	do_echo(char **argv)
 		printf("\n");
 }
 
+/**
+ * @brief Prints all environment variables in KEY=VALUE format.
+ *
+ * Iterates through the environment list and prints each variable
+ * with its value.
+ *
+ * @param env Pointer to environment variable list.
+ */
 void	do_env(t_env *env)
 {
 	while (env)

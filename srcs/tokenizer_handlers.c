@@ -6,12 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:01:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:32:24 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:18 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Extracts a non-quoted word from the input line.
+ *
+ * Reads characters until a space, operator, or quote is found.
+ * Returns a newly allocated substring.
+ *
+ * @param line Input line string.
+ * @param i Pointer to current index.
+ * @return Pointer to extracted word.
+ */
 char	*extract_non_quoted_word(const char *line, int *i)
 {
 	int		start;
@@ -25,6 +35,17 @@ char	*extract_non_quoted_word(const char *line, int *i)
 	return (s);
 }
 
+/**
+ * @brief Extracts a substring up to a delimiter character.
+ *
+ * Reads characters until the delimiter is found. Returns a newly
+ * allocated substring.
+ *
+ * @param line Input line string.
+ * @param i Pointer to current index.
+ * @param delimiter Delimiter character.
+ * @return Pointer to extracted substring.
+ */
 char	*extract_subsegment(const char *line, int *i, char delimiter)
 {
 	int		start;
@@ -37,7 +58,17 @@ char	*extract_subsegment(const char *line, int *i, char delimiter)
 	return (s);
 }
 
-// Helper function to handle quote tokens
+/**
+ * @brief Handles quote tokens in the input line.
+ *
+ * Extracts quoted substrings and creates corresponding tokens.
+ * Returns NULL on error or unmatched quotes.
+ *
+ * @param line Input line string.
+ * @param i Pointer to current index.
+ * @param tokens Pointer to token list.
+ * @return Pointer to created token, or NULL on error.
+ */
 t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens)
 {
 	char	*value;
@@ -65,7 +96,15 @@ t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens)
 	return (NULL);
 }
 
-// Helper function to handle redirection tokens
+/**
+ * @brief Handles redirection tokens in the input line.
+ *
+ * Detects and creates tokens for >, >>, <, << redirections.
+ *
+ * @param line Input line string.
+ * @param i Pointer to current index.
+ * @return Pointer to created token, or NULL if not matched.
+ */
 t_token	*handle_redirection_tokens(const char *line, int *i)
 {
 	if (ft_strncmp(&line[*i], ">>", 2) == 0)
@@ -91,7 +130,15 @@ t_token	*handle_redirection_tokens(const char *line, int *i)
 	return (NULL);
 }
 
-// Helper function to handle operator tokens
+/**
+ * @brief Handles operator tokens in the input line.
+ *
+ * Detects and creates tokens for &&, ||, |, (, ), & operators.
+ *
+ * @param line Input line string.
+ * @param i Pointer to current index.
+ * @return Pointer to created token, or NULL if not matched.
+ */
 t_token	*handle_operator_tokens(const char *line, int *i)
 {
 	if (ft_strncmp(&line[*i], "&&", 2) == 0)

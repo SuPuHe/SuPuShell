@@ -3,15 +3,26 @@
 /*                                                        :::      ::::::::   */
 /*   wildcards_second_part.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 16:43:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/29 11:46:00 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/30 18:19:09 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Checks if a string matches a wildcard pattern.
+ *
+ * Supports '*' and '?' wildcards. Recursively compares the string
+ * and pattern, handling multiple consecutive '*' and matching any
+ * character for '?'.
+ *
+ * @param str String to check.
+ * @param pattern Wildcard pattern to match.
+ * @return 1 if match, 0 otherwise.
+ */
 int	matches_pattern(const char *str, const char *pattern)
 {
 	if (*pattern == '\0')
@@ -37,6 +48,15 @@ int	matches_pattern(const char *str, const char *pattern)
 	return (0);
 }
 
+/**
+ * @brief Counts files in current directory matching a wildcard pattern.
+ *
+ * Scans directory and counts non-hidden files that match the pattern
+ * using matches_pattern().
+ *
+ * @param pattern Wildcard pattern to match.
+ * @return Number of matching files.
+ */
 int	count_matches(const char *pattern)
 {
 	DIR				*dir;
@@ -58,6 +78,15 @@ int	count_matches(const char *pattern)
 	return (count);
 }
 
+/**
+ * @brief Allocates an array for storing wildcard expansion results.
+ *
+ * Allocates memory for an array of strings with space for size + 1
+ * elements (including NULL terminator).
+ *
+ * @param size Number of elements to allocate.
+ * @return Pointer to allocated array, or NULL on failure.
+ */
 char	**create_result_array(int size)
 {
 	char	**result;
@@ -68,6 +97,15 @@ char	**create_result_array(int size)
 	return (result);
 }
 
+/**
+ * @brief Handles patterns without wildcards by returning the pattern itself.
+ *
+ * Allocates an array with one string, copies the pattern, and sets
+ * the second element to NULL.
+ *
+ * @param pattern Pattern string without wildcards.
+ * @return Array containing the pattern, or NULL on allocation failure.
+ */
 char	**handle_no_wildcards(const char *pattern)
 {
 	char	**result;

@@ -6,12 +6,17 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 17:03:29 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:22:08 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Prints the current working directory.
+ *
+ * Uses getcwd to get the current directory and prints it in green color.
+ */
 void	do_pwd(void)
 {
 	char	buf[512];
@@ -20,6 +25,15 @@ void	do_pwd(void)
 	printf(BOLDGREEN"%s\n"RESET, buf);
 }
 
+/**
+ * @brief Changes the current directory and updates environment variables.
+ *
+ * Handles cd with no arguments, '~', '-', and a specific path. Updates
+ * OLDPWD and PWD environment variables after changing directory.
+ *
+ * @param commands Array of command arguments.
+ * @param env Pointer to environment variable list.
+ */
 void	do_cd(char **commands, t_env **env)
 {
 	const char	*home = getenv("HOME");
@@ -46,6 +60,14 @@ void	do_cd(char **commands, t_env **env)
 	}
 }
 
+/**
+ * @brief Prints all environment variables in export format.
+ *
+ * Iterates through the environment list and prints each variable in
+ * 'declare -x KEY="VALUE"' format.
+ *
+ * @param env Pointer to environment variable list.
+ */
 static void	print_all_env_vars(t_env *env)
 {
 	t_env	*cur;
@@ -61,6 +83,15 @@ static void	print_all_env_vars(t_env *env)
 	}
 }
 
+/**
+ * @brief Handles the export command for environment variables.
+ *
+ * Prints all variables if no arguments. Otherwise, parses and updates
+ * each argument as an environment variable.
+ *
+ * @param argv Array of export arguments.
+ * @param env Pointer to environment variable list.
+ */
 void	do_export(char **argv, t_env **env)
 {
 	int		i;
@@ -90,6 +121,14 @@ void	do_export(char **argv, t_env **env)
 	}
 }
 
+/**
+ * @brief Handles the unset command for environment variables.
+ *
+ * Removes each specified variable from the environment list.
+ *
+ * @param argv Array of variable names to unset.
+ * @param env Pointer to environment variable list.
+ */
 void	do_unset(char **argv, t_env **env)
 {
 	int	i;
