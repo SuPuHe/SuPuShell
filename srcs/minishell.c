@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/29 17:45:02 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/30 10:19:13 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,117 +252,166 @@ char	*extract_non_quoted_word(const char *line, int *i)
 	return s;
 }
 
+// Helper function to skip whitespace
+static void	skip_whitespace(const char *line, int *i, bool *had_space)
+{
+	*had_space = false;
+	while (ft_isspace(line[*i]))
+	{
+		*had_space = true;
+		(*i)++;
+	}
+}
+
+// Helper function to handle operator tokens
+static t_token	*handle_operator_tokens(const char *line, int *i)
+{
+	if (ft_strncmp(&line[*i], "&&", 2) == 0)
+	{
+		*i += 2;
+		return (create_token(TOKEN_AND, NULL));
+	}
+	else if (ft_strncmp(&line[*i], "||", 2) == 0)
+	{
+		*i += 2;
+		return (create_token(TOKEN_OR, NULL));
+	}
+	else if (line[*i] == '|')
+	{
+		(*i)++;
+		return (create_token(TOKEN_PIPE, NULL));
+	}
+	else if (line[*i] == '(')
+	{
+		(*i)++;
+		return (create_token(TOKEN_LPAREN, NULL));
+	}
+	else if (line[*i] == ')')
+	{
+		(*i)++;
+		return (create_token(TOKEN_RPAREN, NULL));
+	}
+	else if (line[*i] == '&')
+	{
+		(*i)++;
+		return (create_token(TOKEN_AMPERSAND, NULL));
+	}
+	return (NULL);
+}
+
+// Helper function to handle redirection tokens
+static t_token	*handle_redirection_tokens(const char *line, int *i)
+{
+	if (ft_strncmp(&line[*i], ">>", 2) == 0)
+	{
+		*i += 2;
+		return (create_token(TOKEN_REDIR_APPEND, NULL));
+	}
+	else if (ft_strncmp(&line[*i], "<<", 2) == 0)
+	{
+		*i += 2;
+		return (create_token(TOKEN_HEREDOC, NULL));
+	}
+	else if (line[*i] == '>')
+	{
+		(*i)++;
+		return (create_token(TOKEN_REDIR_OUT, NULL));
+	}
+	else if (line[*i] == '<')
+	{
+		(*i)++;
+		return (create_token(TOKEN_REDIR_IN, NULL));
+	}
+	return (NULL);
+}
+
+// Helper function to handle quote tokens
+static t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens)
+{
+	char	*value;
+
+	if (line[*i] == '\'')
+	{
+		(*i)++;
+		value = extract_subsegment(line, i, '\'');
+		if (line[*i] == '\'')
+			(*i)++;
+		else
+		{
+			free_token_list(*tokens);
+			return (NULL);
+		}
+		return (create_token(TOKEN_SINGLE_QUOTE_WORD, value));
+	}
+	else if (line[*i] == '"')
+	{
+		(*i)++;
+		value = extract_subsegment(line, i, '"');
+		if (line[*i] == '"')
+			(*i)++;
+		else
+		{
+			free_token_list(*tokens);
+			return (NULL);
+		}
+		return (create_token(TOKEN_DOUBLE_QUOTE_WORD, value));
+	}
+	return (NULL);
+}
+
+// Helper function to add token to list
+static void	add_token_to_list(t_token *new_token, bool had_space, t_list **tokens)
+{
+	t_list	*node;
+
+	if (new_token)
+	{
+		new_token->has_space = had_space;
+		node = cf_lstnew(new_token);
+		ft_lstadd_back(tokens, node);
+	}
+}
+
+// Helper function to add end token
+static void	add_end_token(t_list **tokens)
+{
+	t_token	*end_token;
+	t_list	*end_node;
+
+	end_token = create_token(TOKEN_END, NULL);
+	end_token->has_space = false;
+	end_node = cf_lstnew(end_token);
+	ft_lstadd_back(tokens, end_node);
+}
+
 t_list	*tokenize(const char *line)
 {
-	t_list	*tokens = NULL;
-	int		i = 0;
-	bool	had_space = false;
+	t_list	*tokens;
+	int		i;
+	bool	had_space;
+	t_token	*new_token;
 
+	tokens = NULL;
+	i = 0;
 	while (line[i])
 	{
-		had_space = false;
-		while (ft_isspace(line[i]))
-		{
-			had_space = true;
-			i++;
-		}
-
+		skip_whitespace(line, &i, &had_space);
 		if (!line[i])
 			break;
 
-		t_token *new_token = NULL;
-		if (ft_strncmp(&line[i], "&&", 2) == 0)
-		{
-			new_token = create_token(TOKEN_AND, NULL);
-			i += 2;
-		}
-		else if (ft_strncmp(&line[i], "||", 2) == 0)
-		{
-			new_token = create_token(TOKEN_OR, NULL);
-			i += 2;
-		}
-		else if (line[i] == '|')
-		{
-			new_token = create_token(TOKEN_PIPE, NULL);
-			i++;
-		}
-		else if (line[i] == '(')
-		{
-			new_token = create_token(TOKEN_LPAREN, NULL);
-			i++;
-		}
-		else if (line[i] == ')')
-		{
-			new_token = create_token(TOKEN_RPAREN, NULL);
-			i++;
-		}
-		else if (ft_strncmp(&line[i], ">>", 2) == 0)
-		{
-			new_token = create_token(TOKEN_REDIR_APPEND, NULL);
-			i += 2;
-		}
-		else if (ft_strncmp(&line[i], "<<", 2) == 0)
-		{
-			new_token = create_token(TOKEN_HEREDOC, NULL);
-			i += 2;
-		}
-		else if (line[i] == '>')
-		{
-			new_token = create_token(TOKEN_REDIR_OUT, NULL);
-			i++;
-		}
-		else if (line[i] == '<')
-		{
-			new_token = create_token(TOKEN_REDIR_IN, NULL);
-			i++;
-		}
-		else if (line[i] == '&')
-		{
-			new_token = create_token(TOKEN_AMPERSAND, NULL);
-			i++;
-		}
-		else if (line[i] == '\'')
-		{
-			i++;
-			char *value = extract_subsegment(line, &i, '\'');
-			if (line[i] == '\'')
-				i++;
-			else
-			{
-				free_token_list(tokens);
-				return (NULL);
-			}
-			new_token = create_token(TOKEN_SINGLE_QUOTE_WORD, value);
-		}
-		else if (line[i] == '"')
-		{
-			i++;
-			char *value = extract_subsegment(line, &i, '"');
-			if (line[i] == '"')
-				i++;
-			else
-			{
-				free_token_list(tokens);
-				return (NULL);
-			}
-			new_token = create_token(TOKEN_DOUBLE_QUOTE_WORD, value);
-		}
-		else
+		new_token = handle_operator_tokens(line, &i);
+		if (!new_token)
+			new_token = handle_redirection_tokens(line, &i);
+		if (!new_token)
+			new_token = handle_quote_tokens(line, &i, &tokens);
+		if (!new_token)
 		{
 			char *word_str = extract_non_quoted_word(line, &i);
 			new_token = create_token(TOKEN_WORD, word_str);
 		}
-		if (new_token)
-		{
-			new_token->has_space = had_space;
-			t_list *node = cf_lstnew(new_token);
-			ft_lstadd_back(&tokens, node);
-		}
+		add_token_to_list(new_token, had_space, &tokens);
 	}
-	t_token *end_token = create_token(TOKEN_END, NULL);
-	end_token->has_space = false;
-	t_list *end_node = cf_lstnew(end_token);
-	ft_lstadd_back(&tokens, end_node);
+	add_end_token(&tokens);
 	return (tokens);
 }
 
@@ -399,7 +448,7 @@ static void	expand_env_var(t_string_builder *sb, const char *str, t_env *env, in
 	var_value = get_env_value(env, var_name);
 	if (var_value)
 		sb_append(sb, var_value);
-	free(var_name);
+	cf_free_one(var_name);
 }
 
 //part of expand_string_variables
@@ -528,128 +577,241 @@ t_ast_node	*create_subshell_node(t_ast_node *child)
 	return (node);
 }
 
+static void	init_input_structure(t_input *input, t_env *env, t_shell *shell);
+static bool	is_command_terminator(t_token *token);
+static bool	validate_redirection_tokens(t_list **current_tokens, t_input *input);
+static void	handle_heredoc_redirection(t_input *input, t_token *filename_token);
+static char	*expand_filename_token(t_token *filename_token, t_env *env, t_shell *shell);
+static void	apply_output_redirection(t_input *input, t_token_type redir_type, char *expanded_value);
+static void	apply_input_redirection(t_input *input, char *expanded_value);
+static bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+static bool	is_adjacent_word_token(t_token *token);
+static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value, t_env *env, t_shell *shell);
+static void	handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value);
+static void	handle_regular_word(t_input *input, char *expanded_value);
+static void	handle_heredoc_fallback(t_input *input);
+static bool	handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+
+
+
+// Helper function to initialize input structure
+static void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
+{
+	ft_memset(input, 0, sizeof(t_input));
+	input->env = env;
+	input->syntax_ok = true;
+	input->shell = shell;
+}
+
+// Helper function to check if token is a command terminator
+static bool	is_command_terminator(t_token *token)
+{
+	return (token->type == TOKEN_PIPE || token->type == TOKEN_AND ||
+			token->type == TOKEN_OR || token->type == TOKEN_RPAREN ||
+			token->type == TOKEN_END);
+}
+
+// Helper function to handle redirection tokens
+// Helper function to validate redirection tokens
+static bool	validate_redirection_tokens(t_list **current_tokens, t_input *input)
+{
+	*current_tokens = (*current_tokens)->next;
+	if (!*current_tokens)
+		return (input->syntax_ok = false, false);
+	return (true);
+}
+
+// Helper function to handle heredoc redirection
+static void	handle_heredoc_redirection(t_input *input, t_token *filename_token)
+{
+	if (input->heredoc)
+		cf_free_one(input->heredoc);
+	input->heredoc = cf_strdup(filename_token->value);
+}
+
+// Helper function to expand filename token
+static char	*expand_filename_token(t_token *filename_token, t_env *env, t_shell *shell)
+{
+	if (filename_token->type == TOKEN_SINGLE_QUOTE_WORD)
+		return (cf_strdup(filename_token->value));
+	else
+		return (expand_string_variables(filename_token->value, env, shell));
+}
+
+// Helper function to apply output redirection
+static void	apply_output_redirection(t_input *input, t_token_type redir_type, char *expanded_value)
+{
+	if (input->outfile)
+		cf_free_one(input->outfile);
+	input->outfile = expanded_value;
+	if (redir_type == TOKEN_REDIR_OUT)
+		input->append = false;
+	else if (redir_type == TOKEN_REDIR_APPEND)
+		input->append = true;
+}
+
+// Helper function to apply input redirection
+static void	apply_input_redirection(t_input *input, char *expanded_value)
+{
+	if (input->infile)
+		cf_free_one(input->infile);
+	input->infile = expanded_value;
+}
+
+static bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell)
+{
+	t_token		*current_tok;
+	t_token		*filename_token;
+	t_token_type	redir_type;
+	char		*expanded_value;
+
+	current_tok = (t_token*)(*current_tokens)->content;
+	redir_type = current_tok->type;
+
+	if (!validate_redirection_tokens(current_tokens, input))
+		return (false);
+
+	filename_token = (t_token*)(*current_tokens)->content;
+
+	if (redir_type == TOKEN_HEREDOC)
+		handle_heredoc_redirection(input, filename_token);
+	else
+	{
+		expanded_value = expand_filename_token(filename_token, env, shell);
+		if (redir_type == TOKEN_REDIR_OUT || redir_type == TOKEN_REDIR_APPEND)
+			apply_output_redirection(input, redir_type, expanded_value);
+		else if (redir_type == TOKEN_REDIR_IN)
+			apply_input_redirection(input, expanded_value);
+	}
+	*current_tokens = (*current_tokens)->next;
+	return (true);
+}
+
+// Helper function to check if token is an adjacent word token
+static bool	is_adjacent_word_token(t_token *token)
+{
+	return (token->type == TOKEN_SINGLE_QUOTE_WORD ||
+			token->type == TOKEN_DOUBLE_QUOTE_WORD ||
+			token->type == TOKEN_WORD);
+}
+
+// Helper function to concatenate adjacent tokens
+static char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value, t_env *env, t_shell *shell)
+{
+	t_list	*next_token;
+	char	*next_expanded;
+	char	*combined;
+
+	next_token = (*current_tokens)->next;
+	while (next_token && !((t_token*)next_token->content)->has_space &&
+			is_adjacent_word_token((t_token*)next_token->content))
+	{
+		next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
+		if (next_expanded)
+		{
+			combined = ft_strjoin_free(expanded_value, next_expanded);
+			cf_free_one(expanded_value);
+			cf_free_one(next_expanded);
+			expanded_value = combined;
+			*current_tokens = next_token;
+			next_token = next_token->next;
+		}
+		else
+			break;
+	}
+	return (expanded_value);
+}
+
+// Helper function to handle wildcard expansion
+static void	handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value)
+{
+	char	**wildcards;
+	int		j;
+
+	if (current_tok->type == TOKEN_WORD &&
+		(ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
+	{
+		wildcards = expand_wildcards(expanded_value);
+		if (wildcards)
+		{
+			for (j = 0; wildcards[j]; j++)
+				input->args = append_arg(input->args, wildcards[j]);
+			free_expanded_wildcards(wildcards);
+		}
+		else
+			input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+	}
+	else
+		handle_regular_word(input, expanded_value);
+}
+
+// Helper function to handle regular word
+static void	handle_regular_word(t_input *input, char *expanded_value)
+{
+	if (ft_strlen(expanded_value) > 0)
+	{
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+	}
+	else
+		cf_free_one(expanded_value);
+}
+
+static bool	handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell)
+{
+	t_token	*current_tok;
+	char	*expanded_value;
+
+	current_tok = (t_token*)(*current_tokens)->content;
+	expanded_value = expand_token_value(current_tok, env, shell);
+	if (!expanded_value)
+		return (input->syntax_ok = false, false);
+
+	expanded_value = concatenate_adjacent_tokens(current_tokens, expanded_value, env, shell);
+	handle_wildcard_expansion(input, current_tok, expanded_value);
+
+	*current_tokens = (*current_tokens)->next;
+	return (true);
+}
+
+// Helper function to handle heredoc fallback
+static void	handle_heredoc_fallback(t_input *input)
+{
+	if ((!input->args || !input->args[0]) && input->heredoc)
+	{
+		input->args = cf_malloc(sizeof(char *) * 2);
+		if (!input->args)
+		{
+			input->syntax_ok = false;
+			return ;
+		}
+		input->args[0] = cf_strdup(":");
+		input->args[1] = NULL;
+	}
+}
+
 t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *shell)
 {
 	t_input	input;
 	t_token	*current_tok;
-	char	*expanded_value;
 
-	ft_memset(&input, 0, sizeof(t_input));
-	input.env = env;
-	input.syntax_ok = true;
-	input.shell = shell;
+	init_input_structure(&input, env, shell);
 
-	while (*current_tokens &&
-			((t_token*)(*current_tokens)->content)->type != TOKEN_PIPE &&
-			((t_token*)(*current_tokens)->content)->type != TOKEN_AND &&
-			((t_token*)(*current_tokens)->content)->type != TOKEN_OR &&
-			((t_token*)(*current_tokens)->content)->type != TOKEN_RPAREN &&
-			((t_token*)(*current_tokens)->content)->type != TOKEN_END)
+	while (*current_tokens && !is_command_terminator((t_token*)(*current_tokens)->content))
 	{
 		current_tok = (t_token*)(*current_tokens)->content;
 		if (current_tok->type >= TOKEN_REDIR_IN && current_tok->type <= TOKEN_HEREDOC)
 		{
-			t_token_type redir_type = current_tok->type;
-			*current_tokens = (*current_tokens)->next;
-
-			if (!*current_tokens)
-			{
-				input.syntax_ok = false;
+			if (!handle_redirection_token(&input, current_tokens, env, shell))
 				return (input);
-			}
-			t_token *filename_token = (t_token*)(*current_tokens)->content;
-
-			if (redir_type == TOKEN_HEREDOC)
-			{
-				if (input.heredoc)
-					cf_free_one(input.heredoc);
-				input.heredoc = cf_strdup(filename_token->value);
-			}
-			else if (filename_token->type == TOKEN_SINGLE_QUOTE_WORD)
-				expanded_value = cf_strdup(filename_token->value);
-			else
-				expanded_value = expand_string_variables(filename_token->value, env, shell);
-
-			if (redir_type == TOKEN_REDIR_OUT)
-			{
-				if (input.outfile)
-					cf_free_one(input.outfile);
-				input.outfile = expanded_value;
-				input.append = false;
-			}
-			else if (redir_type == TOKEN_REDIR_APPEND)
-			{
-				if (input.outfile)
-					cf_free_one(input.outfile);
-				input.outfile = expanded_value;
-				input.append = true;
-			}
-			else if (redir_type == TOKEN_REDIR_IN)
-			{
-				if (input.infile)
-					cf_free_one(input.infile);
-				input.infile = expanded_value;
-			}
-			*current_tokens = (*current_tokens)->next;
-			continue ;
 		}
 		else if (current_tok->type == TOKEN_WORD ||
 			current_tok->type == TOKEN_SINGLE_QUOTE_WORD ||
 			current_tok->type == TOKEN_DOUBLE_QUOTE_WORD)
 		{
-			expanded_value = expand_token_value(current_tok, env, shell);
-			if (!expanded_value)
-			{
-				input.syntax_ok = false;
+			if (!handle_word_token(&input, current_tokens, env, shell))
 				return (input);
-			}
-
-			t_list *next_token = (*current_tokens)->next;
-			while (next_token &&
-					!((t_token*)next_token->content)->has_space &&
-					(((t_token*)next_token->content)->type == TOKEN_SINGLE_QUOTE_WORD ||
-					((t_token*)next_token->content)->type == TOKEN_DOUBLE_QUOTE_WORD ||
-					((t_token*)next_token->content)->type == TOKEN_WORD))
-			{
-				char *next_expanded = expand_token_value((t_token*)next_token->content, env, shell);
-				if (next_expanded)
-				{
-					char *combined = ft_strjoin_free(expanded_value, next_expanded);
-					cf_free_one(expanded_value);
-					cf_free_one(next_expanded);
-					expanded_value = combined;
-					*current_tokens = next_token;
-					next_token = next_token->next;
-				}
-				else
-					break;
-			}
-			if (current_tok->type == TOKEN_WORD &&
-				(ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
-			{
-				char **wildcards = expand_wildcards(expanded_value);
-				if (wildcards)
-				{
-					for (int j = 0; wildcards[j]; j++)
-						input.args = append_arg(input.args, wildcards[j]);
-					free_expanded_wildcards(wildcards);
-				}
-				else
-				{
-					input.args = append_arg(input.args, expanded_value);
-				}
-				cf_free_one(expanded_value);
-			}
-			else if (ft_strlen(expanded_value) > 0)
-			{
-				input.args = append_arg(input.args, expanded_value);
-				cf_free_one(expanded_value);
-			}
-			else
-			{
-				cf_free_one(expanded_value);
-			}
-			*current_tokens = (*current_tokens)->next;
 		}
 		else
 		{
@@ -657,16 +819,7 @@ t_input	parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *
 			return (input);
 		}
 	}
-	if ((!input.args || !input.args[0]) && input.heredoc)
-	{
-		input.args = cf_malloc(sizeof(char *) * 2);
-		if (!input.args)
-		{
-			return (input.syntax_ok = false, input);
-		}
-		input.args[0] = cf_strdup(":");
-		input.args[1] = NULL;
-	}
+	handle_heredoc_fallback(&input);
 	return (input);
 }
 
@@ -1123,3 +1276,9 @@ int	main(int argc, char **argv, char **envp)
 }
 
 //valgrind --leak-check=full --show-leak-kinds=all --suppressions=valgrind_readline.supp ./minishell
+// ➜  SuPuShell git:(master) ✗ export FILE=test.txt
+// ➜  SuPuShell git:(master) ✗ echo hi > $FILE
+// ➜  SuPuShell git:(master) ✗ echo hi $FILE > $FILE
+// ➜  SuPuShell git:(master) ✗ echo hi '$FILE' >> $FILE
+// ➜  SuPuShell git:(master) ✗ echo hi '$FILE' >> '$FILE'
+// ➜  SuPuShell git:(master) ✗ cat << $FILE
