@@ -6,18 +6,35 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 15:14:02 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:16 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Checks if a character is a whitespace character.
+ *
+ * Returns true if the character is a space, tab, newline, vertical tab,
+ * form feed, or carriage return.
+ *
+ * @param c Character to check.
+ * @return Nonzero if whitespace, zero otherwise.
+ */
 int	ft_isspace(char c)
 {
 	return (c == ' ' || c == '\t' || c == '\n'
 		|| c == '\v' || c == '\f' || c == '\r');
 }
 
+/**
+ * @brief Returns the length of a string array.
+ *
+ * Counts the number of non-NULL strings in the array.
+ *
+ * @param arr Array of strings.
+ * @return Number of strings in the array.
+ */
 static int	ft_arrlen(char **arr)
 {
 	int	i;
@@ -30,6 +47,16 @@ static int	ft_arrlen(char **arr)
 	return (i);
 }
 
+/**
+ * @brief Appends a new argument to a string array.
+ *
+ * Allocates a new array, copies existing arguments, adds the new argument,
+ * and returns the new array.
+ *
+ * @param args Array of arguments.
+ * @param new_arg Argument to append.
+ * @return Pointer to new array, or NULL on error.
+ */
 char	**append_arg(char **args, char *new_arg)
 {
 	int		len;

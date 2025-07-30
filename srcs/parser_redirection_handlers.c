@@ -6,13 +6,21 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:45:08 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:13 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helper function to apply output redirection
+/**
+ * @brief Applies output redirection to the input structure.
+ *
+ * Sets the output file and append mode based on the redirection type.
+ *
+ * @param input Pointer to input structure.
+ * @param redir_type Type of output redirection.
+ * @param expanded_value Expanded output file name.
+ */
 void	apply_output_redirection(t_input *input,
 	t_token_type redir_type, char *expanded_value)
 {
@@ -25,7 +33,14 @@ void	apply_output_redirection(t_input *input,
 		input->append = true;
 }
 
-// Helper function to apply input redirection
+/**
+ * @brief Applies input redirection to the input structure.
+ *
+ * Sets the input file for the command.
+ *
+ * @param input Pointer to input structure.
+ * @param expanded_value Expanded input file name.
+ */
 void	apply_input_redirection(t_input *input, char *expanded_value)
 {
 	if (input->infile)
@@ -33,6 +48,15 @@ void	apply_input_redirection(t_input *input, char *expanded_value)
 	input->infile = expanded_value;
 }
 
+/**
+ * @brief Applies all input and output redirections for a command.
+ *
+ * Calls input and output redirection handlers and returns true if
+ * successful.
+ *
+ * @param input Pointer to input structure.
+ * @return true if all redirections applied, false otherwise.
+ */
 bool	apply_redirections(t_input *input)
 {
 	if (!apply_input_redirections(input))
@@ -42,7 +66,15 @@ bool	apply_redirections(t_input *input)
 	return (true);
 }
 
-//part of apply_redirections
+/**
+ * @brief Applies all input redirections, including heredoc.
+ *
+ * Handles heredoc and opens input file for reading, duplicating
+ * file descriptor to stdin.
+ *
+ * @param input Pointer to input structure.
+ * @return true if successful, false otherwise.
+ */
 bool	apply_input_redirections(t_input *input)
 {
 	int	fd;
@@ -66,7 +98,15 @@ bool	apply_input_redirections(t_input *input)
 	return (true);
 }
 
-//part of apply_redirections
+/**
+ * @brief Applies all output redirections for a command.
+ *
+ * Opens output file for writing, sets append or truncate mode,
+ * and duplicates file descriptor to stdout.
+ *
+ * @param input Pointer to input structure.
+ * @return true if successful, false otherwise.
+ */
 bool	apply_output_redirections(t_input *input)
 {
 	int	fd;

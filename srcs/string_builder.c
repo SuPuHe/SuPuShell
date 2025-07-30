@@ -6,12 +6,20 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:22:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 12:23:06 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:17 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Creates a new string builder object.
+ *
+ * Allocates and initializes a string builder for efficient string
+ * concatenation.
+ *
+ * @return Pointer to new string builder, or NULL on error.
+ */
 t_string_builder	*sb_create(void)
 {
 	t_string_builder	*sb;
@@ -30,6 +38,14 @@ t_string_builder	*sb_create(void)
 	return (sb);
 }
 
+/**
+ * @brief Appends a character to the string builder.
+ *
+ * Expands the buffer if needed and adds the character.
+ *
+ * @param sb Pointer to string builder.
+ * @param c Character to append.
+ */
 void	sb_append_char(t_string_builder *sb, char c)
 {
 	size_t	new_capacity;
@@ -48,6 +64,14 @@ void	sb_append_char(t_string_builder *sb, char c)
 	sb->str[sb->len] = '\0';
 }
 
+/**
+ * @brief Appends a string to the string builder.
+ *
+ * Expands the buffer if needed and adds the string.
+ *
+ * @param sb Pointer to string builder.
+ * @param s String to append.
+ */
 void	sb_append(t_string_builder *sb, const char *s)
 {
 	size_t	s_len;
@@ -70,6 +94,14 @@ void	sb_append(t_string_builder *sb, const char *s)
 	sb->len += s_len;
 }
 
+/**
+ * @brief Builds the final string and destroys the string builder.
+ *
+ * Returns the built string and frees the string builder object.
+ *
+ * @param sb Pointer to string builder.
+ * @return Pointer to final string.
+ */
 char	*sb_build_and_destroy(t_string_builder *sb)
 {
 	char	*final_str;

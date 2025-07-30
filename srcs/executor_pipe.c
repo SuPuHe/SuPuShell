@@ -6,13 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:29:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:20:20 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:05:30 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helpers for execute_node: handle right child process of a pipe
+/**
+ * @brief Executes the right child of a pipe in a child process.
+ *
+ * Sets up input redirection from the pipe, executes the right AST node,
+ * and exits with the returned status.
+ *
+ * @param node AST node for the right side of the pipe.
+ * @param shell Pointer to the shell structure.
+ * @param pipefd Pipe file descriptors array.
+ */
 void	execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd)
 {
 	int	status;
@@ -28,7 +37,16 @@ void	execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd)
 	exit(status);
 }
 
-// Helpers for execute_node: handle left child process of a pipe
+/**
+ * @brief Executes the left child of a pipe in a child process.
+ *
+ * Sets up output redirection to the pipe, executes the left AST node,
+ * and exits with the returned status.
+ *
+ * @param node AST node for the left side of the pipe.
+ * @param shell Pointer to the shell structure.
+ * @param pipefd Pipe file descriptors array.
+ */
 void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd)
 {
 	int	status;
@@ -44,7 +62,16 @@ void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd)
 	exit(status);
 }
 
-// Helpers for execute_node: handle pipe AST nodes
+/**
+ * @brief Executes a pipe AST node, connecting left and right children.
+ *
+ * Creates a pipe, forks child processes for left and right nodes,
+ * and waits for both to finish. Returns the exit status.
+ *
+ * @param node AST node representing the pipe.
+ * @param shell Pointer to the shell structure.
+ * @return Exit status of the rightmost command in the pipe.
+ */
 int	execute_pipe_node(t_ast_node *node, t_shell *shell)
 {
 	int		pipefd[2];

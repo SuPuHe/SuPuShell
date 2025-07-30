@@ -6,12 +6,21 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 15:42:01 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/28 15:50:33 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:20:31 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Allocates memory and tracks it for centralized freeing.
+ *
+ * Allocates a memory block and registers it in the centralized free list.
+ * Returns pointer to allocated memory, or NULL on failure.
+ *
+ * @param size Number of bytes to allocate.
+ * @return Pointer to allocated memory, or NULL on error.
+ */
 void	*cf_malloc(size_t size)
 {
 	void		*ptr;
@@ -32,6 +41,15 @@ void	*cf_malloc(size_t size)
 	return (ptr);
 }
 
+/**
+ * @brief Duplicates a string and tracks it for centralized freeing.
+ *
+ * Allocates a copy of the input string and registers it in the centralized
+ * free list. Returns pointer to duplicated string, or NULL on failure.
+ *
+ * @param s String to duplicate.
+ * @return Pointer to duplicated string, or NULL on error.
+ */
 char	*cf_strdup(const char *s)
 {
 	char		*dup;
@@ -52,6 +70,17 @@ char	*cf_strdup(const char *s)
 	return (dup);
 }
 
+/**
+ * @brief Reallocates a tracked memory block to a new size.
+ *
+ * Allocates a new block, copies data from the old block, frees the old block,
+ * and registers the new block in the centralized free list.
+ * Returns pointer to reallocated memory, or NULL on error.
+ *
+ * @param ptr Pointer to memory block to reallocate.
+ * @param new_size New size in bytes.
+ * @return Pointer to reallocated memory, or NULL on error.
+ */
 void	*cf_realloc(void *ptr, size_t new_size)
 {
 	void	*new_ptr;

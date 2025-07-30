@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/07 13:17:53 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/29 11:54:43 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/30 18:31:16 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,11 @@
 
 volatile sig_atomic_t	g_sigint_exit_status = 0;
 
+/**
+ * @brief Disables echoing of control characters in the terminal.
+ *
+ * Modifies terminal settings to turn off ECHOCTL flag.
+ */
 void	disable_echoctl(void)
 {
 	struct termios	term;
@@ -24,6 +29,13 @@ void	disable_echoctl(void)
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
+/**
+ * @brief Handles SIGINT signal (Ctrl+C) for the shell.
+ *
+ * Prints a newline, resets the input line, and sets exit status.
+ *
+ * @param signum Signal number (unused).
+ */
 static void	handle_sigint(int signum)
 {
 	(void)signum;
@@ -34,6 +46,11 @@ static void	handle_sigint(int signum)
 	g_sigint_exit_status = 1;
 }
 
+/**
+ * @brief Sets up signal handlers for the shell.
+ *
+ * Installs handlers for SIGINT and SIGQUIT, resets exit status.
+ */
 void	setup_signal(void)
 {
 	signal(SIGINT, handle_sigint);

@@ -6,13 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:19:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:46:48 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:25:22 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-//part of expand_string_variables
+/**
+ * @brief Expands the special variable $? to the last exit status value.
+ *
+ * Converts the shell's last exit status to a string and appends it
+ * to the string builder. Advances the index pointer.
+ *
+ * @param sb Pointer to the string builder.
+ * @param shell Pointer to the shell structure.
+ * @param i Pointer to the current index in the string.
+ */
 void	expand_status(t_string_builder *sb, t_shell *shell, int *i)
 {
 	char	*status_str;
@@ -23,7 +32,15 @@ void	expand_status(t_string_builder *sb, t_shell *shell, int *i)
 	(*i)++;
 }
 
-//part of expand_string_variables
+/**
+ * @brief Expands all shell variables in the input string.
+ *
+ * Iterates through the string, expanding variables and appending
+ * their values to the string builder.
+ *
+ * @param str Input string to expand.
+ * @param ctx Pointer to the expansion context.
+ */
 void	expand_loop(const char *str, t_expand_ctx *ctx)
 {
 	int	*i;
@@ -44,7 +61,14 @@ void	expand_loop(const char *str, t_expand_ctx *ctx)
 	}
 }
 
-//part of expand_string_variables
+/**
+ * @brief Dispatches variable expansion based on the variable type.
+ *
+ * Determines the type of variable (status, digit, env, other)
+ * and calls the appropriate expansion function.
+ *
+ * @param ctx Pointer to the expansion context.
+ */
 void	expand_hub(t_expand_ctx *ctx)
 {
 	if (ctx->str[*ctx->i] == '?')
@@ -57,6 +81,17 @@ void	expand_hub(t_expand_ctx *ctx)
 		expand_other(ctx->sb);
 }
 
+/**
+ * @brief Expands all shell variables in a string and returns the result.
+ *
+ * Uses a string builder to construct the expanded string, replacing
+ * variables with their values from the environment and shell.
+ *
+ * @param str Input string to expand.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return Expanded string (must be freed by the caller).
+ */
 char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
 {
 	t_string_builder	*sb;
@@ -76,6 +111,17 @@ char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
 	return (sb_build_and_destroy(sb));
 }
 
+/**
+ * @brief Expands the value of a token based on its type.
+ *
+ * Handles single-quoted, double-quoted, and regular word tokens,
+ * expanding them as necessary using the environment and shell context.
+ *
+ * @param token Pointer to the token to expand.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ * @return Expanded string (must be freed by the caller).
+ */
 char	*expand_token_value(t_token *token, t_env *env, t_shell *shell)
 {
 	if (!token || !token->value)

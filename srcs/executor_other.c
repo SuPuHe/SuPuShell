@@ -6,13 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:30:54 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 12:56:47 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:05:30 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helpers for execute_node: handle AND (&&) AST nodes
+/**
+ * @brief Executes an AND (&&) AST node.
+ *
+ * Executes the left node; if it succeeds, executes the right node.
+ * Returns the exit status of the last executed node.
+ *
+ * @param node AST node representing the AND operation.
+ * @param shell Pointer to the shell structure.
+ * @return Exit status of the last executed node.
+ */
 int	execute_and_node(t_ast_node *node, t_shell *shell)
 {
 	int	last_status;
@@ -23,7 +32,16 @@ int	execute_and_node(t_ast_node *node, t_shell *shell)
 	return (last_status);
 }
 
-// Helpers for execute_node: handle OR (||) AST nodes
+/**
+ * @brief Executes an OR (||) AST node.
+ *
+ * Executes the left node; if it fails, executes the right node.
+ * Returns the exit status of the last executed node.
+ *
+ * @param node AST node representing the OR operation.
+ * @param shell Pointer to the shell structure.
+ * @return Exit status of the last executed node.
+ */
 int	execute_or_node(t_ast_node *node, t_shell *shell)
 {
 	int	last_status;
@@ -34,7 +52,15 @@ int	execute_or_node(t_ast_node *node, t_shell *shell)
 	return (last_status);
 }
 
-// Helpers for execute_node: handle subshell child process
+/**
+ * @brief Executes a subshell AST node in a child process.
+ *
+ * Runs the left child node in a new process, handling signals and
+ * cleaning up before exit.
+ *
+ * @param node AST node representing the subshell.
+ * @param shell Pointer to the shell structure.
+ */
 void	execute_subshell_child(t_ast_node *node, t_shell *shell)
 {
 	int	status;
@@ -47,7 +73,16 @@ void	execute_subshell_child(t_ast_node *node, t_shell *shell)
 	exit(status);
 }
 
-// Helpers for execute_node: handle subshell AST nodes
+/**
+ * @brief Executes a subshell AST node by forking a new process.
+ *
+ * Forks a child process to run the subshell, waits for completion,
+ * and returns the exit status.
+ *
+ * @param node AST node representing the subshell.
+ * @param shell Pointer to the shell structure.
+ * @return Exit status of the subshell.
+ */
 int	execute_subshell_node(t_ast_node *node, t_shell *shell)
 {
 	pid_t	pid;

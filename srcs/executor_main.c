@@ -6,13 +6,21 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:25:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 16:25:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:23:46 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// Helpers for execute_node: check if command is a built-in
+/**
+ * @brief Checks if the given command name matches a built-in shell command.
+ *
+ * This function compares the input string to known built-in command names
+ * such as "cd", "export", "unset", "exit", "echo", "env", "pwd", and ":".
+ *
+ * @param command The command name to check.
+ * @return true if the command is built-in, false otherwise.
+ */
 bool	is_builtin_command(const char *command)
 {
 	return (ft_strncmp(command, "cd", 3) == 0
@@ -25,7 +33,16 @@ bool	is_builtin_command(const char *command)
 		|| ft_strncmp(command, ":", 2) == 0);
 }
 
-// Helpers for execute_node: handle external (non-built-in) commands
+/**
+ * @brief Executes an external (non-built-in) command in a child process.
+ *
+ * Forks a new process, sets up signal handling, and runs the command.
+ * Waits for the child to finish and returns its exit status.
+ *
+ * @param command The input command structure with arguments.
+ * @param shell Pointer to the shell structure.
+ * @return The exit status of the executed command.
+ */
 int	execute_external_command(t_input *command, t_shell *shell)
 {
 	pid_t	pid;
@@ -54,7 +71,16 @@ int	execute_external_command(t_input *command, t_shell *shell)
 	return (last_status);
 }
 
-// Helpers for execute_node: handle built-in shell commands
+/**
+ * @brief Executes a built-in shell command in the current process.
+ *
+ * Handles built-in commands like cd, export, unset, echo, env, pwd, and :.
+ * Updates shell state and returns the exit status.
+ *
+ * @param command The input command structure with arguments.
+ * @param shell Pointer to the shell structure.
+ * @return The exit status of the built-in command.
+ */
 int	execute_builtin_command(t_input *command, t_shell *shell)
 {
 	int	last_status;
@@ -93,7 +119,16 @@ int	execute_builtin_command(t_input *command, t_shell *shell)
 	return (last_status);
 }
 
-// Helpers for execute_node: handle command AST nodes (built-in or external)
+/**
+ * @brief Executes a command AST node (built-in or external).
+ *
+ * Applies redirections, checks if the command is built-in or external,
+ * and executes it. Returns the exit status.
+ *
+ * @param node Pointer to the command AST node.
+ * @param shell Pointer to the shell structure.
+ * @return Exit status of the command.
+ */
 int	execute_command_node(t_ast_node *node, t_shell *shell)
 {
 	int		last_status;
@@ -111,7 +146,16 @@ int	execute_command_node(t_ast_node *node, t_shell *shell)
 	return (last_status);
 }
 
-// Main dispatcher for AST execution
+/**
+ * @brief Main dispatcher for AST execution.
+ *
+ * Executes the AST node based on its type (command, pipe, and/or, subshell).
+ * Returns the exit status of the last executed node.
+ *
+ * @param node Pointer to the AST node to execute.
+ * @param shell Pointer to the shell structure.
+ * @return Exit status of the last executed node.
+ */
 int	execute_node(t_ast_node *node, t_shell *shell)
 {
 	int	last_status;

@@ -6,13 +6,22 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:21:18 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 13:40:38 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 18:25:30 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-//part of expand_string_variables
+/**
+ * @brief Expands $0 variable to the shell name.
+ *
+ * If the variable is $0, appends "SuPuShell" to the string builder.
+ * Advances the index pointer.
+ *
+ * @param sb Pointer to string builder.
+ * @param str Input string.
+ * @param i Pointer to current index.
+ */
 void	expand_digit(t_string_builder *sb, const char *str, int *i)
 {
 	if (str[*i] == '0')
@@ -20,13 +29,30 @@ void	expand_digit(t_string_builder *sb, const char *str, int *i)
 	(*i)++;
 }
 
-//part of expand_string_variables
+/**
+ * @brief Handles expansion of unknown or unsupported variables.
+ *
+ * Appends a literal '$' character to the string builder.
+ *
+ * @param sb Pointer to string builder.
+ */
 void	expand_other(t_string_builder *sb)
 {
 	sb_append_char(sb, '$');
 }
 
-//part of expand_string_variables
+/**
+ * @brief Expands an environment variable in the input string.
+ *
+ * Extracts the variable name, looks up its value in the environment,
+ * and appends the value to the string builder if found.
+ * Advances the index pointer.
+ *
+ * @param sb Pointer to string builder.
+ * @param str Input string.
+ * @param env Pointer to environment structure.
+ * @param i Pointer to current index.
+ */
 void	expand_env_var(t_string_builder *sb,
 	const char *str, t_env *env, int *i)
 {
@@ -44,6 +70,14 @@ void	expand_env_var(t_string_builder *sb,
 	cf_free_one(var_name);
 }
 
+/**
+ * @brief Checks if a character is a shell operator.
+ *
+ * Returns true if the character is one of: | & ( ) < >
+ *
+ * @param c Character to check.
+ * @return true if operator, false otherwise.
+ */
 bool	is_operator(char c)
 {
 	return (c == '|' || c == '&' || c == '('
