@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 13:33:41 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/30 15:21:40 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,48 +48,29 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 //malloc / free / printf
-# include <stdio.h>
 # include <stdlib.h>
 // open / read / write / close
 # include <fcntl.h>
 # include <unistd.h>
 //fork / execve / wait
-# include <unistd.h>
 # include <sys/wait.h>
 // dup2 / pipe
-# include <unistd.h>
-# include <stdio.h>
 //signal / kill / sigaction
 # include <signal.h>
-# include <unistd.h>
-# include <stdio.h>
 // access / stat
-# include <unistd.h>
 # include <sys/stat.h>
-# include <stdio.h>
 // opendir / readdir
 # include <dirent.h>
-# include <stdio.h>
-//getcwd / chdir
-# include <unistd.h>
-# include <stdio.h>
-// isatty / ttyname
-# include <stdio.h>
-# include <unistd.h>
 //getenv / export
-# include <stdio.h>
 # include <stdlib.h>
 //tcgetattr / tcsetattr
 # include <termios.h>
-# include <stdio.h>
-# include <unistd.h>
 //tgetent / tgetstr / tputs (termcap)
 # include <term.h>
-# include <unistd.h>
 //bool
 # include <stdbool.h>
 
-#include <dirent.h>
+# include <dirent.h>
 
 extern volatile sig_atomic_t	g_sigint_exit_status;
 
@@ -240,89 +221,124 @@ char	**handle_no_wildcards(const char *pattern);
 void	billy_print(void);
 
 //ast.c
-t_ast_node	*create_cmd_node(t_input *cmd);
-t_ast_node	*create_binary_node(t_node_type type, t_ast_node *left, t_ast_node *right);
-t_ast_node	*create_subshell_node(t_ast_node *child);
-void		free_ast(t_ast_node *node);
+t_ast_node		*create_cmd_node(t_input *cmd);
+t_ast_node		*create_binary_node(t_node_type type,
+			t_ast_node *left, t_ast_node *right);
+t_ast_node		*create_subshell_node(t_ast_node *child);
+void			free_ast(t_ast_node *node);
+
 //executor_main.c
 bool	is_builtin_command(const char *command);
 int		execute_external_command(t_input *command, t_shell *shell);
 int		execute_builtin_command(t_input *command, t_shell *shell);
 int		execute_command_node(t_ast_node *node, t_shell *shell);
 int		execute_node(t_ast_node *node, t_shell *shell);
+
 //executor_second_part.c
 void	execute_external_child(t_input *command, t_shell *shell);
+
 //executor_other.c
 int		execute_and_node(t_ast_node *node, t_shell *shell);
 int		execute_or_node(t_ast_node *node, t_shell *shell);
 void	execute_subshell_child(t_ast_node *node, t_shell *shell);
 int		execute_subshell_node(t_ast_node *node, t_shell *shell);
+
 //executor_pipe.c
 void	execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd);
 void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd);
 int		execute_pipe_node(t_ast_node *node, t_shell *shell);
+
 //expander_utils.c
 void	expand_digit(t_string_builder *sb, const char *str, int *i);
 void	expand_other(t_string_builder *sb);
-void	expand_env_var(t_string_builder *sb, const char *str, t_env *env, int *i);
+void	expand_env_var(t_string_builder *sb,
+			const char *str, t_env *env, int *i);
 bool	is_operator(char c);
+
 //expander.c
 void	expand_status(t_string_builder *sb, t_shell *shell, int *i);
 void	expand_loop(const char *str, t_expand_ctx *ctx);
 void	expand_hub(t_expand_ctx *ctx);
 char	*expand_string_variables(const char *str, t_env *env, t_shell *shell);
 char	*expand_token_value(t_token *token, t_env *env, t_shell *shell);
+
 //parser_command.c
 bool		is_command_terminator(t_token *token);
 void		init_input_structure(t_input *input, t_env *env, t_shell *shell);
 t_ast_node	*parse_primary_subshell(t_list **tokens, t_shell *shell);
 t_ast_node	*parse_primary_command(t_list **tokens, t_shell *shell);
 t_input		parse_command_from_tokens(t_list **current_tokens, t_env *env, t_shell *shell);
+
 //parser_main.c
 t_ast_node	*parse_primary(t_list **tokens, t_shell *shell);
 t_ast_node	*parse_pipeline(t_list **tokens, t_shell *shell);
 t_ast_node	*parse_and_or(t_list **tokens, t_shell *shell);
 t_ast_node	*parse_expression(t_list **tokens, t_shell *shell);
 t_ast_node	*parse(const char *line, t_shell *shell);
+
 //parser_redirection_handlers.c
-void	apply_output_redirection(t_input *input, t_token_type redir_type, char *expanded_value);
+void	apply_output_redirection(t_input *input,
+			t_token_type redir_type, char *expanded_value);
 void	apply_input_redirection(t_input *input, char *expanded_value);
 bool	apply_redirections(t_input *input);
 bool	apply_input_redirections(t_input *input);
 bool	apply_output_redirections(t_input *input);
+
 //parser_redirection.c
-char	*expand_filename_token(t_token *filename_token, t_env *env, t_shell *shell);
+char	*expand_filename_token(t_token *filename_token,
+			t_env *env, t_shell *shell);
 void	handle_heredoc_redirection(t_input *input, t_token *filename_token);
 bool	validate_redirection_tokens(t_list **current_tokens, t_input *input);
-bool	handle_redirection_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+bool	handle_redirection_token(t_input *input,
+			t_list **current_tokens, t_env *env, t_shell *shell);
 bool	handle_heredoc(t_input *input);
+
 //parser_word_second_part.c
 bool	is_adjacent_word_token(t_token *token);
+
 //parser_word.c
 void	handle_heredoc_fallback(t_input *input);
 void	handle_regular_word(t_input *input, char *expanded_value);
-void	handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value);
-char	*concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value, t_env *env, t_shell *shell);
-bool	handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+void	handle_wildcard_expansion(t_input *input,
+			t_token *current_tok, char *expanded_value);
+char	*concatenate_adjacent_tokens(t_list **current_tokens,
+			char *expanded_value, t_env *env, t_shell *shell);
+bool	handle_word_token(t_input *input,
+			t_list **current_tokens, t_env *env, t_shell *shell);
+
 //string_builder.c
 t_string_builder	*sb_create(void);
-void	sb_append_char(t_string_builder *sb, char c);
-void	sb_append(t_string_builder *sb, const char *s);
-char	*sb_build_and_destroy(t_string_builder *sb);
+void				sb_append_char(t_string_builder *sb, char c);
+void				sb_append(t_string_builder *sb, const char *s);
+char				*sb_build_and_destroy(t_string_builder *sb);
+
 //tokenizer_handlers.c
 char	*extract_non_quoted_word(const char *line, int *i);
 char	*extract_subsegment(const char *line, int *i, char delimiter);
 t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens);
 t_token	*handle_redirection_tokens(const char *line, int *i);
 t_token	*handle_operator_tokens(const char *line, int *i);
+
 //tokenizer_main_second_part.c
+t_token	*process_next_token(const char *line,
+			int *i, t_list **tokens_list, bool *had_space);
 void	add_end_token(t_list **tokens);
+
 //tokenizer_main.c
 void	skip_whitespace(const char *line, int *i, bool *had_space);
 void	add_token_to_list(t_token *new_token, bool had_space, t_list **tokens);
 void	free_token_list(t_list *tokens);
 t_token	*create_token(t_token_type type, const char *value);
 t_list	*tokenize(const char *line);
+
+//input_checker.c
+void	handle_quote_char(char c,
+			t_input_check *check, bool *in_squote, bool *in_dquote);
+bool	handle_non_quote_syntax(char c,
+			t_input_check *check, bool in_squote, bool in_dquote);
+bool	process_line_for_syntax_errors(const char *line,
+			t_input_check *check, bool *in_squote, bool *in_dquote);
+int		check_for_input(char *line);
 
 
 #endif
