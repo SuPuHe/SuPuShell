@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_second_part.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:22:44 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 11:15:28 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,20 @@ void	print_error(char *argv)
 	{
 		write(2, &argv[i], 1);
 		i++;
+	}
+}
+
+int	return_exit_code(char *path)
+{
+	if (path && access(path, X_OK) != 0)
+	{
+		write(2, ": permission denied\n"RESET, 25);
+		return (126);
+	}
+	else
+	{
+		write(2, ": command not found\n"RESET, 25);
+		return (127);
 	}
 }
 
@@ -56,10 +70,9 @@ void	run_external_command(char **argv, t_env *env)
 	if (!path || access(path, X_OK) != 0)
 	{
 		print_error(argv[0]);
-		write(2, ": command not found\n"RESET, 25);
 		rl_clear_history();
 		cf_free_all();
-		exit(127);
+		exit(return_exit_code(path));
 	}
 	execve(path, argv, envp);
 	perror("execve");
