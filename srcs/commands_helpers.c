@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:42:14 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 11:22:22 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 11:27:35 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,8 @@ char	**build_envp(t_env *env)
 }
 
 /**
- * @brief Sorts an array of environment variable pointers by key using bubble sort.
+ * @brief Sorts an array of environment variable
+ * pointers by key using bubble sort.
  *
  * Compares keys of adjacent elements and swaps them if out of order.
  * Used to sort environment variables alphabetically for export.
