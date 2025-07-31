@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 17:31:35 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 10:28:50 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,7 @@ void	do_env(t_env *env);
 //commands_helpers
 void	goto_prev_dir(t_env **env);
 char	**build_envp(t_env *env);
+void	bubble_sort_env_array(t_env **array, int count);
+t_env	**create_sorted_env_array(t_env *env, int *count);
 
 #endif

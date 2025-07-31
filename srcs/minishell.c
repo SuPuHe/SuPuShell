@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:12:26 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 10:23:32 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,11 @@ static void	process_command(char *line, t_ast_node **ast,
 		free_ast(*ast);
 		*ast = NULL;
 	}
+	if (shell->should_exit)
+	{
+		rl_clear_history();
+		cf_free_all();
+	}
 }
 
 /**
@@ -101,6 +106,7 @@ static void	process_command(char *line, t_ast_node **ast,
  * @param envp Environment variables.
  * @return Exit status of the shell.
  */
+
 int	main(int argc, char **argv, char **envp)
 {
 	char		*line;
@@ -122,11 +128,7 @@ int	main(int argc, char **argv, char **envp)
 		process_command(line, &ast, &shell, interactive);
 		free(line);
 		if (shell.should_exit)
-		{
-			rl_clear_history();
-			cf_free_all();
 			break ;
-		}
 	}
 	rl_clear_history();
 	cf_free_all();

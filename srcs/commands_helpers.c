@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_helpers.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:42:14 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:22:14 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 10:28:44 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,4 +92,60 @@ char	**build_envp(t_env *env)
 	}
 	envp[i] = NULL;
 	return (envp);
+}
+
+void	bubble_sort_env_array(t_env **array, int count)
+{
+	int		i;
+	int		j;
+	t_env	*temp;
+
+	if (!array || count <= 1)
+		return ;
+	i = 0;
+	while (i < count - 1)
+	{
+		j = 0;
+		while (j < count - i - 1)
+		{
+			if (ft_strcmp(array[j]->key, array[j + 1]->key) > 0)
+			{
+				temp = array[j];
+				array[j] = array[j + 1];
+				array[j + 1] = temp;
+			}
+			j++;
+		}
+		i++;
+	}
+}
+
+// Modified to print environment variables in ascending order using bubble sort
+t_env	**create_sorted_env_array(t_env *env, int *count)
+{
+	t_env	**env_array;
+	t_env	*cur;
+	int		i;
+
+	*count = 0;
+	cur = env;
+	while (cur)
+	{
+		(*count)++;
+		cur = cur->next;
+	}
+	if (*count == 0)
+		return (NULL);
+	env_array = (t_env **)cf_malloc(sizeof(t_env *) * (*count));
+	if (!env_array)
+		return (NULL);
+	i = 0;
+	cur = env;
+	while (cur)
+	{
+		env_array[i++] = cur;
+		cur = cur->next;
+	}
+	bubble_sort_env_array(env_array, *count);
+	return (env_array);
 }

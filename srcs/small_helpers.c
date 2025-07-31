@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   small_helpers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:31:16 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 10:29:52 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,4 +76,25 @@ char	**append_arg(char **args, char *new_arg)
 	new_args[len] = cf_strdup(new_arg);
 	new_args[len + 1] = NULL;
 	return (new_args);
+}
+
+int	last_status_assign(t_input *command, t_shell *shell)
+{
+	int	last_status;
+
+	last_status = 0;
+	if (command->args[1])
+	{
+		last_status = ft_atoi(command->args[1]);
+		if (ft_isalpha(command->args[1][0]))
+		{
+			printf("exit: %s: numeric argument required\n", command->args[1]);
+			last_status = 2;
+		}
+		else
+			printf("exit\n");
+	}
+	else
+		last_status = shell->last_exit_status;
+	return (last_status);
 }
