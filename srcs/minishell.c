@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 10:23:32 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/31 11:13:35 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,17 +35,7 @@ static void	init_shell(t_shell *shell, char **envp, int *interactive)
 	}
 }
 
-/**
- * @brief Reads and processes user input, updating the AST.
- *
- * Reads a line from the user, sets up signals, and parses the input
- * into an AST node. Handles SIGINT status and returns the input line.
- *
- * @param shell Pointer to the shell structure.
- * @param ast Pointer to the AST node pointer to update.
- * @return The input line string (must be freed by the caller).
- */
-static char	*handle_input(t_shell *shell, t_ast_node **ast)
+static char	*read_shell_input(t_shell *shell)
 {
 	char	*line;
 
@@ -59,40 +49,27 @@ static char	*handle_input(t_shell *shell, t_ast_node **ast)
 		shell->last_exit_status = 1;
 		g_sigint_exit_status = 0;
 	}
-	if (line)
-		*ast = parse(line, shell);
 	return (line);
 }
 
-/**
- * @brief Processes a command line: history, validation, and execution.
- *
- * Adds the line to history if interactive, checks for valid input,
- * and executes the AST if present. Frees the AST after execution.
- *
- * @param line The input line string.
- * @param ast Pointer to the AST node pointer.
- * @param shell Pointer to the shell structure.
- * @param interactive Interactive mode flag.
- */
-static void	process_command(char *line, t_ast_node **ast,
-	t_shell *shell, int interactive)
+static bool	process_one_command_iteration(char *line, t_shell *shell,
+	int interactive)
 {
+	t_ast_node	*ast;
+
+	ast = NULL;
 	if (*line && interactive)
 		add_history(line);
 	if (!check_for_input(line))
-		return ;
-	if (*ast)
+		return (shell->last_exit_status = 2, true);
+	ast = parse(line, shell);
+	if (ast)
 	{
-		execute_node(*ast, shell);
-		free_ast(*ast);
-		*ast = NULL;
+		execute_node(ast, shell);
+		free_ast(ast);
+		ast = NULL;
 	}
-	if (shell->should_exit)
-	{
-		rl_clear_history();
-		cf_free_all();
-	}
+	return (true);
 }
 
 /**
@@ -106,26 +83,23 @@ static void	process_command(char *line, t_ast_node **ast,
  * @param envp Environment variables.
  * @return Exit status of the shell.
  */
-
 int	main(int argc, char **argv, char **envp)
 {
-	char		*line;
-	t_shell		shell;
-	int			interactive;
-	t_ast_node	*ast;
+	char	*line;
+	t_shell	shell;
+	int		interactive;
 
 	interactive = 0;
-	ast = NULL;
 	(void)argv;
 	if (argc != 1)
 		return (1);
 	init_shell(&shell, envp, &interactive);
 	while (1)
 	{
-		line = handle_input(&shell, &ast);
-		if (!line || shell.should_exit)
+		line = read_shell_input(&shell);
+		if (!line)
 			break ;
-		process_command(line, &ast, &shell, interactive);
+		process_one_command_iteration(line, &shell, interactive);
 		free(line);
 		if (shell.should_exit)
 			break ;

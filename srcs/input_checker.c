@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   input_checker.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:02:06 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:31:14 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 11:11:40 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
