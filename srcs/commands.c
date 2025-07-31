@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:22:08 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 10:28:05 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,17 +70,23 @@ void	do_cd(char **commands, t_env **env)
  */
 static void	print_all_env_vars(t_env *env)
 {
-	t_env	*cur;
+	t_env	**env_array;
+	int		count;
+	int		i;
 
-	cur = env;
-	while (cur)
+	env_array = create_sorted_env_array(env, &count);
+	if (!env_array)
+		return ;
+	i = 0;
+	while (i < count)
 	{
-		printf("declare -x %s", cur->key);
-		if (cur->value)
-			printf("=\"%s\"", cur->value);
+		printf("declare -x %s", env_array[i]->key);
+		if (env_array[i]->value)
+			printf("=\"%s\"", env_array[i]->value);
 		printf("\n");
-		cur = cur->next;
+		i++;
 	}
+	cf_free_one(env_array);
 }
 
 /**

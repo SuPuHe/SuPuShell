@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   helpers.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:15:11 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 17:54:51 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 10:30:10 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,5 +37,6 @@ char	*search_path(const char *cmd, t_env *env);
 int		check_for_input(char *line);
 int		ft_isspace(char c);
 char	**append_arg(char **args, char *new_arg);
+int		last_status_assign(t_input *command, t_shell *shell);
 
 #endif
