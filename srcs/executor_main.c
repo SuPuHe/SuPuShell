@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_main.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:25:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 10:29:45 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/31 11:25:04 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,10 @@ int	execute_external_command(t_input *command, t_shell *shell)
 /**
  * @brief Executes a built-in shell command in the current process.
  *
- * Handles built-in commands like cd, export, unset, echo, env, pwd, and :.
- * Updates shell state and returns the exit status.
+ * Handles built-in commands: cd, export, unset, exit, echo, env, pwd, and :.
+ * For 'exit', sets shell->should_exit and returns the correct exit status
+ * using last_status_assign. For other commands, calls the corresponding
+ * handler. Returns the exit status for the command.
  *
  * @param command The input command structure with arguments.
  * @param shell Pointer to the shell structure.

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 11:13:35 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/31 11:19:56 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,16 @@ static void	init_shell(t_shell *shell, char **envp, int *interactive)
 	}
 }
 
+/**
+ * @brief Reads a line of input from the shell prompt or stdin.
+ *
+ * Sets up signal handlers, displays the prompt in interactive mode,
+ * and reads input using readline or get_next_line. Updates shell exit
+ * status if interrupted by SIGINT.
+ *
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the input line (must be freed by caller).
+ */
 static char	*read_shell_input(t_shell *shell)
 {
 	char	*line;
@@ -52,6 +62,18 @@ static char	*read_shell_input(t_shell *shell)
 	return (line);
 }
 
+/**
+ * @brief Processes a single command iteration in the shell loop.
+ *
+ * Adds input to history if interactive, checks for syntax errors,
+ * parses the input into an AST, executes the command, and frees the AST.
+ * Updates shell exit status on error.
+ *
+ * @param line Input line to process.
+ * @param shell Pointer to the shell structure.
+ * @param interactive Interactive mode flag.
+ * @return true to continue loop, false to exit.
+ */
 static bool	process_one_command_iteration(char *line, t_shell *shell,
 	int interactive)
 {
