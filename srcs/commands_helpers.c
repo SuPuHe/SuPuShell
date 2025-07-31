@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_helpers.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:42:14 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 10:28:44 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/31 11:22:22 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,15 @@ char	**build_envp(t_env *env)
 	return (envp);
 }
 
+/**
+ * @brief Sorts an array of environment variable pointers by key using bubble sort.
+ *
+ * Compares keys of adjacent elements and swaps them if out of order.
+ * Used to sort environment variables alphabetically for export.
+ *
+ * @param array Array of t_env pointers to sort.
+ * @param count Number of elements in the array.
+ */
 void	bubble_sort_env_array(t_env **array, int count)
 {
 	int		i;
@@ -120,7 +129,16 @@ void	bubble_sort_env_array(t_env **array, int count)
 	}
 }
 
-// Modified to print environment variables in ascending order using bubble sort
+/**
+ * @brief Creates a sorted array of environment variable pointers.
+ *
+ * Counts environment variables, allocates an array, copies pointers,
+ * and sorts them alphabetically by key using bubble_sort_env_array.
+ *
+ * @param env Pointer to environment variable list.
+ * @param count Pointer to store the number of variables.
+ * @return Pointer to sorted array, or NULL on error or empty list.
+ */
 t_env	**create_sorted_env_array(t_env *env, int *count)
 {
 	t_env	**env_array;

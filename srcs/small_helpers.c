@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   small_helpers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 10:29:52 by omizin           ###   ########.fr       */
+/*   Updated: 2025/07/31 11:23:53 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,17 @@ char	**append_arg(char **args, char *new_arg)
 	return (new_args);
 }
 
+/**
+ * @brief Determines the exit status for the shell's exit command.
+ *
+ * Parses the argument for exit, checks if it is numeric, prints error
+ * if not, and returns the appropriate exit status. If no argument is
+ * provided, returns the last exit status from the shell.
+ *
+ * @param command Pointer to input command structure.
+ * @param shell Pointer to shell structure.
+ * @return Exit status value.
+ */
 int	last_status_assign(t_input *command, t_shell *shell)
 {
 	int	last_status;
