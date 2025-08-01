@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:12:44 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 17:42:29 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 15:37:23 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,8 @@ typedef struct s_input
 	char		*infile;
 	char		*outfile;
 	bool		append;
-	char		*heredoc;
+	char		**heredoc_delimiters;
+	int			heredoc_count;
 }	t_input;
 
 typedef enum e_token_type
