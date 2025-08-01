@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:21:18 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:25:30 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 12:08:57 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 /**
  * @brief Expands $0 variable to the shell name.
  *
- * If the variable is $0, appends "SuPuShell" to the string builder.
+ * If the variable is $0, appends "Billyshell" to the string builder.
  * Advances the index pointer.
  *
  * @param sb Pointer to string builder.
@@ -25,7 +25,7 @@
 void	expand_digit(t_string_builder *sb, const char *str, int *i)
 {
 	if (str[*i] == '0')
-		sb_append(sb, "SuPuShell");
+		sb_append(sb, "Billyshell");
 	(*i)++;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:10:26 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/07/31 13:35:41 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,33 +48,45 @@ void	handle_heredoc_redirection(t_input *input, t_token *filename_token)
 }
 
 /**
- * @brief Validates redirection tokens and advances the token list.
+ * @brief Validates the presence of a token after a redirection operator.
  *
- * Moves to the next token and checks for syntax errors.
+ * Advances the token list and checks if the next token exists and is valid.
+ * If the next token is missing,
+ * sets the syntax flag to false and returns false.
  *
  * @param current_tokens Pointer to the token list pointer.
- * @param input Pointer to the input structure.
- * @return true if valid, false otherwise.
+ * @param input Pointer to the input structure to update the syntax flag.
+ * @return true if the next token is valid, false otherwise.
  */
 bool	validate_redirection_tokens(t_list **current_tokens, t_input *input)
 {
 	*current_tokens = (*current_tokens)->next;
-	if (!*current_tokens)
-		return (input->syntax_ok = false, false);
+	if (!*current_tokens || !(*current_tokens)->content)
+	{
+		write(2, "Error: Missing file after redirection token.\n", 46);
+		input->syntax_ok = false;
+		return (false);
+	}
 	return (true);
 }
 
 /**
- * @brief Handles a redirection token, updating the input structure.
+ * @brief Processes a redirection token and updates the input structure.
  *
- * Processes heredoc, input, and output redirections, expanding filenames
- * and updating the input structure accordingly.
+ * This function handles redirection tokens such as input redirection (`<`),
+ * output redirection (`>`), append redirection (`>>`), and heredoc (`<<`).
+ * It validates the token sequence, expands filenames, and updates the
+ * input structure accordingly.
  *
- * @param input Pointer to the input structure.
- * @param current_tokens Pointer to the token list pointer.
- * @param env Pointer to the environment structure.
- * @param shell Pointer to the shell structure.
- * @return true if successful, false otherwise.
+ * If the redirection token is invalid or missing a filename, an error
+ * message is displayed, and the syntax flag is set to false.
+ *
+ * @param input Pointer to the input structure to update.
+ * @param current_tokens Pointer to the current position in the token list.
+ * @param env Pointer to the environment structure for variable expansion.
+ * @param shell Pointer to the shell structure for additional context.
+ * @return true if the redirection was successfully processed,
+ * false otherwise.
  */
 bool	handle_redirection_token(t_input *input,
 	t_list **current_tokens, t_env *env, t_shell *shell)
@@ -89,6 +101,8 @@ bool	handle_redirection_token(t_input *input,
 	if (!validate_redirection_tokens(current_tokens, input))
 		return (false);
 	filename_token = (t_token *)(*current_tokens)->content;
+	if (!filename_token || !filename_token->value)
+		return (input->syntax_ok = false, false);
 	if (redir_type == TOKEN_HEREDOC)
 		handle_heredoc_redirection(input, filename_token);
 	else
@@ -99,8 +113,7 @@ bool	handle_redirection_token(t_input *input,
 		else if (redir_type == TOKEN_REDIR_IN)
 			apply_input_redirection(input, expanded_value);
 	}
-	*current_tokens = (*current_tokens)->next;
-	return (true);
+	return (*current_tokens = (*current_tokens)->next, true);
 }
 
 /**
