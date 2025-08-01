@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/01 16:39:20 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 16:47:02 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,4 +171,31 @@ char	*get_env_value(t_env *env, const char *key)
 		env = env->next;
 	}
 	return (NULL);
+}
+
+/**
+ * @brief Checks if a string is a valid environment variable name.
+ *
+ * Valid names start with a letter or underscore and contain only
+ * letters, digits, and underscores.
+ *
+ * @param name String to check.
+ * @return true if valid, false otherwise.
+ */
+bool	is_valid_var_name(const char *name)
+{
+	if (!name || !*name)
+		return (false);
+
+	// Первый символ должен быть буквой или подчеркиванием
+	if (!ft_isalpha(*name) && *name != '_')
+		return (false);
+
+	// Остальные символы должны быть буквами, цифрами или подчеркиванием
+	while (*++name)
+	{
+		if (!ft_isalnum(*name) && *name != '_')
+			return (false);
+	}
+	return (true);
 }

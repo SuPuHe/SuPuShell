@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 10:28:05 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/01 16:50:13 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ static void	print_all_env_vars(t_env *env)
 	while (i < count)
 	{
 		printf("declare -x %s", env_array[i]->key);
-		if (env_array[i]->value)
+		if (env_array[i]->value && env_array[i]->value[0])
 			printf("=\"%s\"", env_array[i]->value);
 		printf("\n");
 		i++;
@@ -116,13 +116,24 @@ void	do_export(char **argv, t_env **env)
 		tmp = cf_strdup(argv[i]);
 		if (!tmp)
 			return ;
-		if (!parse_export_argument(tmp, &key, &val))
+		if (parse_export_argument(tmp, &key, &val))
 		{
-			printf(BOLDRED"export: invalid format: %s\n"RESET, argv[i]);
-			i++;
-			continue ;
+			// Случай: export VAR=value
+			update_or_add_env_var(env, key, val);
 		}
-		update_or_add_env_var(env, key, val);
+		else
+		{
+			// Случай: export VAR (без знака равенства)
+			// Проверяем, что это валидное имя переменной
+			if (is_valid_var_name(argv[i]))
+			{
+				update_or_add_env_var(env, argv[i], "");
+			}
+			else
+			{
+				printf(BOLDRED"export: invalid format: %s\n"RESET, argv[i]);
+			}
+		}
 		i++;
 	}
 }
