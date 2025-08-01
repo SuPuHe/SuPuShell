@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   input_checker.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:02:06 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 11:11:40 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/01 15:03:32 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,15 @@ int	check_for_input(char *line)
 	t_input_check	check;
 	bool			in_squote;
 	bool			in_dquote;
+	int				i;
 
+	if (!line || !*line)
+		return (0);
+	i = 0;
+	while (line[i] && ft_isspace(line[i]))
+		i++;
+	if (!line[i])
+		return (0);
 	check.d_quot = 0;
 	check.s_quot = 0;
 	check.l_par = 0;
