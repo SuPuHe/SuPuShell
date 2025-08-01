@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:31:13 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 16:13:10 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
  * @brief Applies output redirection to the input structure.
  *
  * Sets the output file and append mode based on the redirection type.
+ * Creates the file immediately to match bash behavior.
  *
  * @param input Pointer to input structure.
  * @param redir_type Type of output redirection.
@@ -24,6 +25,9 @@
 void	apply_output_redirection(t_input *input,
 	t_token_type redir_type, char *expanded_value)
 {
+	int	fd;
+	int	flags;
+
 	if (input->outfile)
 		cf_free_one(input->outfile);
 	input->outfile = expanded_value;
@@ -31,6 +35,16 @@ void	apply_output_redirection(t_input *input,
 		input->append = false;
 	else if (redir_type == TOKEN_REDIR_APPEND)
 		input->append = true;
+
+	// Создаем файл сразу, как это делает bash
+	flags = O_CREAT | O_WRONLY;
+	if (input->append)
+		flags |= O_APPEND;
+	else
+		flags |= O_TRUNC;
+	fd = open(expanded_value, flags, 0644);
+	if (fd >= 0)
+		close(fd);
 }
 
 /**
@@ -79,7 +93,7 @@ bool	apply_input_redirections(t_input *input)
 {
 	int	fd;
 
-	if (input->heredoc)
+	if (input->heredoc_count > 0)
 	{
 		if (!handle_heredoc(input))
 			return (false);
