@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 17:53:49 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 15:37:07 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ bool		validate_redirection_tokens(t_list **current_tokens,
 bool		handle_redirection_token(t_input *input,
 				t_list **current_tokens, t_env *env, t_shell *shell);
 bool		handle_heredoc(t_input *input);
+void		free_heredoc_delimiters(t_input *input);
 
 //parser_word_second_part.c
 bool		is_adjacent_word_token(t_token *token);

@@ -6,11 +6,12 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:23:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:19:37 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 16:13:00 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include "parser.h"
 
 /**
  * @brief Creates an AST node for a command.
@@ -102,6 +103,7 @@ void	free_ast(t_ast_node *node)
 		free_ast(node->right);
 	if (node->type == NODE_CMD && node->command)
 	{
+		free_heredoc_delimiters(node->command);
 		cf_free_one(node->command);
 	}
 	cf_free_one(node);

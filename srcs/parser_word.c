@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:33:16 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 15:37:14 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
  */
 void	handle_heredoc_fallback(t_input *input)
 {
-	if ((!input->args || !input->args[0]) && input->heredoc)
+	if ((!input->args || !input->args[0]) && input->heredoc_count > 0)
 	{
 		input->args = cf_malloc(sizeof(char *) * 2);
 		if (!input->args)
