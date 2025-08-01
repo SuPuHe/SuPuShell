@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   helpers.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:15:11 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 10:30:10 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/01 16:47:04 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ int		parse_export_argument(char *arg, char **key, char **val);
 void	remove_env_var(t_env **env, const char *key);
 t_env	*create_env(char **envp);
 char	*get_env_value(t_env *env, const char *key);
+bool	is_valid_var_name(const char *name);
 
 //path_helpers
 char	*ft_strsep(char **str, const char *sep);
