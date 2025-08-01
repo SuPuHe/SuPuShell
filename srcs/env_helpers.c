@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:22:48 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/01 16:39:20 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,18 @@ void	update_or_add_env_var(t_env **env, char *key, char *val)
 	new = cf_malloc(sizeof(t_env));
 	new->key = cf_strdup(key);
 	new->value = cf_strdup(val);
-	new->next = *env;
-	*env = new;
+	new->next = NULL;
+
+	// Добавляем в конец списка
+	if (!*env)
+		*env = new;
+	else
+	{
+		cur = *env;
+		while (cur->next)
+			cur = cur->next;
+		cur->next = new;
+	}
 }
 
 /**
@@ -112,11 +122,13 @@ void	remove_env_var(t_env **env, const char *key)
 t_env	*create_env(char **envp)
 {
 	t_env	*head;
+	t_env	*tail;
 	t_env	*node;
 	char	*equal;
 	int		i;
 
 	head = NULL;
+	tail = NULL;
 	i = 0;
 	while (envp[i])
 	{
@@ -124,8 +136,17 @@ t_env	*create_env(char **envp)
 		equal = ft_strchr(envp[i], '=');
 		node->key = substr_dup(envp[i], equal);
 		node->value = cf_strdup(equal + 1);
-		node->next = head;
-		head = node;
+		node->next = NULL;
+		if (!head)
+		{
+			head = node;
+			tail = node;
+		}
+		else
+		{
+			tail->next = node;
+			tail = node;
+		}
 		i++;
 	}
 	return (head);
