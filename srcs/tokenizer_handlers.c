@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenizer_handlers.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:01:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:31:18 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/04 17:38:14 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,26 @@ char	*extract_non_quoted_word(const char *line, int *i)
 {
 	int		start;
 	char	*s;
+	char	quote_char;
 
+	quote_char = '\0';
 	start = *i;
-	while (line[*i] && !ft_isspace(line[*i])
-		&& !is_operator(line[*i]) && line[*i] != '\'' && line[*i] != '"')
-		(*i)++;
+	if (line[*i] == '$' && (*i + 1 < (int)ft_strlen(line)) &&
+		(line[*i + 1] == '\'' || line[*i + 1] == '\"'))
+		{
+			quote_char = line[*i + 1];
+			(*i) += 2;
+			while (line[*i] && line[*i] != quote_char)
+				(*i)++;
+			if (line[*i] == quote_char) 
+				(*i)++;
+	}
+	else
+	{
+		while (line[*i] && !ft_isspace(line[*i])
+			&& !is_operator(line[*i]) && line[*i] != '\'' && line[*i] != '\"')
+			(*i)++;
+	}
 	s = cf_substr(line, start, *i - start);
 	return (s);
 }
