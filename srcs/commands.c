@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/01 16:50:13 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/04 11:37:17 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	do_pwd(void)
 	char	buf[512];
 
 	getcwd(buf, sizeof(buf));
-	printf(BOLDGREEN"%s\n"RESET, buf);
+	printf("%s\n", buf);
 }
 
 /**
