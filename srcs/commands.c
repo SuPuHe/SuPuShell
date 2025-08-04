@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/04 13:08:49 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 13:18:56 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,18 @@ void	do_pwd(void)
  * @param commands Array of command arguments.
  * @param env Pointer to environment variable list.
  */
-void	do_cd(char **commands, t_env **env)
+void	do_cd(t_shell *shell, char **commands, t_env **env)
 {
 	const char	*home = getenv("HOME");
 	char		newpwd[512];
 	char		oldpwd[512];
 
+	if (commands[2])
+	{
+		ft_putstr_fd("Billyshell: cd: too many arguments\n", 2);
+		shell->last_exit_status = 1;
+		return ;
+	}
 	if (!getcwd(oldpwd, sizeof(oldpwd)))
 		return ;
 	if (!commands[1])
@@ -51,7 +57,10 @@ void	do_cd(char **commands, t_env **env)
 	else
 	{
 		if (chdir(commands[1]) == -1)
+		{
 			perror(BOLDRED"cd"RESET);
+			shell->last_exit_status = 1;
+		}
 	}
 	if (getcwd(newpwd, sizeof(newpwd)))
 	{
