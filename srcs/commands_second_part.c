@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_second_part.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/04 13:31:53 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 14:53:52 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,12 +122,19 @@ void	do_echo(char **argv)
  * @brief Prints all environment variables in KEY=VALUE format.
  *
  * Iterates through the environment list and prints each variable
- * with its value.
+ * with its value. If arguments are provided, returns error.
  *
  * @param env Pointer to environment variable list.
+ * @param argv Array of command arguments.
  */
-void	do_env(t_env *env)
+void	do_env(t_env *env, char **argv)
 {
+	if (argv[1])
+	{
+		print_error(argv[1]);
+		write(2, ": No such file or directory\n"RESET, 30);
+		return ;
+	}
 	while (env)
 	{
 		if (env->value)

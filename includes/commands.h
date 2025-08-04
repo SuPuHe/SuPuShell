@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/04 14:25:38 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 14:53:52 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	do_unset(char **argv, t_env **env);
 void	print_error(char *argv);
 void	do_echo(char **argv);
 void	run_external_command(char **argv, t_env *env);
-void	do_env(t_env *env);
+void	do_env(t_env *env, char **argv);
 
 //commands_helpers
 void	goto_prev_dir(t_env **env);
