@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 11:15:28 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 13:31:53 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ void	run_external_command(char **argv, t_env *env)
 	perror("execve");
 	rl_clear_history();
 	cf_free_all();
-	exit(1);
+	exit(127);
 }
 
 /**
