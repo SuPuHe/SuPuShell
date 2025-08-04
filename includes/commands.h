@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 10:28:50 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 14:25:38 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 //commands
 void	do_pwd(void);
-void	do_cd(char **commands, t_env **env);
-void	do_export(char **argv, t_env **env);
+void	do_cd(t_shell *shell, char **commands, t_env **env);
+void	do_export(t_shell *shell, char **argv, t_env **env);
 void	do_unset(char **argv, t_env **env);
 
 //commands_second_part
