@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   small_helpers.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/31 11:23:53 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/04 11:26:30 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,23 +89,45 @@ char	**append_arg(char **args, char *new_arg)
  * @param shell Pointer to shell structure.
  * @return Exit status value.
  */
+int	ft_isnumeric(const char *str)
+{
+	int	i;
+
+	i = 0;
+	if (!str || !str[0])
+		return (0);
+	if (str[0] == '-' || str[0] == '+')
+		i++;
+	if (!str[i])
+		return (0);
+	while (str[i])
+	{
+		if (!ft_isdigit(str[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	last_status_assign(t_input *command, t_shell *shell)
 {
 	int	last_status;
 
-	last_status = 0;
+	// ft_putstr_fd("exit\n", 2);
 	if (command->args[1])
 	{
-		last_status = ft_atoi(command->args[1]);
-		if (ft_isalpha(command->args[1][0]))
+		if (!ft_isnumeric(command->args[1]))
 		{
-			printf("exit: %s: numeric argument required\n", command->args[1]);
-			last_status = 2;
+			ft_putstr_fd("Billyshell: exit: numeric argument required\n", 2);
+			return (2);
 		}
-		else
-			printf("exit\n");
+		last_status = ft_atoi(command->args[1]);
+		if (command->args[2])
+		{
+			ft_putstr_fd("Billyshell: exit: too many arguments\n", 2);
+			return (1);
+		}
+		return ((unsigned char)last_status);
 	}
-	else
-		last_status = shell->last_exit_status;
-	return (last_status);
+	return (shell->last_exit_status);
 }
