@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:19:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:25:22 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/04 17:39:30 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,12 +71,29 @@ void	expand_loop(const char *str, t_expand_ctx *ctx)
  */
 void	expand_hub(t_expand_ctx *ctx)
 {
+	char	quote_char;
+	int		literal_content_start;
+	char	*literal_content;
+
 	if (ctx->str[*ctx->i] == '?')
 		expand_status(ctx->sb, ctx->shell, ctx->i);
 	else if (ft_isdigit(ctx->str[*ctx->i]))
 		expand_digit(ctx->sb, ctx->str, ctx->i);
 	else if (ctx->str[*ctx->i] == '_' || ft_isalpha(ctx->str[*ctx->i]))
 		expand_env_var(ctx->sb, ctx->str, ctx->env, ctx->i);
+	else if (ctx->str[*ctx->i] == '\"' || ctx->str[*ctx->i] == '\'')
+	{
+		quote_char = ctx->str[*ctx->i];
+		(*ctx->i)++;
+		literal_content_start = *ctx->i;
+		while (ctx->str[*ctx->i] && ctx->str[*ctx->i] != quote_char)
+			(*ctx->i)++;
+		literal_content = cf_substr(ctx->str, literal_content_start, *ctx->i - literal_content_start);
+		sb_append(ctx->sb, literal_content);
+		cf_free_one(literal_content);
+		if (ctx->str[*ctx->i] == quote_char)
+			(*ctx->i)++;
+	}
 	else
 		expand_other(ctx->sb);
 }
