@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/04 11:37:17 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 13:08:49 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,25 +89,32 @@ static void	print_all_env_vars(t_env *env)
 	cf_free_one(env_array);
 }
 
+
 /**
- * @brief Handles the export command for environment variables.
+ * @brief Handles the 'export' command in the minishell.
  *
- * Prints all variables if no arguments. Otherwise, parses and updates
- * each argument as an environment variable.
+ * This function provides behavior consistent with a standard shell's 'export'
+ * command, handling argument parsing, variable validation, updating the
+ * environment, and setting the correct exit status. It also ensures proper
+ * memory management.
  *
- * @param argv Array of export arguments.
- * @param env Pointer to environment variable list.
+ * @param shell Pointer to the shell structure (for last_exit_status).
+ * @param argv Array of command-line arguments for 'export'.
+ * @param env Pointer to the head of the environment variables linked list.
  */
-void	do_export(char **argv, t_env **env)
+void	do_export(t_shell *shell, char **argv, t_env **env)
 {
 	int		i;
 	char	*key;
 	char	*val;
 	char	*tmp;
+	bool	any_invalid_arg;
 
+	any_invalid_arg = false;
 	if (!argv[1])
 	{
 		print_all_env_vars(*env);
+		shell->last_exit_status = 0;
 		return ;
 	}
 	i = 1;
@@ -115,27 +122,40 @@ void	do_export(char **argv, t_env **env)
 	{
 		tmp = cf_strdup(argv[i]);
 		if (!tmp)
+		{
+			perror("minishell: export: memory allocation error");
+			shell->last_exit_status = 1;
 			return ;
+		}
 		if (parse_export_argument(tmp, &key, &val))
 		{
-			// Случай: export VAR=value
-			update_or_add_env_var(env, key, val);
+			if (is_valid_var_name(key))
+				update_or_add_env_var(env, key, val);
+			else
+			{
+				ft_putstr_fd("Billyshell: export: not a valid identifier\n", 2);
+				any_invalid_arg = true;
+			}
 		}
 		else
 		{
-			// Случай: export VAR (без знака равенства)
-			// Проверяем, что это валидное имя переменной
 			if (is_valid_var_name(argv[i]))
 			{
 				update_or_add_env_var(env, argv[i], "");
 			}
 			else
 			{
-				printf(BOLDRED"export: invalid format: %s\n"RESET, argv[i]);
+				ft_putstr_fd("Billyshell: export: not a valid identifier\n", 2);
+				any_invalid_arg = true;
 			}
 		}
+		cf_free_one(tmp);
 		i++;
 	}
+	if (any_invalid_arg)
+		shell->last_exit_status = 1;
+	else
+		shell->last_exit_status = 0;
 }
 
 /**

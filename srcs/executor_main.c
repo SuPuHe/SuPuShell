@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_main.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:25:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 11:25:04 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/04 13:02:31 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,20 +85,18 @@ int	execute_external_command(t_input *command, t_shell *shell)
  */
 int	execute_builtin_command(t_input *command, t_shell *shell)
 {
-	int	last_status;
-
-	last_status = 0;
+	shell->last_exit_status = 0;
 	if (ft_strncmp(command->args[0], "cd", 3) == 0)
 		do_cd(command->args, &shell->env);
 	else if (ft_strncmp(command->args[0], "export", 7) == 0)
-		do_export(command->args, &shell->env);
+		do_export(shell, command->args, &shell->env);
 	else if (ft_strncmp(command->args[0], "unset", 6) == 0)
 		do_unset(command->args, &shell->env);
 	else if (ft_strncmp(command->args[0], "exit", 5) == 0)
 	{
 		shell->should_exit = 1;
-		last_status = last_status_assign(command, shell);
-		return (last_status);
+		shell->last_exit_status = last_status_assign(command, shell);
+		return (shell->last_exit_status);
 	}
 	else if (ft_strncmp(command->args[0], "echo", 5) == 0)
 		do_echo(command->args);
@@ -107,8 +105,8 @@ int	execute_builtin_command(t_input *command, t_shell *shell)
 	else if (ft_strncmp(command->args[0], "pwd", 4) == 0)
 		do_pwd();
 	else if (ft_strncmp(command->args[0], ":", 2) == 0)
-		last_status = 0;
-	return (last_status);
+		shell->last_exit_status = 0;
+	return (shell->last_exit_status);
 }
 
 /**
