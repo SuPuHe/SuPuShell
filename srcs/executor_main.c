@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_main.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:25:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/04 13:13:39 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/04 14:53:52 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ int	execute_builtin_command(t_input *command, t_shell *shell)
 	else if (ft_strncmp(command->args[0], "echo", 5) == 0)
 		do_echo(command->args);
 	else if (ft_strncmp(command->args[0], "env", 4) == 0)
-		do_env(shell->env);
+		do_env(shell->env, command->args);
 	else if (ft_strncmp(command->args[0], "pwd", 4) == 0)
 		do_pwd();
 	else if (ft_strncmp(command->args[0], ":", 2) == 0)

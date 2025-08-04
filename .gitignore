@@ -43,3 +43,4 @@ test_shell
 out.txt
 *.supp
 to_do
+*txt
