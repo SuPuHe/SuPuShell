@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenizer_handlers.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:01:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/04 17:38:14 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/05 16:41:58 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ char	*extract_non_quoted_word(const char *line, int *i)
 			(*i) += 2;
 			while (line[*i] && line[*i] != quote_char)
 				(*i)++;
-			if (line[*i] == quote_char) 
+			if (line[*i] == quote_char)
 				(*i)++;
 	}
 	else
