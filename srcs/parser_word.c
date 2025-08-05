@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/01 15:37:14 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/05 17:14:53 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,10 @@ void	handle_regular_word(t_input *input, char *expanded_value)
 		cf_free_one(expanded_value);
 	}
 	else
+	{
+		input->args = append_arg(input->args, "\0");
 		cf_free_one(expanded_value);
+	}
 }
 
 /**
