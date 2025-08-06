@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands_second_part.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/04 14:53:52 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/06 13:34:24 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,14 +59,16 @@ void	run_external_command(char **argv, t_env *env)
 {
 	char	*path;
 	char	**envp;
+	char	*cur_dir;
 
 	envp = build_envp(env);
-	if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
+	cur_dir = get_env_value(env, "PWD");
+	if (ft_strcmp(cur_dir, "/usr/bin") == 0)
+		path = argv[0];
+	else if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
 		path = argv[0];
 	else
-	{
 		path = search_path(argv[0], env);
-	}
 	if (!path || access(path, X_OK) != 0)
 	{
 		print_error(argv[0]);
