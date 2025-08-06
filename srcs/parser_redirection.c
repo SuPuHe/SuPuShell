@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/01 16:12:09 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:16:56 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,14 @@ char	*expand_filename_token(t_token *filename_token,
  * @param input Pointer to the input structure.
  * @param filename_token Pointer to the heredoc delimiter token.
  */
-void	handle_heredoc_redirection(t_input *input, t_token *filename_token)
+void handle_heredoc_redirection(t_input *input, t_token *filename_token)
 {
-	char	**new_delimiters;
-	int		i;
+	char **new_delimiters;
+	int i;
+
+	// Если уже есть делимитер, не добавляем новый
+	if (input->heredoc_count > 0)
+		return;
 
 	if (!input->heredoc_delimiters)
 	{
@@ -145,74 +149,51 @@ bool	handle_redirection_token(t_input *input,
  * @param input Pointer to the input structure.
  * @return true on success, false on error.
  */
-bool	handle_heredoc(t_input *input)
+bool handle_heredoc(t_input *input)
 {
+	// Если heredoc уже обработан, просто возвращаем true
+	if (input->heredoc_processed)
+		return true;
+
 	char	*line;
 	int		fd;
 	char	*filename;
-	int		i;
-	int		delimiter_count;
-	int		*delimiter_matched;
+	char	*num_str;
 
-	filename = "/tmp/.minishell_heredoc";
+	num_str = ft_itoa(0);
+	filename = ft_strjoin("/tmp/.minishell_heredoc_", num_str);
+	cf_free_one(num_str);
+
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
-		return (perror("heredoc file"), false);
-
-	// Инициализируем массив для отслеживания совпадений разделителей
-	delimiter_matched = cf_malloc(sizeof(int) * input->heredoc_count);
-	i = 0;
-	while (i < input->heredoc_count)
 	{
-		delimiter_matched[i] = 0;
-		i++;
+		perror("heredoc file");
+		cf_free_one(filename);
+		return (false);
 	}
 
 	while (1)
 	{
 		line = readline("> ");
-		if (!line)
-			break ;
-
-		// Проверяем каждый разделитель
-		i = 0;
-		while (i < input->heredoc_count)
+		if (!line || ft_strcmp(line, input->heredoc_delimiters[0]) == 0)
 		{
-			if (ft_strcmp(line, input->heredoc_delimiters[i]) == 0)
-			{
-				delimiter_matched[i]++;
-				break ;
-			}
-			i++;
+			cf_free_one(line);
+			break;
 		}
-
-		// Проверяем, все ли разделители были найдены нужное количество раз
-		delimiter_count = 0;
-		i = 0;
-		while (i < input->heredoc_count)
-		{
-			delimiter_count += delimiter_matched[i];
-			i++;
-		}
-
-		// Если все разделители найдены, завершаем
-		if (delimiter_count >= input->heredoc_count)
-		{
-			free(line);
-			break ;
-		}
-
 		write(fd, line, ft_strlen(line));
 		write(fd, "\n", 1);
-		free(line);
+		cf_free_one(line);
 	}
 
-	cf_free_one(delimiter_matched);
 	close(fd);
-	input->infile = cf_strdup(filename);
+
+	if (input->infile)
+		cf_free_one(input->infile);
+	input->infile = filename;
+	input->heredoc_processed = true;  // Помечаем как обработанный
+
 	return (true);
 }
-
 /**
  * @brief Frees heredoc delimiters array.
  *
