@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:08:27 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 13:07:12 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/06 17:04:03 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
 	input->env = env;
 	input->syntax_ok = true;
 	input->shell = shell;
+	input->heredoc_processed = false;
 }
 
 /**
