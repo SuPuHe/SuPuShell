@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/06 13:34:24 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/07 10:08:11 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,12 @@ void	print_error(char *argv)
 
 int	return_exit_code(char *path)
 {
-	if (path && access(path, X_OK) != 0)
+	if (!path)
+	{
+		write(2, ": command not found\n"RESET, 25);
+		return (127);
+	}
+	else if (access(path, F_OK) == 0 && access(path, X_OK) != 0)
 	{
 		write(2, ": permission denied\n"RESET, 25);
 		return (126);
