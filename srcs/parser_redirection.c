@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/07 15:53:58 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/07 16:33:22 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,31 +42,50 @@ char	*expand_filename_token(t_token *filename_token,
  */
 void handle_heredoc_redirection(t_input *input, t_token *filename_token)
 {
-	char **new_delimiters;
-	int i;
+	char	**new_delimiters;
+	bool	*new_quoted;
+	int		i;
+	char	*raw = filename_token->value;
+	char	*cleaned_delimiter;
+	bool	quoted = false;
 
-	// Если уже есть делимитер, не добавляем новый
-	if (input->heredoc_count > 0)
-		return;
+	// Определяем, был ли токен в кавычках
+	if (filename_token->type == TOKEN_SINGLE_QUOTE_WORD || filename_token->type == TOKEN_DOUBLE_QUOTE_WORD)
+		quoted = true;
 
+	// Убираем кавычки из значения токена (если нужно)
+	if (quoted)
+		cleaned_delimiter = cf_strdup(raw); // значение уже без кавычек, если tokenizer так сделал
+	else
+		cleaned_delimiter = cf_strdup(raw);
+
+	// Расширяем массивы: heredoc_delimiters и heredoc_is_quoted
 	if (!input->heredoc_delimiters)
 	{
 		input->heredoc_delimiters = cf_malloc(sizeof(char *) * 2);
+		input->heredoc_is_quoted = cf_malloc(sizeof(bool) * 2);
 		input->heredoc_count = 0;
 	}
 	else
 	{
 		new_delimiters = cf_malloc(sizeof(char *) * (input->heredoc_count + 2));
+		new_quoted = cf_malloc(sizeof(bool) * (input->heredoc_count + 2));
 		i = 0;
 		while (i < input->heredoc_count)
 		{
 			new_delimiters[i] = input->heredoc_delimiters[i];
+			new_quoted[i] = input->heredoc_is_quoted[i];
 			i++;
 		}
 		cf_free_one(input->heredoc_delimiters);
+		cf_free_one(input->heredoc_is_quoted);
 		input->heredoc_delimiters = new_delimiters;
+		input->heredoc_is_quoted = new_quoted;
 	}
-	input->heredoc_delimiters[input->heredoc_count] = cf_strdup(filename_token->value);
+
+	// Добавляем delimiter и флаг
+	input->heredoc_delimiters[input->heredoc_count] = cleaned_delimiter;
+	input->heredoc_is_quoted[input->heredoc_count] = quoted;
 	input->heredoc_delimiters[input->heredoc_count + 1] = NULL;
 	input->heredoc_count++;
 }
@@ -144,6 +163,7 @@ void	heredoc_child_process(t_input *input, char *filename)
 {
 	char	*line;
 	int		fd;
+	char	*expanded;
 
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
@@ -160,9 +180,19 @@ void	heredoc_child_process(t_input *input, char *filename)
 			cf_free_one(line);
 			break ;
 		}
-		write(fd, line, ft_strlen(line));
-		write(fd, "\n", 1);
-		cf_free_one(line);
+		if (!input->heredoc_is_quoted[0])
+		{
+			expanded = expand_string_variables(line, input->env, input->shell);
+			write(fd, expanded, ft_strlen(expanded));
+			write(fd, "\n", 1);
+			cf_free_one(expanded);
+		}
+		else
+		{
+			// Если quoted, просто записываем строку без расширения
+			write(fd, line, ft_strlen(line));
+			write(fd, "\n", 1);
+		}
 	}
 	close(fd);
 }
@@ -237,6 +267,11 @@ void	free_heredoc_delimiters(t_input *input)
 		}
 		cf_free_one(input->heredoc_delimiters);
 		input->heredoc_delimiters = NULL;
-		input->heredoc_count = 0;
 	}
+	if (input->heredoc_is_quoted)
+	{
+		cf_free_one(input->heredoc_is_quoted);
+		input->heredoc_is_quoted = NULL;
+	}
+	input->heredoc_count = 0;
 }
