@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:02:06 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/01 15:03:32 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/07 13:59:38 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,8 +124,8 @@ int	check_for_input(char *line)
 	if (!process_line_for_syntax_errors(line, &check, &in_squote, &in_dquote))
 		return (0);
 	if ((check.d_quot % 2 != 0 || check.s_quot % 2 != 0))
-		return (printf("Error input: Unclosed quotes\n"), 0);
+		return (ft_putstr_fd("Error input: Unclosed quotes\n", 2), 0);
 	if (check.r_par != check.l_par)
-		return (printf("Error input: Unbalanced parentheses\n"), 0);
+		return (ft_putstr_fd("Error input: Unbalanced parentheses\n", 2), 0);
 	return (1);
 }
