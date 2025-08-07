@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/07 11:33:53 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/07 15:53:58 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,6 +140,33 @@ bool	handle_redirection_token(t_input *input,
 	return (*current_tokens = (*current_tokens)->next, true);
 }
 
+void	heredoc_child_process(t_input *input, char *filename)
+{
+	char	*line;
+	int		fd;
+
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0)
+	{
+		perror("heredoc file");
+		exit(1);
+	}
+
+	while (1)
+	{
+		line = readline("> ");
+		if (!line || ft_strcmp(line, input->heredoc_delimiters[0]) == 0)
+		{
+			cf_free_one(line);
+			break ;
+		}
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
+		cf_free_one(line);
+	}
+	close(fd);
+}
+
 /**
  * @brief Handles heredoc input, writing lines to a temporary file.
  *
@@ -149,51 +176,46 @@ bool	handle_redirection_token(t_input *input,
  * @param input Pointer to the input structure.
  * @return true on success, false on error.
  */
-bool handle_heredoc(t_input *input)
+bool	handle_heredoc(t_input *input)
 {
-	// Если heredoc уже обработан, просто возвращаем true
 	if (input->heredoc_processed)
-		return true;
+		return (true);
 
-	char	*line;
-	int		fd;
 	char	*filename;
 	char	*num_str;
+	pid_t	pid;
+	int		status;
 
 	num_str = ft_itoa(0);
 	filename = ft_strjoin("/tmp/.minishell_heredoc_", num_str);
 	cf_free_one(num_str);
 
-	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
+	pid = fork();
+	if (pid == 0)
 	{
-		perror("heredoc file");
-		cf_free_one(filename);
-		return (false);
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		heredoc_child_process(input, filename);  // child only
+		exit(0);
 	}
-
-	while (1)
+	else
 	{
-		line = readline("> ");
-		if (!line || ft_strcmp(line, input->heredoc_delimiters[0]) == 0)
+		waitpid(pid, &status, 0);
+		if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
 		{
-			cf_free_one(line);
-			break;
+			unlink(filename);
+			cf_free_one(filename);
+			g_sigint_exit_status = 130;
+			return (false);  // heredoc aborted
 		}
-		write(fd, line, ft_strlen(line));
-		write(fd, "\n", 1);
-		cf_free_one(line);
+		if (input->infile)
+			cf_free_one(input->infile);
+		input->infile = filename;
+		input->heredoc_processed = true;
+		return (true);
 	}
-
-	close(fd);
-
-	if (input->infile)
-		cf_free_one(input->infile);
-	input->infile = filename;
-	input->heredoc_processed = true;  // Помечаем как обработанный
-
-	return (true);
 }
+
 /**
  * @brief Frees heredoc delimiters array.
  *

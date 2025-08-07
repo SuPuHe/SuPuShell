@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:07:36 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/05 17:18:48 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/07 15:37:57 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,11 @@ static char	*read_shell_input(t_shell *shell)
 	if (g_sigint_exit_status == 1)
 	{
 		shell->last_exit_status = 1;
+		g_sigint_exit_status = 0;
+	}
+	else if (g_sigint_exit_status == 130)
+	{
+		shell->last_exit_status = 0;
 		g_sigint_exit_status = 0;
 	}
 	return (line);
