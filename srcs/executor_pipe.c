@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_pipe.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:29:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/06 17:02:41 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/07 11:13:02 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,29 @@ void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd)
 	exit(status);
 }
 
+
+bool handle_heredocs_in_pipeline(t_ast_node *node)
+{
+	if (!node)
+		return true;
+
+	// Base case: If we're at a command node with heredocs, handle them
+	if (node->type == NODE_CMD && node->command->heredoc_count > 0)
+	{
+		if (!handle_heredoc(node->command))
+			return false;
+	}
+	// Recursive calls for pipe nodes
+	else if (node->type == NODE_PIPE)
+	{
+		if (!handle_heredocs_in_pipeline(node->left))
+			return false;
+		if (!handle_heredocs_in_pipeline(node->right))
+			return false;
+	}
+	return true;
+}
+
 /**
  * @brief Executes a pipe AST node, connecting left and right children.
  *
@@ -75,99 +98,89 @@ void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd)
 int execute_pipe_node(t_ast_node *node, t_shell *shell)
 {
 	int		pipefd[2];
-	pid_t	left_pid;
-	pid_t	right_pid;
+	pid_t	pid;
 	int		status;
-	int		last_status;
-	int		heredoc_fd = -1;
-	bool	has_heredoc = false;
-	bool	is_last_command = true;  // Добавляем флаг для последней команды
+	int		pipe_in_fd; // Stores the read end of the previous pipe
 
-	// Проверяем, является ли правая часть последней командой в пайплайне
-	if (node->right && node->right->type == NODE_PIPE)
-		is_last_command = false;
-
-	// Проверяем наличие heredoc
-	if (node->right && node->right->type == NODE_CMD &&
-		node->right->command && node->right->command->heredoc_count > 0)
-	{
-		has_heredoc = true;
-		if (!handle_heredoc(node->right->command))
-			return 1;
-		// Открываем heredoc файл для чтения только если это последняя команда
-		if (is_last_command && node->right->command->infile)
-			heredoc_fd = open(node->right->command->infile, O_RDONLY);
-	}
-
-	last_status = 0;
-	if (pipe(pipefd) == -1)
-	{
-		if (heredoc_fd != -1)
-			close(heredoc_fd);
-		perror("pipe");
+	// This function handles all heredocs for the entire pipeline at once
+	if (!handle_heredocs_in_pipeline(node))
 		return 1;
-	}
 
-	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
+	pipe_in_fd = STDIN_FILENO;
 
-	// Создаем левый процесс всегда, если это не последняя команда с heredoc
-	if (!has_heredoc || !is_last_command)
+	while (node && node->type == NODE_PIPE)
 	{
-		left_pid = fork();
-		if (left_pid == 0)
+		if (pipe(pipefd) == -1)
 		{
-			if (heredoc_fd != -1)
-				close(heredoc_fd);
+			perror("pipe");
+			return 1;
+		}
+
+		pid = fork();
+		if (pid == -1)
+		{
+			perror("fork");
 			close(pipefd[0]);
+			close(pipefd[1]);
+			return 1;
+		}
+		else if (pid == 0) // Child process for the left command
+		{
+			close(pipefd[0]); // Child will not read from this pipe
+
+			// Set stdin: pipe from the previous command or the original stdin
+			dup2(pipe_in_fd, STDIN_FILENO);
+			if (pipe_in_fd != STDIN_FILENO)
+				close(pipe_in_fd);
+
+			// Set stdout: pipe to the next command
 			dup2(pipefd[1], STDOUT_FILENO);
 			close(pipefd[1]);
-			status = execute_node(node->left, shell);
-			exit(status);
+
+			// Execute the left command
+			exit(execute_node(node->left, shell));
 		}
+
+		// Parent process
+		close(pipefd[1]); // Parent will not write to this pipe
+		if (pipe_in_fd != STDIN_FILENO)
+			close(pipe_in_fd);
+		pipe_in_fd = pipefd[0]; // The read end of this pipe becomes the input for the next command
+		node = node->right; // Move to the next command in the pipeline
 	}
 
-	// Создаем правый процесс
-	right_pid = fork();
-	if (right_pid == 0)
+	// Now execute the last command in the pipeline
+	pid = fork();
+	if (pid == -1)
 	{
-		close(pipefd[1]);
+		perror("fork");
+		if (pipe_in_fd != STDIN_FILENO)
+			close(pipe_in_fd);
+		return 1;
+	}
+	else if (pid == 0) // Child process for the last command
+	{
+		// Set stdin: pipe from the previous command or the original stdin
+		dup2(pipe_in_fd, STDIN_FILENO);
+		if (pipe_in_fd != STDIN_FILENO)
+			close(pipe_in_fd);
 
-		// Если это последняя команда и есть heredoc, используем его
-		if (is_last_command && has_heredoc && heredoc_fd != -1)
-		{
-			dup2(heredoc_fd, STDIN_FILENO);
-			close(heredoc_fd);
-			close(pipefd[0]);
-		}
-		else
-		{
-			// Иначе читаем из пайпа
-			dup2(pipefd[0], STDIN_FILENO);
-			close(pipefd[0]);
-		}
-
-		status = execute_node(node->right, shell);
-		exit(status);
+		// This is the key: `execute_node` will now handle heredocs/redirections
+		// for the last command, and they will take precedence over the pipe input
+		exit(execute_node(node, shell));
 	}
 
-	// Закрываем дескрипторы в родителе
-	if (heredoc_fd != -1)
-		close(heredoc_fd);
-	close(pipefd[0]);
-	close(pipefd[1]);
-
-	// Ждем завершения процессов
-	if (!has_heredoc || !is_last_command)
-		waitpid(left_pid, &status, 0);
-	waitpid(right_pid, &status, 0);
+	// Parent process waits for all children and cleans up
+	if (pipe_in_fd != STDIN_FILENO)
+		close(pipe_in_fd);
+	waitpid(pid, &status, 0);
 
 	if (WIFEXITED(status))
-		last_status = WEXITSTATUS(status);
+		return WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
-		last_status = 128 + WTERMSIG(status);
+		return 128 + WTERMSIG(status);
 
-	return last_status;
+	return 1;
 }
 //❌ 185
 //before ❌ 192
