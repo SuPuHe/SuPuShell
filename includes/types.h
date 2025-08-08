@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:12:44 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/07 16:15:25 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/08 16:21:32 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,9 @@ typedef struct s_input
 	t_env		*env;
 	char		**args;
 	bool		syntax_ok;
+	char		**all_outfiles;
+	bool		*all_outfiles_append_flags;
+	int			outfiles_count;
 	char		*infile;
 	char		*outfile;
 	bool		append;
