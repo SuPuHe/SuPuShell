@@ -3,14 +3,56 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/08 11:09:08 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/08 13:34:15 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+// Объединяет подряд идущие токены типов WORD, SINGLE_QUOTE_WORD, DOUBLE_QUOTE_WORD,
+// начиная с текущего токена, возвращает строку и новый указатель на токен после delimiter
+// Возвращает NULL, если не удалось
+char	*collect_heredoc_delimiter(t_list **current_tokens, bool *quoted)
+{
+	t_token	*tok;
+	char	*result;
+	char	*tmp;
+	bool	has_quotes;
+
+	if (!current_tokens || !*current_tokens)
+		return (NULL);
+	result = NULL;
+	has_quotes = false;
+	while (*current_tokens)
+	{
+		tok = (t_token *)(*current_tokens)->content;
+		if (!tok || tok->type == TOKEN_WORD
+			|| tok->type == TOKEN_SINGLE_QUOTE_WORD
+			|| tok->type == TOKEN_DOUBLE_QUOTE_WORD)
+		{
+			if (tok->type == TOKEN_SINGLE_QUOTE_WORD
+				|| tok->type == TOKEN_DOUBLE_QUOTE_WORD)
+				has_quotes = true;
+			tmp = result;
+			if (!result)
+				result = cf_strdup(tok->value);
+			else
+				result = ft_strjoin(result, tok->value);
+			if (tmp)
+				cf_free_one(tmp);
+			*current_tokens = (*current_tokens)->next;
+		}
+		else
+			break ;
+	}
+	*quoted = has_quotes;
+	return (result);
+}
+
+
 
 /**
  * @brief Expands a filename token, handling quotes and variables.
@@ -40,26 +82,13 @@ char	*expand_filename_token(t_token *filename_token,
  * @param input Pointer to the input structure.
  * @param filename_token Pointer to the heredoc delimiter token.
  */
-void handle_heredoc_redirection(t_input *input, t_token *filename_token)
+void	handle_heredoc_redirection_with_delimiter(
+	t_input *input, char *delimiter, bool quoted)
 {
-	char	**new_delimiters;
+	char	**new_delims;
 	bool	*new_quoted;
 	int		i;
-	char	*raw = filename_token->value;
-	char	*cleaned_delimiter;
-	bool	quoted = false;
 
-	// Определяем, был ли токен в кавычках
-	if (filename_token->type == TOKEN_SINGLE_QUOTE_WORD || filename_token->type == TOKEN_DOUBLE_QUOTE_WORD)
-		quoted = true;
-
-	// Убираем кавычки из значения токена (если нужно)
-	if (quoted)
-		cleaned_delimiter = cf_strdup(raw); // значение уже без кавычек, если tokenizer так сделал
-	else
-		cleaned_delimiter = cf_strdup(raw);
-
-	// Расширяем массивы: heredoc_delimiters и heredoc_is_quoted
 	if (!input->heredoc_delimiters)
 	{
 		input->heredoc_delimiters = cf_malloc(sizeof(char *) * 2);
@@ -68,26 +97,24 @@ void handle_heredoc_redirection(t_input *input, t_token *filename_token)
 	}
 	else
 	{
-		new_delimiters = cf_malloc(sizeof(char *) * (input->heredoc_count + 2));
+		new_delims = cf_malloc(sizeof(char *) * (input->heredoc_count + 2));
 		new_quoted = cf_malloc(sizeof(bool) * (input->heredoc_count + 2));
 		i = 0;
 		while (i < input->heredoc_count)
 		{
-			new_delimiters[i] = input->heredoc_delimiters[i];
+			new_delims[i] = input->heredoc_delimiters[i];
 			new_quoted[i] = input->heredoc_is_quoted[i];
 			i++;
 		}
 		cf_free_one(input->heredoc_delimiters);
 		cf_free_one(input->heredoc_is_quoted);
-		input->heredoc_delimiters = new_delimiters;
+		input->heredoc_delimiters = new_delims;
 		input->heredoc_is_quoted = new_quoted;
 	}
-
-	// Добавляем delimiter и флаг
-	input->heredoc_delimiters[input->heredoc_count] = cleaned_delimiter;
+	input->heredoc_delimiters[input->heredoc_count] = delimiter;
 	input->heredoc_is_quoted[input->heredoc_count] = quoted;
-	input->heredoc_delimiters[input->heredoc_count + 1] = NULL;
 	input->heredoc_count++;
+	input->heredoc_delimiters[input->heredoc_count] = NULL;
 }
 
 /**
@@ -101,15 +128,29 @@ void handle_heredoc_redirection(t_input *input, t_token *filename_token)
  * @param input Pointer to the input structure to update the syntax flag.
  * @return true if the next token is valid, false otherwise.
  */
+// bool	validate_redirection_tokens(t_list **current_tokens, t_input *input)
+// {
+// 	*current_tokens = (*current_tokens)->next;
+// 	if (!*current_tokens || !(*current_tokens)->content)
+// 	{
+// 		write(2, "Error: Missing file after redirection token.\n", 46);
+// 		input->syntax_ok = false;
+// 		return (false);
+// 	}
+// 	return (true);
+// }
 bool	validate_redirection_tokens(t_list **current_tokens, t_input *input)
 {
-	*current_tokens = (*current_tokens)->next;
-	if (!*current_tokens || !(*current_tokens)->content)
-	{
-		write(2, "Error: Missing file after redirection token.\n", 46);
-		input->syntax_ok = false;
-		return (false);
-	}
+	t_token	*tok;
+
+	if (!*current_tokens || !(*current_tokens)->next)
+		return (input->syntax_ok = false, false);
+	tok = (t_token *)(*current_tokens)->next->content;
+	// Разрешаем, чтобы после heredoc шел ещё heredoc
+	if (tok->type == TOKEN_REDIR_OUT || tok->type == TOKEN_REDIR_IN
+		|| tok->type == TOKEN_REDIR_APPEND || tok->type == TOKEN_HEREDOC
+		|| !tok->value)
+		return (input->syntax_ok = false, false);
 	return (true);
 }
 
@@ -135,31 +176,47 @@ bool	handle_redirection_token(t_input *input,
 	t_list **current_tokens, t_env *env, t_shell *shell)
 {
 	t_token			*current_tok;
-	t_token			*filename_token;
 	t_token_type	redir_type;
+	char			*delimiter;
+	bool			quoted;
+	t_token			*filename_token;
 	char			*expanded_value;
 
-	current_tok = (t_token *)(*current_tokens)->content;
-	redir_type = current_tok->type;
 	if (!validate_redirection_tokens(current_tokens, input))
 		return (false);
+	current_tok = (t_token *)(*current_tokens)->content;
+	redir_type = current_tok->type;
+
+	// Сдвигаем на токен после символа редиректа
+	*current_tokens = (*current_tokens)->next;
+
+	if (redir_type == TOKEN_HEREDOC)
+	{
+		delimiter = collect_heredoc_delimiter(current_tokens, &quoted);
+		if (!delimiter)
+			return (false);
+		handle_heredoc_redirection_with_delimiter(input, delimiter, quoted);
+		// Здесь больше НЕ двигаем *current_tokens — функция уже сделала это
+		return (true);
+	}
+
 	filename_token = (t_token *)(*current_tokens)->content;
 	if (!filename_token || !filename_token->value)
 		return (input->syntax_ok = false, false);
-	if (redir_type == TOKEN_HEREDOC)
-		handle_heredoc_redirection(input, filename_token);
-	else
-	{
-		expanded_value = expand_filename_token(filename_token, env, shell);
-		if (redir_type == TOKEN_REDIR_OUT || redir_type == TOKEN_REDIR_APPEND)
-			apply_output_redirection(input, redir_type, expanded_value);
-		else if (redir_type == TOKEN_REDIR_IN)
-			apply_input_redirection(input, expanded_value);
-	}
-	return (*current_tokens = (*current_tokens)->next, true);
+
+	expanded_value = expand_filename_token(filename_token, env, shell);
+	if (redir_type == TOKEN_REDIR_OUT || redir_type == TOKEN_REDIR_APPEND)
+		apply_output_redirection(input, redir_type, expanded_value);
+	else if (redir_type == TOKEN_REDIR_IN)
+		apply_input_redirection(input, expanded_value);
+
+	*current_tokens = (*current_tokens)->next; // съедаем токен с именем файла
+	return (true);
 }
 
-void	heredoc_child_process(t_input *input, char *filename)
+
+
+void	heredoc_child_process(t_input *input, char *filename, int index)
 {
 	char	*line;
 	int		fd;
@@ -171,30 +228,27 @@ void	heredoc_child_process(t_input *input, char *filename)
 		perror("heredoc file");
 		exit(1);
 	}
-
 	while (1)
 	{
 		line = readline("> ");
-		if (!line || ft_strcmp(line, input->heredoc_delimiters[0]) == 0)
+		if (!line || ft_strcmp(line, input->heredoc_delimiters[index]) == 0)
 		{
-			free(line);
+			cf_free_one(line);
 			break ;
 		}
-		else if (!input->heredoc_is_quoted[0])
+		if (!input->heredoc_is_quoted[index])
 		{
 			expanded = expand_string_variables(line, input->env, input->shell);
 			write(fd, expanded, ft_strlen(expanded));
 			write(fd, "\n", 1);
 			cf_free_one(expanded);
-			free(line);
 		}
 		else
 		{
-			// Если quoted, просто записываем строку без расширения
 			write(fd, line, ft_strlen(line));
 			write(fd, "\n", 1);
-			free(line);
 		}
+		cf_free_one(line);
 	}
 	close(fd);
 }
@@ -210,41 +264,46 @@ void	heredoc_child_process(t_input *input, char *filename)
  */
 bool	handle_heredoc(t_input *input)
 {
-	if (input->heredoc_processed)
-		return (true);
-
+	int		i;
+	char	*num_str;
 	char	*filename;
 	pid_t	pid;
 	int		status;
 
-	filename = "/tmp/.minishell_heredoc";
-
-	pid = fork();
-	if (pid == 0)
-	{
-		signal(SIGINT, SIG_DFL);
-		signal(SIGQUIT, SIG_DFL);
-		heredoc_child_process(input, filename);
-		rl_clear_history();
-		cf_free_all();
-		exit(0);
-	}
-	else
-	{
-		waitpid(pid, &status, 0);
-		if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
-		{
-			unlink(filename);
-			cf_free_one(filename);
-			g_sigint_exit_status = 130;
-			return (false);  // heredoc aborted
-		}
-		if (input->infile)
-			cf_free_one(input->infile);
-		input->infile = filename;
-		input->heredoc_processed = true;
+	if (input->heredoc_processed)
 		return (true);
+	i = 0;
+	while (i < input->heredoc_count)
+	{
+		num_str = ft_itoa(i);
+		filename = ft_strjoin("/tmp/.minishell_heredoc_", num_str);
+		cf_free_one(num_str);
+		pid = fork();
+		if (pid == 0)
+		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
+			heredoc_child_process(input, filename, i);
+			exit(0);
+		}
+		else
+		{
+			waitpid(pid, &status, 0);
+			if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+			{
+				unlink(filename);
+				cf_free_one(filename);
+				g_sigint_exit_status = 130;
+				return (false);
+			}
+			if (input->infile)
+				cf_free_one(input->infile);
+			input->infile = filename;
+		}
+		i++;
 	}
+	input->heredoc_processed = true;
+	return (true);
 }
 
 /**
