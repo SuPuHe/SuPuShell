@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/07 16:33:22 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/08 11:09:08 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,21 +177,23 @@ void	heredoc_child_process(t_input *input, char *filename)
 		line = readline("> ");
 		if (!line || ft_strcmp(line, input->heredoc_delimiters[0]) == 0)
 		{
-			cf_free_one(line);
+			free(line);
 			break ;
 		}
-		if (!input->heredoc_is_quoted[0])
+		else if (!input->heredoc_is_quoted[0])
 		{
 			expanded = expand_string_variables(line, input->env, input->shell);
 			write(fd, expanded, ft_strlen(expanded));
 			write(fd, "\n", 1);
 			cf_free_one(expanded);
+			free(line);
 		}
 		else
 		{
 			// Если quoted, просто записываем строку без расширения
 			write(fd, line, ft_strlen(line));
 			write(fd, "\n", 1);
+			free(line);
 		}
 	}
 	close(fd);
@@ -212,20 +214,19 @@ bool	handle_heredoc(t_input *input)
 		return (true);
 
 	char	*filename;
-	char	*num_str;
 	pid_t	pid;
 	int		status;
 
-	num_str = ft_itoa(0);
-	filename = ft_strjoin("/tmp/.minishell_heredoc_", num_str);
-	cf_free_one(num_str);
+	filename = "/tmp/.minishell_heredoc";
 
 	pid = fork();
 	if (pid == 0)
 	{
 		signal(SIGINT, SIG_DFL);
 		signal(SIGQUIT, SIG_DFL);
-		heredoc_child_process(input, filename);  // child only
+		heredoc_child_process(input, filename);
+		rl_clear_history();
+		cf_free_all();
 		exit(0);
 	}
 	else

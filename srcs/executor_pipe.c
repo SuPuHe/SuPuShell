@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:29:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/07 11:13:02 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/07 17:23:34 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,10 @@ int execute_pipe_node(t_ast_node *node, t_shell *shell)
 			close(pipefd[1]);
 
 			// Execute the left command
-			exit(execute_node(node->left, shell));
+			status = execute_node(node->left, shell);
+			rl_clear_history();
+			cf_free_all();
+			exit(status);
 		}
 
 		// Parent process
@@ -167,7 +170,10 @@ int execute_pipe_node(t_ast_node *node, t_shell *shell)
 
 		// This is the key: `execute_node` will now handle heredocs/redirections
 		// for the last command, and they will take precedence over the pipe input
-		exit(execute_node(node, shell));
+		status = execute_node(node, shell);
+		rl_clear_history();
+		cf_free_all();
+		exit(status);
 	}
 
 	// Parent process waits for all children and cleans up
