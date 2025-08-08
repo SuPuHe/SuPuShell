@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection_handlers.c                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/06 17:16:13 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/08 15:45:01 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,8 @@
 void	apply_output_redirection(t_input *input,
 	t_token_type redir_type, char *expanded_value)
 {
-	int	fd;
-	int	flags;
+	// int	fd;
+	// int	flags;
 
 	if (input->outfile)
 		cf_free_one(input->outfile);
@@ -37,14 +37,14 @@ void	apply_output_redirection(t_input *input,
 		input->append = true;
 
 	// Создаем файл сразу, как это делает bash
-	flags = O_CREAT | O_WRONLY;
-	if (input->append)
-		flags |= O_APPEND;
-	else
-		flags |= O_TRUNC;
-	fd = open(expanded_value, flags, 0644);
-	if (fd >= 0)
-		close(fd);
+	// flags = O_CREAT | O_WRONLY;
+	// if (input->append)
+	// 	flags |= O_APPEND;
+	// else
+	// 	flags |= O_TRUNC;
+	// fd = open(expanded_value, flags, 0644);
+	// if (fd >= 0)
+	// 	close(fd);
 }
 
 /**
