@@ -6,11 +6,35 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/08 15:45:01 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/08 16:28:54 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void	add_outfile(t_input *input, char *filename, bool append)
+{
+	char **new_arr;
+	bool *new_flags;
+	int i;
+
+	new_arr = malloc(sizeof(char *) * (input->outfiles_count + 1));
+	new_flags = malloc(sizeof(bool) * (input->outfiles_count + 1));
+	for (i = 0; i < input->outfiles_count; i++)
+	{
+		new_arr[i] = input->all_outfiles[i];
+		new_flags[i] = input->all_outfiles_append_flags[i];
+	}
+	new_arr[input->outfiles_count] = filename;
+	new_flags[input->outfiles_count] = append;
+	if (input->all_outfiles)
+		free(input->all_outfiles);
+	if (input->all_outfiles_append_flags)
+		free(input->all_outfiles_append_flags);
+	input->all_outfiles = new_arr;
+	input->all_outfiles_append_flags = new_flags;
+	input->outfiles_count++;
+}
 
 /**
  * @brief Applies output redirection to the input structure.
@@ -22,29 +46,55 @@
  * @param redir_type Type of output redirection.
  * @param expanded_value Expanded output file name.
  */
+// void	apply_output_redirection(t_input *input,
+// 	t_token_type redir_type, char *expanded_value)
+// {
+// 	// int	fd;
+// 	// int	flags;
+
+// 	if (input->outfile)
+// 		cf_free_one(input->outfile);
+// 	input->outfile = expanded_value;
+// 	if (redir_type == TOKEN_REDIR_OUT)
+// 		input->append = false;
+// 	else if (redir_type == TOKEN_REDIR_APPEND)
+// 		input->append = true;
+
+// 	// Создаем файл сразу, как это делает bash
+// 	// flags = O_CREAT | O_WRONLY;
+// 	// if (input->append)
+// 	// 	flags |= O_APPEND;
+// 	// else
+// 	// 	flags |= O_TRUNC;
+// 	// fd = open(expanded_value, flags, 0644);
+// 	// if (fd >= 0)
+// 	// 	close(fd);
+// }
 void	apply_output_redirection(t_input *input,
 	t_token_type redir_type, char *expanded_value)
 {
-	// int	fd;
-	// int	flags;
+	int flags;
+	int fd;
+	bool append = (redir_type == TOKEN_REDIR_APPEND);
 
+	// Добавляем файл в список всех файлов вывода
+	add_outfile(input, expanded_value, append);
+
+	// Создаем файл сразу, чтобы bash-совместимо
+	flags = O_CREAT | O_WRONLY;
+	if (append)
+		flags |= O_APPEND;
+	else
+		flags |= O_TRUNC;
+	fd = open(expanded_value, flags, 0644);
+	if (fd >= 0)
+		close(fd);
+
+	// Обновляем последний активный редирект для dup2
 	if (input->outfile)
 		cf_free_one(input->outfile);
-	input->outfile = expanded_value;
-	if (redir_type == TOKEN_REDIR_OUT)
-		input->append = false;
-	else if (redir_type == TOKEN_REDIR_APPEND)
-		input->append = true;
-
-	// Создаем файл сразу, как это делает bash
-	// flags = O_CREAT | O_WRONLY;
-	// if (input->append)
-	// 	flags |= O_APPEND;
-	// else
-	// 	flags |= O_TRUNC;
-	// fd = open(expanded_value, flags, 0644);
-	// if (fd >= 0)
-	// 	close(fd);
+	input->outfile = cf_strdup(expanded_value);
+	input->append = append;
 }
 
 /**
