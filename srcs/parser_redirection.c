@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/08 13:34:15 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:01:57 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ char	*collect_heredoc_delimiter(t_list **current_tokens, bool *quoted)
 			if (!result)
 				result = cf_strdup(tok->value);
 			else
-				result = ft_strjoin(result, tok->value);
+				result = cf_strjoin(result, tok->value);
 			if (tmp)
 				cf_free_one(tmp);
 			*current_tokens = (*current_tokens)->next;
@@ -226,6 +226,8 @@ void	heredoc_child_process(t_input *input, char *filename, int index)
 	if (fd < 0)
 	{
 		perror("heredoc file");
+		rl_clear_history();
+		cf_free_all();
 		exit(1);
 	}
 	while (1)
@@ -233,7 +235,7 @@ void	heredoc_child_process(t_input *input, char *filename, int index)
 		line = readline("> ");
 		if (!line || ft_strcmp(line, input->heredoc_delimiters[index]) == 0)
 		{
-			cf_free_one(line);
+			free(line);
 			break ;
 		}
 		if (!input->heredoc_is_quoted[index])
@@ -248,7 +250,7 @@ void	heredoc_child_process(t_input *input, char *filename, int index)
 			write(fd, line, ft_strlen(line));
 			write(fd, "\n", 1);
 		}
-		cf_free_one(line);
+		free(line);
 	}
 	close(fd);
 }
@@ -275,8 +277,8 @@ bool	handle_heredoc(t_input *input)
 	i = 0;
 	while (i < input->heredoc_count)
 	{
-		num_str = ft_itoa(i);
-		filename = ft_strjoin("/tmp/.minishell_heredoc_", num_str);
+		num_str = cf_itoa(i);
+		filename = cf_strjoin("/tmp/.minishell_heredoc_", num_str);
 		cf_free_one(num_str);
 		pid = fork();
 		if (pid == 0)
@@ -284,6 +286,8 @@ bool	handle_heredoc(t_input *input)
 			signal(SIGINT, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
 			heredoc_child_process(input, filename, i);
+			rl_clear_history();
+			cf_free_all();
 			exit(0);
 		}
 		else

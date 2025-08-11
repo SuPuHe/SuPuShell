@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cf_libft.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 13:35:59 by omizin            #+#    #+#             */
-/*   Updated: 2025/07/30 18:21:31 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:02:41 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,4 +68,58 @@ t_list	*cf_lstnew(void *content)
 	node->content = content;
 	node->next = NULL;
 	return (node);
+}
+
+char	*cf_strjoin(char const *s1, char const *s2)
+{
+	char	*word;
+	size_t	len;
+
+	len = ft_strlen(s1) + ft_strlen(s2);
+	word = (char *)cf_malloc(sizeof(char) * (len + 1));
+	if (!word)
+		return ((void *)0);
+	ft_memcpy(word, s1, ft_strlen(s1));
+	ft_memcpy(word + ft_strlen(s1), s2, ft_strlen(s2));
+	word[len] = '\0';
+	return (word);
+}
+
+static size_t	itoa_len(int n)
+{
+	size_t	len;
+
+	len = 0;
+	if (n <= 0)
+		len = 1;
+	while (n)
+	{
+		n = n / 10;
+		len++;
+	}
+	return (len);
+}
+
+char	*cf_itoa(int n)
+{
+	char	*str;
+	long	num;
+	size_t	len;
+
+	num = n;
+	len = itoa_len(n);
+	str = cf_malloc(sizeof(char) * (len + 1));
+	if (!str)
+		return ((void *)0);
+	str[len] = '\0';
+	if (num < 0)
+		num = -num;
+	while (len--)
+	{
+		str[len] = (num % 10) + '0';
+		num = num / 10;
+	}
+	if (n < 0)
+		str[0] = '-';
+	return (str);
 }
