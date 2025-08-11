@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection_handlers.c                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/08 16:28:54 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/11 11:38:38 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,22 +73,22 @@ void	add_outfile(t_input *input, char *filename, bool append)
 void	apply_output_redirection(t_input *input,
 	t_token_type redir_type, char *expanded_value)
 {
-	int flags;
-	int fd;
+	//int flags;
+	//int fd;
 	bool append = (redir_type == TOKEN_REDIR_APPEND);
 
 	// Добавляем файл в список всех файлов вывода
 	add_outfile(input, expanded_value, append);
 
 	// Создаем файл сразу, чтобы bash-совместимо
-	flags = O_CREAT | O_WRONLY;
-	if (append)
-		flags |= O_APPEND;
-	else
-		flags |= O_TRUNC;
-	fd = open(expanded_value, flags, 0644);
-	if (fd >= 0)
-		close(fd);
+	// flags = O_CREAT | O_WRONLY;
+	// if (append)
+	// 	flags |= O_APPEND;
+	// else
+	// 	flags |= O_TRUNC;
+	// fd = open(expanded_value, flags, 0644);
+	// if (fd >= 0)
+	// 	close(fd);
 
 	// Обновляем последний активный редирект для dup2
 	if (input->outfile)
