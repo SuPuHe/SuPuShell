@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/12 15:53:25 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/12 16:58:27 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,39 +17,48 @@
 // Возвращает NULL, если не удалось
 char	*collect_heredoc_delimiter(t_list **current_tokens, bool *quoted)
 {
-	t_token	*tok;
-	char	*result;
-	char	*tmp;
-	bool	has_quotes;
+	t_list				*start;
+	t_list				*cur;
+	t_token				*tok;
+	t_string_builder	*sb;
+	bool				is_quoted;
 
-	if (!current_tokens || !*current_tokens)
+	if (!current_tokens || !*current_tokens || !(*current_tokens)->content)
 		return (NULL);
-	result = NULL;
-	has_quotes = false;
-	while (*current_tokens)
+
+	start = *current_tokens;
+	cur = start;
+	sb = sb_create();
+	if (!sb)
+		return (NULL);
+	is_quoted = false;
+
+	while (cur)
 	{
-		tok = (t_token *)(*current_tokens)->content;
-		if (!tok || tok->type == TOKEN_WORD
-			|| tok->type == TOKEN_SINGLE_QUOTE_WORD
-			|| tok->type == TOKEN_DOUBLE_QUOTE_WORD)
-		{
-			if (tok->type == TOKEN_SINGLE_QUOTE_WORD
-				|| tok->type == TOKEN_DOUBLE_QUOTE_WORD)
-				has_quotes = true;
-			tmp = result;
-			if (!result)
-				result = cf_strdup(tok->value);
-			else
-				result = cf_strjoin(result, tok->value);
-			if (tmp)
-				cf_free_one(tmp);
-			*current_tokens = (*current_tokens)->next;
-		}
-		else
+		tok = (t_token *)cur->content;
+		if (!tok)
 			break ;
+		/* принимаем только части delimiter'а */
+		if (tok->type != TOKEN_WORD
+			&& tok->type != TOKEN_SINGLE_QUOTE_WORD
+			&& tok->type != TOKEN_DOUBLE_QUOTE_WORD)
+			break ;
+		/* если перед этим токеном есть пробел и это не первый токен — останавливаемся */
+		if (tok->has_space && cur != start)
+			break ;
+		/* если это кавычка — помечаем quoted */
+		if (tok->type == TOKEN_SINGLE_QUOTE_WORD
+			|| tok->type == TOKEN_DOUBLE_QUOTE_WORD)
+			is_quoted = true;
+		/* добавляем значение токена в builder (token->value уже без кавычек) */
+		sb_append(sb, tok->value, false);
+		cur = cur->next;
 	}
-	*quoted = has_quotes;
-	return (result);
+
+	*quoted = is_quoted;
+	/* продвигаем current_tokens на токен после собранного delimiter'а */
+	*current_tokens = cur;
+	return (sb_build_and_destroy(sb));
 }
 
 
@@ -194,7 +203,7 @@ bool	handle_redirection_token(t_input *input,
 	{
 		delimiter = collect_heredoc_delimiter(current_tokens, &quoted);
 		if (!delimiter)
-			return (false);
+			return (input->syntax_ok = false, false);
 		handle_heredoc_redirection_with_delimiter(input, delimiter, quoted);
 		// Здесь больше НЕ двигаем *current_tokens — функция уже сделала это
 		return (true);
