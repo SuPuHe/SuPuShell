@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/11 12:01:57 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/12 15:53:25 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ char	*expand_filename_token(t_token *filename_token,
 	if (filename_token->type == TOKEN_SINGLE_QUOTE_WORD)
 		return (cf_strdup(filename_token->value));
 	else
-		return (expand_string_variables(filename_token->value, env, shell));
+		return (expand_string_variables(filename_token->value, env, shell, false));
 }
 
 /**
@@ -240,7 +240,7 @@ void	heredoc_child_process(t_input *input, char *filename, int index)
 		}
 		if (!input->heredoc_is_quoted[index])
 		{
-			expanded = expand_string_variables(line, input->env, input->shell);
+			expanded = expand_string_variables(line, input->env, input->shell, false);
 			write(fd, expanded, ft_strlen(expanded));
 			write(fd, "\n", 1);
 			cf_free_one(expanded);

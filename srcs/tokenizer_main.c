@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenizer_main.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 11:58:51 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/05 16:46:55 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:42:09 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
