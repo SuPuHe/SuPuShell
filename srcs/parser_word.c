@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/12 14:54:25 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/12 16:57:38 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void	handle_regular_word(t_input *input, char *expanded_value)
 	}
 	else if (expanded_value)
 	{
-		input->args = append_arg(input->args, "\0");
+		input->args = append_arg(input->args, cf_strdup(""));
 		cf_free_one(expanded_value);
 	}
 	else
