@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:19:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/04 17:39:30 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/12 16:43:03 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	expand_status(t_string_builder *sb, t_shell *shell, int *i)
 	char	*status_str;
 
 	status_str = ft_itoa(shell->last_exit_status);
-	sb_append(sb, status_str);
+	sb_append(sb, status_str, false);
 	free(status_str);
 	(*i)++;
 }
@@ -41,7 +41,7 @@ void	expand_status(t_string_builder *sb, t_shell *shell, int *i)
  * @param str Input string to expand.
  * @param ctx Pointer to the expansion context.
  */
-void	expand_loop(const char *str, t_expand_ctx *ctx)
+void	expand_loop(const char *str, t_expand_ctx *ctx, bool quotes)
 {
 	int	*i;
 
@@ -51,7 +51,7 @@ void	expand_loop(const char *str, t_expand_ctx *ctx)
 		if (str[*i] == '$')
 		{
 			(*i)++;
-			expand_hub(ctx);
+			expand_hub(ctx, quotes);
 		}
 		else
 		{
@@ -69,18 +69,19 @@ void	expand_loop(const char *str, t_expand_ctx *ctx)
  *
  * @param ctx Pointer to the expansion context.
  */
-void	expand_hub(t_expand_ctx *ctx)
+void	expand_hub(t_expand_ctx *ctx, bool quotes)
 {
 	char	quote_char;
 	int		literal_content_start;
 	char	*literal_content;
 
+	ctx->quotes = quotes;
 	if (ctx->str[*ctx->i] == '?')
 		expand_status(ctx->sb, ctx->shell, ctx->i);
 	else if (ft_isdigit(ctx->str[*ctx->i]))
 		expand_digit(ctx->sb, ctx->str, ctx->i);
 	else if (ctx->str[*ctx->i] == '_' || ft_isalpha(ctx->str[*ctx->i]))
-		expand_env_var(ctx->sb, ctx->str, ctx->env, ctx->i);
+		expand_env_var(ctx->sb, ctx->str, ctx->env, ctx);
 	else if (ctx->str[*ctx->i] == '\"' || ctx->str[*ctx->i] == '\'')
 	{
 		quote_char = ctx->str[*ctx->i];
@@ -89,7 +90,7 @@ void	expand_hub(t_expand_ctx *ctx)
 		while (ctx->str[*ctx->i] && ctx->str[*ctx->i] != quote_char)
 			(*ctx->i)++;
 		literal_content = cf_substr(ctx->str, literal_content_start, *ctx->i - literal_content_start);
-		sb_append(ctx->sb, literal_content);
+		sb_append(ctx->sb, literal_content, true);
 		cf_free_one(literal_content);
 		if (ctx->str[*ctx->i] == quote_char)
 			(*ctx->i)++;
@@ -109,7 +110,7 @@ void	expand_hub(t_expand_ctx *ctx)
  * @param shell Pointer to the shell structure.
  * @return Expanded string (must be freed by the caller).
  */
-char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
+char	*expand_string_variables(const char *str, t_env *env, t_shell *shell, bool quotes)
 {
 	t_string_builder	*sb;
 	int					i;
@@ -124,7 +125,7 @@ char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
 	ctx.env = env;
 	ctx.shell = shell;
 	ctx.i = &i;
-	expand_loop(str, &ctx);
+	expand_loop(str, &ctx, quotes);
 	return (sb_build_and_destroy(sb));
 }
 
@@ -139,6 +140,7 @@ char	*expand_string_variables(const char *str, t_env *env, t_shell *shell)
  * @param shell Pointer to the shell structure.
  * @return Expanded string (must be freed by the caller).
  */
+
 char	*expand_token_value(t_token *token, t_env *env, t_shell *shell)
 {
 	if (!token || !token->value)
@@ -149,11 +151,11 @@ char	*expand_token_value(t_token *token, t_env *env, t_shell *shell)
 	}
 	else if (token->type == TOKEN_DOUBLE_QUOTE_WORD)
 	{
-		return (expand_string_variables(token->value, env, shell));
+		return (expand_string_variables(token->value, env, shell, true));
 	}
 	else if (token->type == TOKEN_WORD)
 	{
-		return (expand_string_variables(token->value, env, shell));
+		return (expand_string_variables(token->value, env, shell, false));
 	}
 	return (cf_strdup(""));
 }

@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:21:18 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 12:08:57 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/12 15:51:15 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 void	expand_digit(t_string_builder *sb, const char *str, int *i)
 {
 	if (str[*i] == '0')
-		sb_append(sb, "Billyshell");
+		sb_append(sb, "Billyshell", true);
 	(*i)++;
 }
 
@@ -54,19 +54,19 @@ void	expand_other(t_string_builder *sb)
  * @param i Pointer to current index.
  */
 void	expand_env_var(t_string_builder *sb,
-	const char *str, t_env *env, int *i)
+	const char *str, t_env *env, t_expand_ctx *ctx)
 {
 	int		var_start;
 	char	*var_name;
 	char	*var_value;
 
-	var_start = *i;
-	while (str[*i] && (ft_isalnum(str[*i]) || str[*i] == '_'))
-		(*i)++;
-	var_name = cf_substr(str, var_start, *i - var_start);
+	var_start = *ctx->i;
+	while (str[*ctx->i] && (ft_isalnum(str[*ctx->i]) || str[*ctx->i] == '_'))
+		(*ctx->i)++;
+	var_name = cf_substr(str, var_start, *ctx->i - var_start);
 	var_value = get_env_value(env, var_name);
 	if (var_value)
-		sb_append(sb, var_value);
+		sb_append(sb, var_value, ctx->quotes);
 	cf_free_one(var_name);
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_word.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/05 17:55:31 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/12 14:54:25 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

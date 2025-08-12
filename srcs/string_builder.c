@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string_builder.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:22:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:31:17 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:45:47 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,26 +72,100 @@ void	sb_append_char(t_string_builder *sb, char c)
  * @param sb Pointer to string builder.
  * @param s String to append.
  */
-void	sb_append(t_string_builder *sb, const char *s)
+static char *normalize_spaces(const char *s)
+{
+	size_t	i;
+	size_t	j;
+	size_t	len;
+	char	*new_str;
+
+	if (!s)
+		return NULL;
+
+	len = ft_strlen(s);
+	new_str = cf_malloc(len + 1);
+	if (!new_str)
+		return NULL;
+	i = 0;
+	j = 0;
+	while (s[i] && ft_isspace(s[i]))
+		i++;
+	if (i != 0)
+		i--;
+	while (s[i])
+	{
+		if (!ft_isspace(s[i]))
+			new_str[j++] = s[i++];
+		else
+		{
+			while (s[i] && ft_isspace(s[i]))
+				i++;
+			new_str[j++] = ' ';
+		}
+	}
+	i = j;
+	if (j > 0 && new_str[j - 1] == ' ')
+		j--;
+	if (j != i)
+		j++;
+	new_str[j] = '\0';
+	return new_str;
+}
+
+/**
+ * @brief Appends a string to the string builder, normalizing spaces.
+ *
+ * This function first normalizes the input string 's' by replacing
+ * multiple spaces with a single space and removing leading/trailing spaces.
+ * It then appends this cleaned string to the string builder.
+ *
+ * @param sb Pointer to the string builder.
+ * @param s String to be appended.
+ */
+void sb_append(t_string_builder *sb, const char *s, bool quotes)
 {
 	size_t	s_len;
 	size_t	new_capacity;
 	char	*new_str;
+	char	*processed_s; // Use a new pointer to hold the string being processed
 
-	s_len = ft_strlen(s);
 	if (!s)
-		return ;
-	if (sb->len + s_len >= sb->capacity)
+		return;
+
+	// Conditionally normalize spaces only if 'quotes' is false
+	if (!quotes)
 	{
-		new_capacity = (sb->len + s_len) * 2;
+		processed_s = normalize_spaces(s); // Your helper function
+		if (!processed_s)
+			return;
+	}
+	else
+	{
+		// If 'quotes' is true, use the original string
+		processed_s = (char *)s;
+	}
+
+	s_len = ft_strlen(processed_s);
+	if (sb->len + s_len + 1 >= sb->capacity)
+	{
+		new_capacity = (sb->len + s_len + 1) * 2;
 		new_str = cf_realloc(sb->str, new_capacity);
 		if (!new_str)
-			return ;
+		{
+			if (!quotes)
+				cf_free_one(processed_s);
+			return;
+		}
 		sb->str = new_str;
 		sb->capacity = new_capacity;
 	}
-	ft_strcpy(sb->str + sb->len, s);
+	ft_strcpy(sb->str + sb->len, processed_s);
 	sb->len += s_len;
+	sb->str[sb->len] = '\0';
+
+	// Free the temporary normalized string only if it was created
+	if (!quotes)
+		cf_free_one(processed_s);
 }
 
 /**

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   types.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:12:44 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/08 16:21:32 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:42:15 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,7 @@ typedef struct s_expand_ctx
 	t_env				*env;
 	t_shell				*shell;
 	int					*i;
+	bool				quotes;
 }	t_expand_ctx;
 
 typedef struct s_input_check
