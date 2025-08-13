@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection_handlers.c                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/12 17:37:48 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/13 12:25:42 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,6 @@ void	add_outfile(t_input *input, char *filename, bool append)
 		free(input->all_outfiles_append_flags);
 	input->all_outfiles = new_arr;
 	input->all_outfiles_append_flags = new_flags;
-	free(new_arr);
-	free(new_flags);
 	input->outfiles_count++;
 }
 

@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/07 10:08:11 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/13 12:25:55 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,8 @@ void	run_external_command(char **argv, t_env *env)
 	cur_dir = get_env_value(env, "PWD");
 	if (ft_strcmp(cur_dir, "/usr/bin") == 0)
 		path = argv[0];
-	else if (ft_strncmp(argv[0], "./", 2) == 0 || ft_strncmp(argv[0], "/", 1) == 0)
+	else if (ft_strncmp(argv[0], "./", 2) == 0
+		|| ft_strncmp(argv[0], "/", 1) == 0)
 		path = argv[0];
 	else
 		path = search_path(argv[0], env);

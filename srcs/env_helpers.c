@@ -6,11 +6,31 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/04 12:50:11 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/13 12:25:47 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void	add_new_env_var(t_env **env, char *key, char *val)
+{
+	t_env	*cur;
+	t_env	*new;
+
+	new = cf_malloc(sizeof(t_env));
+	new->key = cf_strdup(key);
+	new->value = cf_strdup(val);
+	new->next = NULL;
+	if (!*env)
+		*env = new;
+	else
+	{
+		cur = *env;
+		while (cur->next)
+			cur = cur->next;
+		cur->next = new;
+	}
+}
 
 /**
  * @brief Updates or adds an environment variable in the list.
@@ -25,7 +45,6 @@
 void	update_or_add_env_var(t_env **env, char *key, char *val)
 {
 	t_env	*cur;
-	t_env	*new;
 
 	cur = *env;
 	while (cur)
@@ -38,21 +57,7 @@ void	update_or_add_env_var(t_env **env, char *key, char *val)
 		}
 		cur = cur->next;
 	}
-	new = cf_malloc(sizeof(t_env));
-	new->key = cf_strdup(key);
-	new->value = cf_strdup(val);
-	new->next = NULL;
-
-	// Добавляем в конец списка
-	if (!*env)
-		*env = new;
-	else
-	{
-		cur = *env;
-		while (cur->next)
-			cur = cur->next;
-		cur->next = new;
-	}
+	add_new_env_var(env, key, val);
 }
 
 /**
@@ -110,6 +115,29 @@ void	remove_env_var(t_env **env, const char *key)
 	}
 }
 
+t_env	*create_env_node(char *env_str)
+{
+	t_env	*node;
+	char	*equal_sign;
+
+	node = cf_malloc(sizeof(t_env));
+	if (!node)
+		return (NULL);
+	equal_sign = ft_strchr(env_str, '=');
+	if (!equal_sign)
+	{
+		node->key = cf_strdup(env_str);
+		node->value = NULL;
+	}
+	else
+	{
+		node->key = substr_dup(env_str, equal_sign);
+		node->value = cf_strdup(equal_sign + 1);
+	}
+	node->next = NULL;
+	return (node);
+}
+
 /**
  * @brief Creates an environment list from envp array.
  *
@@ -124,7 +152,6 @@ t_env	*create_env(char **envp)
 	t_env	*head;
 	t_env	*tail;
 	t_env	*node;
-	char	*equal;
 	int		i;
 
 	head = NULL;
@@ -132,11 +159,7 @@ t_env	*create_env(char **envp)
 	i = 0;
 	while (envp[i])
 	{
-		node = cf_malloc(sizeof(t_env));
-		equal = ft_strchr(envp[i], '=');
-		node->key = substr_dup(envp[i], equal);
-		node->value = cf_strdup(equal + 1);
-		node->next = NULL;
+		node = create_env_node(envp[i]);
 		if (!head)
 		{
 			head = node;
@@ -186,12 +209,8 @@ bool	is_valid_var_name(const char *name)
 {
 	if (!name || !*name)
 		return (false);
-
-	// Первый символ должен быть буквой или подчеркиванием
 	if (!ft_isalpha(*name) && *name != '_')
 		return (false);
-
-	// Остальные символы должны быть буквами, цифрами или подчеркиванием
 	while (*++name)
 	{
 		if (!ft_isalnum(*name) && *name != '_')
@@ -199,4 +218,3 @@ bool	is_valid_var_name(const char *name)
 	}
 	return (true);
 }
-
