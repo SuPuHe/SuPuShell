@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenizer_handlers.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:01:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/05 16:41:58 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/13 13:42:45 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,15 +30,15 @@ char	*extract_non_quoted_word(const char *line, int *i)
 
 	quote_char = '\0';
 	start = *i;
-	if (line[*i] == '$' && (*i + 1 < (int)ft_strlen(line)) &&
-		(line[*i + 1] == '\'' || line[*i + 1] == '\"'))
-		{
-			quote_char = line[*i + 1];
-			(*i) += 2;
-			while (line[*i] && line[*i] != quote_char)
-				(*i)++;
-			if (line[*i] == quote_char)
-				(*i)++;
+	if (line[*i] == '$' && (*i + 1 < (int)ft_strlen(line))
+		&& (line[*i + 1] == '\'' || line[*i + 1] == '\"'))
+	{
+		quote_char = line[*i + 1];
+		(*i) += 2;
+		while (line[*i] && line[*i] != quote_char)
+			(*i)++;
+		if (line[*i] == quote_char)
+			(*i)++;
 	}
 	else
 	{
