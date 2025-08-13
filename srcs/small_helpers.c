@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/04 11:26:30 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/13 13:41:45 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,6 @@ int	last_status_assign(t_input *command, t_shell *shell)
 {
 	int	last_status;
 
-	// ft_putstr_fd("exit\n", 2);
 	if (command->args[1])
 	{
 		if (!ft_isnumeric(command->args[1]))
