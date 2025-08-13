@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:19:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/12 16:43:03 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/13 13:34:58 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,35 @@ void	expand_loop(const char *str, t_expand_ctx *ctx, bool quotes)
 }
 
 /**
+ * @brief Expands a quoted literal by finding the
+ * matching quote and appending its content.
+ *
+ * This helper function handles quoted sections within a string. It finds the
+ * closing quote, extracts the literal content between the quotes, and appends
+ * it to the string builder.
+ *
+ * @param ctx Pointer to the expansion context structure.
+ */
+static void	expand_quoted_literal(t_expand_ctx *ctx)
+{
+	char	quote_char;
+	int		literal_content_start;
+	char	*literal_content;
+
+	quote_char = ctx->str[*ctx->i];
+	(*ctx->i)++;
+	literal_content_start = *ctx->i;
+	while (ctx->str[*ctx->i] && ctx->str[*ctx->i] != quote_char)
+		(*ctx->i)++;
+	literal_content = cf_substr(ctx->str, literal_content_start,
+			*ctx->i - literal_content_start);
+	sb_append(ctx->sb, literal_content, true);
+	cf_free_one(literal_content);
+	if (ctx->str[*ctx->i] == quote_char)
+		(*ctx->i)++;
+}
+
+/**
  * @brief Dispatches variable expansion based on the variable type.
  *
  * Determines the type of variable (status, digit, env, other)
@@ -71,10 +100,6 @@ void	expand_loop(const char *str, t_expand_ctx *ctx, bool quotes)
  */
 void	expand_hub(t_expand_ctx *ctx, bool quotes)
 {
-	char	quote_char;
-	int		literal_content_start;
-	char	*literal_content;
-
 	ctx->quotes = quotes;
 	if (ctx->str[*ctx->i] == '?')
 		expand_status(ctx->sb, ctx->shell, ctx->i);
@@ -83,18 +108,7 @@ void	expand_hub(t_expand_ctx *ctx, bool quotes)
 	else if (ctx->str[*ctx->i] == '_' || ft_isalpha(ctx->str[*ctx->i]))
 		expand_env_var(ctx->sb, ctx->str, ctx->env, ctx);
 	else if (ctx->str[*ctx->i] == '\"' || ctx->str[*ctx->i] == '\'')
-	{
-		quote_char = ctx->str[*ctx->i];
-		(*ctx->i)++;
-		literal_content_start = *ctx->i;
-		while (ctx->str[*ctx->i] && ctx->str[*ctx->i] != quote_char)
-			(*ctx->i)++;
-		literal_content = cf_substr(ctx->str, literal_content_start, *ctx->i - literal_content_start);
-		sb_append(ctx->sb, literal_content, true);
-		cf_free_one(literal_content);
-		if (ctx->str[*ctx->i] == quote_char)
-			(*ctx->i)++;
-	}
+		expand_quoted_literal(ctx);
 	else
 		expand_other(ctx->sb);
 }
@@ -110,7 +124,8 @@ void	expand_hub(t_expand_ctx *ctx, bool quotes)
  * @param shell Pointer to the shell structure.
  * @return Expanded string (must be freed by the caller).
  */
-char	*expand_string_variables(const char *str, t_env *env, t_shell *shell, bool quotes)
+char	*expand_string_variables(const char *str, t_env *env,
+		t_shell *shell, bool quotes)
 {
 	t_string_builder	*sb;
 	int					i;
