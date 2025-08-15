@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:08:27 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/06 17:04:03 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 16:06:09 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ t_input	parse_command_from_tokens(t_list **current_tokens,
 		if (current_tok->type >= TOKEN_REDIR_IN
 			&& current_tok->type <= TOKEN_HEREDOC)
 		{
-			if (!handle_redirection_token(&input, current_tokens, env, shell))
+			if (!handle_redirection_token(&input, current_tokens, env))
 				return (input);
 		}
 		else if (current_tok->type == TOKEN_WORD
