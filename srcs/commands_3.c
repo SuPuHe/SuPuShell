@@ -6,12 +6,25 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 16:52:22 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:52:54 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:52:41 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Processes a single argument for the export built-in.
+ *
+ * Duplicates the argument string, parses it into key and value if it
+ * contains '=', then validates the key. Updates or adds the variable
+ * to the environment if valid, otherwise prints an error.
+ *
+ * @param arg The argument string to process.
+ * @param env Pointer to the environment linked list.
+ *
+ * @return true if the variable was valid and added/updated, false
+ * if invalid or on memory allocation failure.
+ */
 static bool	process_export_arg(char *arg, t_env **env)
 {
 	char	*key;
