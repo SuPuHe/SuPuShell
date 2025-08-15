@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 17:32:43 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 16:38:36 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,10 @@ int		execute_or_node(t_ast_node *node, t_shell *shell);
 void	execute_subshell_child(t_ast_node *node, t_shell *shell);
 int		execute_subshell_node(t_ast_node *node, t_shell *shell);
 
-//executor_pipe.c
-void	execute_pipe_child_right(t_ast_node *node, t_shell *shell, int *pipefd);
-void	execute_pipe_child_left(t_ast_node *node, t_shell *shell, int *pipefd);
+//executor_pipe_1.c
 int		execute_pipe_node(t_ast_node *node, t_shell *shell);
+
+//executor_pipe_2.c
+bool	handle_heredocs_in_pipeline(t_ast_node *node);
 
 #endif
