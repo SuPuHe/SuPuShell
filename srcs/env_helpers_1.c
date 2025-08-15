@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 19:59:51 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/15 16:47:10 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:54:16 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,19 @@ void	remove_env_var(t_env **env, const char *key)
 	}
 }
 
+/**
+ * @brief Creates a new environment variable node from a string.
+ *
+ * Splits the input string at the first '=' character. Sets the key
+ * to the part before '=' and the value to the part after. If no '='
+ * is found, the value is set to NULL. The next pointer is initialized
+ * to NULL.
+ *
+ * @param env_str The environment string in the format "KEY=VALUE".
+ *
+ * @return Pointer to the newly created t_env node, or NULL if memory
+ * allocation fails.
+ */
 t_env	*create_env_node(char *env_str)
 {
 	t_env	*node;
