@@ -6,7 +6,7 @@
 #    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/08/15 16:56:39 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/08/15 17:07:40 by vpushkar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,7 +43,7 @@ tokenizer_handlers.c tokenizer_main.c tokenizer_main_second_part.c \
 input_checker.c string_builder_second_part.c parser_redirection_2.c \
 parser_redirection_handlers_2.c parser_redirection_3.c \
 parser_redirection_4.c parser_redirection_5.c executor_pipe_2.c \
-env_helpers_2.c commands_3.c
+env_helpers_2.c commands_3.c minishell_helper.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))
