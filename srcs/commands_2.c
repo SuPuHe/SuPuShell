@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:30:27 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/15 16:58:56 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:52:27 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,20 @@ void	print_error(char *argv)
 	}
 }
 
+/**
+ * @brief Determines the appropriate exit code for a command.
+ *
+ * Checks if the command path exists and is executable, then returns
+ * the corresponding exit code:
+ * - 127 if the command is not found.
+ * - 126 if the command exists but is not executable.
+ *
+ * Prints an error message to stderr depending on the result.
+ *
+ * @param path The command path to check.
+ *
+ * @return The exit code: 127 for not found, 126 for permission denied.
+ */
 int	return_exit_code(char *path)
 {
 	if (!path)
@@ -90,12 +104,13 @@ void	run_external_command(char **argv, t_env *env)
 }
 
 /**
- * @brief Implements the echo command with -n option support.
+ * @brief Implements the built-in echo command.
  *
- * Prints arguments separated by spaces. Handles multiple -n options
- * to suppress the trailing newline.
+ * Prints all arguments to stdout separated by spaces. Supports the
+ * "-n" option to suppress the trailing newline. Multiple "-n"
+ * flags are handled as in bash.
  *
- * @param argv Array of arguments to echo.
+ * @param argv Array of argument strings, where argv[0] is "echo".
  */
 void	do_echo(char **argv)
 {

@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 11:39:33 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/15 16:55:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:51:35 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,21 @@ void	do_pwd(void)
 	printf("%s\n", buf);
 }
 
+/**
+ * @brief Handles the logic of the built-in cd command.
+ *
+ * Changes the current working directory based on the given arguments:
+ * - No argument or "~": changes to the home directory.
+ * - "-": changes to the previous directory.
+ * - Any other path: attempts to change to that directory.
+ *
+ * Updates shell->last_exit_status to 1 if chdir fails.
+ *
+ * @param shell Pointer to the shell structure (stores last exit status).
+ * @param commands Array of command strings, where commands[0] is "cd".
+ * @param env Pointer to the environment structure.
+ * @param home String containing the home directory path.
+ */
 void	cd_logic(t_shell *shell, char **commands, t_env **env,
 	const char *home)
 {
@@ -75,12 +90,14 @@ void	do_cd(t_shell *shell, char **commands, t_env **env)
 }
 
 /**
- * @brief Prints all environment variables in export format.
+ * @brief Prints all environment variables in sorted order.
  *
- * Iterates through the environment list and prints each variable in
- * 'declare -x KEY="VALUE"' format.
+ * Creates a sorted array of environment variable pointers, then prints
+ * each variable in the format "declare -x KEY=\"VALUE\"" if VALUE exists.
  *
- * @param env Pointer to environment variable list.
+ * Uses cf_free_one to free the array after printing.
+ *
+ * @param env Pointer to the environment linked list.
  */
 void	print_all_env_vars(t_env *env)
 {
@@ -103,6 +120,20 @@ void	print_all_env_vars(t_env *env)
 	cf_free_one(env_array);
 }
 
+/**
+ * @brief Handles a single parsed argument for the export built-in.
+ *
+ * Checks if the provided key is a valid variable name. If valid, it
+ * updates the existing variable or adds a new one to the environment.
+ * If invalid, prints an error message to stderr.
+ *
+ * @param key The name of the environment variable.
+ * @param val The value to assign to the environment variable.
+ * @param env Pointer to the environment linked list.
+ *
+ * @return true if the variable was valid and updated/added; false if
+ * the key was invalid.
+ */
 bool	handle_parsed_export_arg(char *key, char *val, t_env **env)
 {
 	if (is_valid_var_name(key))
