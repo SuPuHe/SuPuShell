@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:25:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:29:43 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:56:13 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,14 +110,16 @@ int	execute_builtin_command(t_input *command, t_shell *shell)
 }
 
 /**
- * @brief Executes a command AST node (built-in or external).
+ * @brief Executes a command node from the AST.
  *
- * Applies redirections, checks if the command is built-in or external,
- * and executes it. Returns the exit status.
+ * Applies input/output redirections first. If redirections fail, the
+ * command returns status 1. Otherwise, executes the command as a
+ * built-in if recognized, or as an external program.
  *
- * @param node Pointer to the command AST node.
+ * @param node Pointer to the AST command node to execute.
  * @param shell Pointer to the shell structure.
- * @return Exit status of the command.
+ *
+ * @return The exit status of the executed command.
  */
 int	execute_command_node(t_ast_node *node, t_shell *shell)
 {
@@ -137,14 +139,16 @@ int	execute_command_node(t_ast_node *node, t_shell *shell)
 }
 
 /**
- * @brief Main dispatcher for AST execution.
+ * @brief Executes an AST node based on its type.
  *
- * Executes the AST node based on its type (command, pipe, and/or, subshell).
- * Returns the exit status of the last executed node.
+ * Handles different node types: command, pipe, AND, OR, and subshell.
+ * Saves and restores the original stdin and stdout file descriptors.
+ * Updates the shell's last_exit_status with the result of execution.
  *
  * @param node Pointer to the AST node to execute.
  * @param shell Pointer to the shell structure.
- * @return Exit status of the last executed node.
+ *
+ * @return The exit status of the executed node.
  */
 int	execute_node(t_ast_node *node, t_shell *shell)
 {
