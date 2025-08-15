@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:38:36 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:29:58 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,14 @@
 # include <stdbool.h>
 # include "types.h"
 
-//executor_main.c
+//executor_main_1.c
 bool	is_builtin_command(const char *command);
 int		execute_external_command(t_input *command, t_shell *shell);
 int		execute_builtin_command(t_input *command, t_shell *shell);
 int		execute_command_node(t_ast_node *node, t_shell *shell);
 int		execute_node(t_ast_node *node, t_shell *shell);
 
-//executor_second_part.c
+//executor_main_2.c
 void	execute_external_child(t_input *command, t_shell *shell);
 
 //executor_other.c

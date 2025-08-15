@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 17:34:16 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:26:21 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@ t_token	*handle_quote_tokens(const char *line, int *i, t_list **tokens);
 t_token	*handle_redirection_tokens(const char *line, int *i);
 t_token	*handle_operator_tokens(const char *line, int *i);
 
-//tokenizer_main_second_part.c
+//tokenizer_main_2.c
 t_token	*process_next_token(const char *line,
 			int *i, t_list **tokens_list, bool *had_space);
 void	add_end_token(t_list **tokens);
 
-//tokenizer_main.c
+//tokenizer_main_1.c
 void	skip_whitespace(const char *line, int *i, bool *had_space);
 void	add_token_to_list(t_token *new_token, bool had_space, t_list **tokens);
 void	free_token_list(t_list *tokens);
