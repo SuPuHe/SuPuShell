@@ -6,12 +6,23 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 15:33:08 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:18:46 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 18:04:06 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Handles the child process for a single heredoc.
+ *
+ * Sets default signal handling for SIGINT and SIGQUIT, runs the
+ * heredoc input routine, clears the readline history, frees all
+ * tracked memory, and exits the child process.
+ *
+ * @param input Pointer to the t_input structure of the current command.
+ * @param filename Temporary file to store heredoc input.
+ * @param i Index of the current heredoc in the command's heredoc array.
+ */
 static bool	handle_heredoc_child_part(t_input *input, char *filename, int i)
 {
 	signal(SIGINT, SIG_DFL);
@@ -22,6 +33,20 @@ static bool	handle_heredoc_child_part(t_input *input, char *filename, int i)
 	exit(0);
 }
 
+/**
+ * @brief Handles the parent-side logic after a heredoc child finishes.
+ *
+ * Checks the child's exit status. If the child was terminated by
+ * SIGINT, it removes the temporary heredoc file and sets the global
+ * signal exit status. Otherwise, sets the input file to the heredoc
+ * temporary file.
+ *
+ * @param input Pointer to the t_input structure of the current command.
+ * @param filename Temporary file created for the heredoc.
+ * @param status Exit status of the child process handling the heredoc.
+ * @return true if heredoc was handled successfully, false if it was
+ *			interrupted by SIGINT.
+ */
 static bool	handle_heredoc_parent_part(t_input *input,
 		char *filename, int status)
 {
@@ -38,6 +63,19 @@ static bool	handle_heredoc_parent_part(t_input *input,
 	return (true);
 }
 
+/**
+ * @brief Processes all heredocs for a command in a loop.
+ *
+ * Iterates through all heredoc delimiters in the input structure,
+ * creates a temporary filename for each, forks a child process to
+ * handle heredoc input, and waits for the child to finish. Parent
+ * handles the result and continues to the next heredoc.
+ *
+ * @param input Pointer to the t_input structure containing heredoc
+ *				delimiters and related metadata.
+ * @return true if all heredocs were processed successfully, false if
+ *				any heredoc failed.
+ */
 static bool	handle_heredoc_loop_part(t_input *input)
 {
 	int		i;
@@ -66,6 +104,18 @@ static bool	handle_heredoc_loop_part(t_input *input)
 	return (true);
 }
 
+/**
+ * @brief Processes all heredocs for the given input structure.
+ *
+ * Checks if the heredocs were already processed, and if not, runs
+ * the loop that handles each heredoc. Marks heredocs as processed
+ * on success.
+ *
+ * @param input Pointer to the t_input structure containing heredoc
+ *				information.
+ * @return true if all heredocs were processed successfully or already
+ *				processed, false if an error occurred during processing.
+ */
 bool	handle_heredoc(t_input *input)
 {
 	if (input->heredoc_processed)
@@ -77,11 +127,14 @@ bool	handle_heredoc(t_input *input)
 }
 
 /**
- * @brief Frees heredoc delimiters array.
+ * @brief Frees all allocated heredoc delimiters and related arrays.
  *
- * Frees all delimiter strings and the array itself.
+ * Iterates through the heredoc_delimiters array, frees each string,
+ * then frees the arrays themselves. Resets pointers and heredoc count
+ * in the input structure to indicate no heredocs are stored.
  *
- * @param input Pointer to the input structure.
+ * @param input Pointer to the t_input structure containing heredoc
+ *				delimiters and metadata.
  */
 void	free_heredoc_delimiters(t_input *input)
 {
