@@ -6,12 +6,27 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:10:29 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:19:16 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 18:02:33 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Collects consecutive word tokens into a string builder.
+ *
+ * Iterates through tokens starting from @p start, appends their
+ * values to the provided string builder until a non-word token,
+ * a token with a space (not at start), or a quote boundary is found.
+ * Updates the @p quoted flag if any token is quoted.
+ *
+ * @param start Pointer to the first token in the list to process.
+ * @param sb Pointer to the string builder where token values are
+ *			appended.
+ * @param quoted Pointer to a bool that is set to true if any of the
+ *			collected tokens are quoted.
+ * @return Pointer to the first token that was not collected.
+ */
 t_list	*collect_d_tokens_and_sb(t_list *start,
 	t_string_builder *sb, bool *quoted)
 {
@@ -61,6 +76,16 @@ char	*expand_filename_token(t_token *filename_token,
 				env, shell, false));
 }
 
+/**
+ * @brief Resizes the arrays used for heredoc delimiters and quotes.
+ *
+ * Allocates new arrays with size increased by 1, copies existing
+ * values, frees the old arrays, and updates the input structure
+ * to point to the new arrays.
+ *
+ * @param input Pointer to the t_input structure containing heredoc
+ *				arrays.
+ */
 static void	resize_heredoc_arrays(t_input *input)
 {
 	char	**new_delims;
