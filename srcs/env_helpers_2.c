@@ -6,12 +6,23 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 16:44:48 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:47:03 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:54:33 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Adds a new environment variable to the end of the list.
+ *
+ * Allocates a new t_env node with the given key and value, then
+ * appends it to the end of the environment linked list. If the list
+ * is empty, the new node becomes the head.
+ *
+ * @param env Pointer to the head of the environment linked list.
+ * @param key The name of the new environment variable.
+ * @param val The value of the new environment variable.
+ */
 void	add_new_env_var(t_env **env, char *key, char *val)
 {
 	t_env	*cur;
