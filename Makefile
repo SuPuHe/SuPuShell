@@ -6,7 +6,7 @@
 #    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/08/15 16:37:58 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/08/15 16:49:12 by vpushkar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,7 +32,7 @@ LDFLAGS = -lreadline
 
 RM = rm -rf
 
-SRCS = minishell.c helpers.c env_helpers.c signals.c commands.c \
+SRCS = minishell.c helpers.c env_helpers_1.c signals.c commands.c \
 commands_helpers.c commands_second_part.c small_helpers.c billy.c \
 wildcards.c centralized_free.c cf_libft.c centralized_alloc.c path_helpers.c \
 wildcards_second_part.c executor_main_second_part.c executor_main.c \
@@ -43,6 +43,7 @@ tokenizer_handlers.c tokenizer_main.c tokenizer_main_second_part.c \
 input_checker.c string_builder_second_part.c parser_redirection_2.c \
 parser_redirection_handlers_2.c parser_redirection_3.c \
 parser_redirection_4.c parser_redirection_5.c executor_pipe_2.c \
+env_helpers_2.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))

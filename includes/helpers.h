@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:15:11 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/01 16:47:04 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 16:48:41 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,15 @@ char	*ft_strjoin_free(char *s1, const char *s2);
 char	*ft_strcpy(char *dest, const char *src);
 char	*ft_strcat(char *dest, const char *src);
 
-//env_helpers
+//env_helpers_1
 void	update_or_add_env_var(t_env **env, char *key, char *val);
 int		parse_export_argument(char *arg, char **key, char **val);
 void	remove_env_var(t_env **env, const char *key);
 t_env	*create_env(char **envp);
-char	*get_env_value(t_env *env, const char *key);
+//env_helpers_2
+void	add_new_env_var(t_env **env, char *key, char *val);
 bool	is_valid_var_name(const char *name);
+char	*get_env_value(t_env *env, const char *key);
 
 //path_helpers
 char	*ft_strsep(char **str, const char *sep);
