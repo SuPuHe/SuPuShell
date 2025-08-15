@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 15:48:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:23:59 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 16:27:42 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,4 +112,3 @@ void	heredoc_child_process(t_input *input, char *filename, int index)
 	}
 	close(fd);
 }
-

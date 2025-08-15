@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:19:27 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/15 16:27:29 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,4 +125,3 @@ bool	apply_input_redirections(t_input *input)
 	}
 	return (true);
 }
-
