@@ -3,34 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:19:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/13 13:34:58 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/15 17:00:50 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-/**
- * @brief Expands the special variable $? to the last exit status value.
- *
- * Converts the shell's last exit status to a string and appends it
- * to the string builder. Advances the index pointer.
- *
- * @param sb Pointer to the string builder.
- * @param shell Pointer to the shell structure.
- * @param i Pointer to the current index in the string.
- */
-void	expand_status(t_string_builder *sb, t_shell *shell, int *i)
-{
-	char	*status_str;
-
-	status_str = ft_itoa(shell->last_exit_status);
-	sb_append(sb, status_str, false);
-	free(status_str);
-	(*i)++;
-}
 
 /**
  * @brief Expands all shell variables in the input string.
