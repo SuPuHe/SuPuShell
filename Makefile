@@ -6,7 +6,7 @@
 #    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/08/15 15:18:43 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/08/15 16:22:17 by vpushkar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,10 +37,12 @@ commands_helpers.c commands_second_part.c small_helpers.c billy.c \
 wildcards.c centralized_free.c cf_libft.c centralized_alloc.c path_helpers.c \
 wildcards_second_part.c executor_main_second_part.c executor_main.c \
 executor_other.c executor_pipe.c expander_utils.c expander.c parser_command.c \
-parser_main.c parser_redirection_handlers.c string_builder.c ast.c \
-parser_redirection.c parser_word_second_part.c parser_word.c \
+parser_main.c parser_redirection_handlers_1.c string_builder.c ast.c \
+parser_redirection_1.c parser_word_second_part.c parser_word.c \
 tokenizer_handlers.c tokenizer_main.c tokenizer_main_second_part.c \
-input_checker.c string_builder_second_part.c
+input_checker.c string_builder_second_part.c parser_redirection_2.c \
+parser_redirection_handlers_2.c parser_redirection_3.c \
+parser_redirection_4.c parser_redirection_5.c
 
 
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRCS))
