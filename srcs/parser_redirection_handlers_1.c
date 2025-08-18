@@ -6,100 +6,73 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 12:50:08 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 13:36:25 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Adds an output file to the input structure.
+ * @brief Expands the arrays for storing outfiles and append flags.
  *
- * Allocates new arrays for output files and their append flags,
- * copies existing values, and adds the new file and its append flag.
- * Updates the count of output files.
+ * Allocates new arrays with size `outfiles_count + 1`, copies old content,
+ * and frees the previous arrays.
  *
- * @param input Pointer to input structure.
- * @param filename Name of the output file to add.
- * @param append True if the file should be appended, false for overwrite.
+ * @param input Input structure containing outfile data.
+ * @param new_arr Pointer to the new array of filenames.
+ * @param new_flags Pointer to the new array of append flags.
+ * @return true if allocation succeeded, false otherwise.
  */
-void	add_outfile(t_input *input, char *filename, bool append)
+static bool	expand_outfiles_arrays(t_input *input,
+			char ***new_arr, bool **new_flags)
 {
-	char	**new_arr;
-	bool	*new_flags;
-	int		i;
+	int	i;
 
-	new_arr = cf_malloc(sizeof(char *) * (input->outfiles_count + 1));
-	if (!new_arr)
-		return;
-	new_flags = cf_malloc(sizeof(bool) * (input->outfiles_count + 1));
-	if (!new_flags)
+	*new_arr = cf_malloc(sizeof(char *) * (input->outfiles_count + 1));
+	if (!*new_arr)
+		return (false);
+	*new_flags = cf_malloc(sizeof(bool) * (input->outfiles_count + 1));
+	if (!*new_flags)
 	{
-		cf_free_one(new_arr);
-		return;
+		cf_free_one(*new_arr);
+		return (false);
 	}
 	i = 0;
 	while (i < input->outfiles_count)
 	{
-		new_arr[i] = input->all_outfiles[i];
-		new_flags[i] = input->all_outfiles_append_flags[i];
+		(*new_arr)[i] = input->all_outfiles[i];
+		(*new_flags)[i] = input->all_outfiles_append_flags[i];
 		i++;
 	}
 	if (input->all_outfiles)
 		cf_free_one(input->all_outfiles);
 	if (input->all_outfiles_append_flags)
 		cf_free_one(input->all_outfiles_append_flags);
+	return (true);
+}
+
+/**
+ * @brief Adds a new outfile to the input structure.
+ *
+ * Expands arrays of outfiles and append flags, copies existing ones,
+ * and inserts the new filename with its append mode.
+ *
+ * @param input Input structure containing outfile data.
+ * @param filename Output filename to add.
+ * @param append Whether the file should be opened in append mode.
+ */
+void	add_outfile(t_input *input, char *filename, bool append)
+{
+	char	**new_arr;
+	bool	*new_flags;
+
+	if (!expand_outfiles_arrays(input, &new_arr, &new_flags))
+		return ;
 	new_arr[input->outfiles_count] = filename;
 	new_flags[input->outfiles_count] = append;
 	input->all_outfiles = new_arr;
 	input->all_outfiles_append_flags = new_flags;
 	input->outfiles_count++;
-}
-
-/**
- * @brief Applies output redirection to the input structure.
- *
- * Sets the output file and append mode based on the redirection type.
- * Creates the file immediately to match bash behavior.
- *
- * @param input Pointer to input structure.
- * @param redir_type Type of output redirection.
- * @param expanded_value Expanded output file name.
- */
-// In parser_redirection_handlers_1.c
-// parser_redirection_handlers_1.c
-
-// parser_redirection_handlers_1.c
-
-void	apply_output_redirection(t_input *input,
-	t_token_type redir_type, char *expanded_value)
-{
-	bool	append;
-
-	append = (redir_type == TOKEN_REDIR_APPEND);
-
-	// Free the previous outfile before adding a new one
-	if (input->outfile)
-		cf_free_one(input->outfile);
-
-	// Add the filename and also make a copy for `input->outfile`
-	add_outfile(input, cf_strdup(expanded_value), append);
-	input->outfile = expanded_value;
-}
-
-/**
- * @brief Applies input redirection to the input structure.
- *
- * Sets the input file for the command.
- *
- * @param input Pointer to input structure.
- * @param expanded_value Expanded input file name.
- */
-void	apply_input_redirection(t_input *input, char *expanded_value)
-{
-	if (input->infile)
-		cf_free_one(input->infile);
-	input->infile = expanded_value;
 }
 
 /**
