@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   types.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:12:44 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/12 16:42:15 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 16:34:04 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,5 +121,12 @@ typedef struct s_cf_node
 	void				*ptr;
 	struct s_cf_node	*next;
 }	t_cf_node;
+
+typedef struct s_pid_list
+{
+	pid_t	p[256];
+	int		n;
+	pid_t	last;
+}	t_pid_list;
 
 #endif
