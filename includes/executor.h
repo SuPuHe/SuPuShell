@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:29:58 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 16:44:50 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,5 +37,7 @@ int		execute_pipe_node(t_ast_node *node, t_shell *shell);
 
 //executor_pipe_2.c
 bool	handle_heredocs_in_pipeline(t_ast_node *node);
+void	pidlist_add(t_pid_list *pl, pid_t pid);
+int		wait_pipeline(t_pid_list *pl);
 
 #endif

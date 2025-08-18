@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:29:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:59:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 16:47:11 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,29 +53,28 @@ static void	close_fd_if_needed(int fd)
 }
 
 /**
- * @brief Sets up a pipe and forks a child process for a pipeline node.
+ * @brief Sets up a pipe and forks a child to execute the left node.
  *
- * Creates a new pipe, forks a child to execute the left command of the
- * pipeline, and manages the input/output file descriptors. Returns the
- * read end of the pipe to be used as input for the next command.
+ * Creates a pipe, forks a child process, and executes the left command
+ * in the pipeline. The child's PID is stored in the PID list. Closes
+ * unused file descriptors and returns the read end of the pipe for the
+ * next command.
  *
- * @param node Pointer to the AST node representing the current pipe.
- * @param pipe_in_fd File descriptor for input to this command.
+ * @param node AST node containing the left and right commands of the pipe.
+ * @param pipe_in_fd File descriptor for input to the current command.
  * @param shell Pointer to the shell structure.
+ * @param pl Pointer to the PID list to track child processes.
  *
  * @return Read end of the pipe for the next command, or -1 on error.
  */
 static int	setup_pipe_fork(t_ast_node *node, int pipe_in_fd,
-				t_shell *shell)
+				t_shell *shell, t_pid_list *pl)
 {
 	int		pipefd[2];
 	pid_t	pid;
 
 	if (pipe(pipefd) == -1)
-	{
-		perror("pipe");
-		return (-1);
-	}
+		return (perror("pipe"), -1);
 	pid = fork();
 	if (pid == -1)
 	{
@@ -89,30 +88,30 @@ static int	setup_pipe_fork(t_ast_node *node, int pipe_in_fd,
 		close(pipefd[0]);
 		run_child_process(pipe_in_fd, pipefd[1], node->left, shell);
 	}
+	pidlist_add(pl, pid);
 	close(pipefd[1]);
 	close_fd_if_needed(pipe_in_fd);
 	return (pipefd[0]);
 }
 
 /**
- * @brief Executes the last command in a pipeline.
+ * @brief Executes the last command in a pipeline and tracks its PID.
  *
- * Forks a child process to execute the final command in the pipeline,
- * sets up the input file descriptor, waits for the child to finish,
- * and returns the exit status. Handles both normal exit and termination
- * by signal.
+ * Forks a child to run the final command in the pipeline, sets up the
+ * input file descriptor, stores the child's PID in the PID list, and
+ * closes unused file descriptors. Returns 0 on success.
  *
- * @param node Pointer to the AST node representing the command.
- * @param pipe_in_fd File descriptor for the input of this command.
+ * @param node AST node of the command to execute.
+ * @param pipe_in_fd Input file descriptor for the command.
  * @param shell Pointer to the shell structure.
+ * @param pl Pointer to the PID list to store child PIDs.
  *
- * @return Exit status of the last command in the pipeline.
+ * @return 0 on success, 1 if fork fails.
  */
 static int	execute_last_pipe_node(t_ast_node *node, int pipe_in_fd,
-				t_shell *shell)
+				t_shell *shell, t_pid_list *pl)
 {
 	pid_t	pid;
-	int		status;
 
 	pid = fork();
 	if (pid == -1)
@@ -123,41 +122,43 @@ static int	execute_last_pipe_node(t_ast_node *node, int pipe_in_fd,
 	}
 	else if (pid == 0)
 		run_child_process(pipe_in_fd, STDOUT_FILENO, node, shell);
+	pidlist_add(pl, pid);
+	pl->last = pid;
 	close_fd_if_needed(pipe_in_fd);
-	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	if (WIFSIGNALED(status))
-		return (128 + WTERMSIG(status));
-	return (1);
+	return (0);
 }
 
 /**
- * @brief Executes a pipeline of commands represented by a pipe node.
+ * @brief Execute a pipeline of commands represented by AST nodes.
  *
- * Iterates through the pipeline AST nodes, creating pipes and forking
- * child processes for each command. Handles heredocs before executing
- * the pipeline. The last node is executed separately to capture the
- * final exit status.
+ * This function sets up pipes and forks child processes for each
+ * command in the pipeline. It also handles heredocs before execution
+ * and waits for all child processes to finish.
  *
- * @param node Pointer to the AST node representing the start of a pipe.
- * @param shell Pointer to the shell structure.
- *
- * @return The exit status of the last command in the pipeline.
+ * @param node Pointer to the root AST node of the pipeline.
+ * @param shell Pointer to the shell context containing environment
+ *				and execution state.
+ * @return int Exit status of the last command in the pipeline or 1
+ *				if an error occurs.
  */
 int	execute_pipe_node(t_ast_node *node, t_shell *shell)
 {
-	int		pipe_in_fd;
+	int			pipe_in_fd;
+	t_pid_list	pl;
 
 	if (!handle_heredocs_in_pipeline(node))
 		return (1);
+	pl.n = 0;
+	pl.last = -1;
 	pipe_in_fd = STDIN_FILENO;
 	while (node && node->type == NODE_PIPE)
 	{
-		pipe_in_fd = setup_pipe_fork(node, pipe_in_fd, shell);
+		pipe_in_fd = setup_pipe_fork(node, pipe_in_fd, shell, &pl);
 		if (pipe_in_fd == -1)
-			return (1);
+			return (wait_pipeline(&pl));
 		node = node->right;
 	}
-	return (execute_last_pipe_node(node, pipe_in_fd, shell));
+	if (execute_last_pipe_node(node, pipe_in_fd, shell, &pl))
+		return (wait_pipeline(&pl));
+	return (wait_pipeline(&pl));
 }
