@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:27:29 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 12:42:37 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ t_ast_node	*parse_expression(t_list **tokens, t_shell *shell);
 t_ast_node	*parse(const char *line, t_shell *shell);
 
 //parser_redirection_handlers_1.c
+void		add_outfile(t_input *input, char *filename, bool append);
 void		apply_output_redirection(t_input *input,
 				t_token_type redir_type, char *expanded_value);
 void		apply_input_redirection(t_input *input, char *expanded_value);
