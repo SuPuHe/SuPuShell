@@ -6,12 +6,67 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 16:17:57 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 13:43:55 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 18:01:54 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+static bool	match_wildcard_pattern(char *pattern, char *text)
+{
+	if (*pattern == '\0' && *text == '\0')
+		return (true);
+	if (*pattern == '*')
+	{
+		if (*(pattern + 1) == '\0')
+			return (true);
+		while (*text)
+		{
+			if (match_wildcard_pattern(pattern + 1, text))
+				return (true);
+			text++;
+		}
+		return (false);
+	}
+	if (*pattern == *text)
+		return (match_wildcard_pattern(pattern + 1, text + 1));
+	return (false);
+}
+
+static char	*get_matching_file(char *pattern)
+{
+	DIR				*dir;
+	struct dirent	*entry;
+	char			*matching_file;
+	int				match_count;
+
+	match_count = 0;
+	matching_file = NULL;
+	dir = opendir(".");
+	if (!dir)
+		return (NULL);
+	entry = readdir(dir);
+	while (entry)
+	{
+		if (match_wildcard_pattern(pattern, entry->d_name))
+		{
+			if (match_count > 0)
+			{
+				ft_putstr_fd("Billyshell: ambiguous redirect\n", 2);
+				cf_free_one(matching_file);
+				closedir(dir);
+				return (NULL);
+			}
+			matching_file = ft_strdup(entry->d_name);
+			match_count++;
+		}
+		entry = readdir(dir);
+	}
+	closedir(dir);
+	if (match_count == 0)
+		return (ft_strdup(pattern));
+	return (matching_file);
+}
 /**
  * @brief Validates and expands a filename token for redirection.
  *
@@ -24,10 +79,11 @@
  * @return Expanded filename string, or NULL on error.
  */
 char	*get_expanded_filename(t_input *input,
-			t_list **current_tokens, t_env *env)
+	t_list **current_tokens, t_env *env)
 {
 	t_token	*filename_token;
 	char	*expanded_value;
+	char	*final_value;
 
 	filename_token = (t_token *)(*current_tokens)->content;
 	if (!filename_token || !filename_token->value)
@@ -41,7 +97,14 @@ char	*get_expanded_filename(t_input *input,
 		input->syntax_ok = false;
 		return (NULL);
 	}
-	return (expanded_value);
+	final_value = get_matching_file(expanded_value);
+	cf_free_one(expanded_value);
+	if (!final_value)
+	{
+		input->syntax_ok = false;
+		return (NULL);
+	}
+	return (final_value);
 }
 
 /**
