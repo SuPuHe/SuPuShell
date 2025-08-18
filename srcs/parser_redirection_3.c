@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 15:48:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 12:48:56 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 13:39:28 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,36 +40,25 @@ static bool	handle_heredoc_token_case(t_input *input,
 }
 
 /**
- * @brief Handles input/output redirection tokens.
+ * @brief Handles input/output file redirection tokens.
  *
- * Expands the filename token and applies redirection based on the
- * redirection type (input, output, append). If expansion fails or
- * filename is missing, marks syntax as invalid.
+ * Expands the filename token, updates infile or outfiles depending
+ * on the redirection type, and advances the token iterator.
  *
  * @param input Input structure holding parsing state.
  * @param current_tokens Pointer to the current token list iterator.
- * @param env Environment variable list used for filename expansion.
+ * @param env Environment variable list for expansion.
  * @param redir_type Type of redirection token (>, >>, <).
  */
 static void	handle_file_redirection_case(t_input *input,
 			t_list **current_tokens, t_env *env,
 			t_token_type redir_type)
 {
-	t_token	*filename_token;
 	char	*expanded_value;
 
-	filename_token = (t_token *)(*current_tokens)->content;
-	if (!filename_token || !filename_token->value)
-	{
-		input->syntax_ok = false;
-		return ;
-	}
-	expanded_value = expand_filename_token(filename_token, env, input->shell);
+	expanded_value = get_expanded_filename(input, current_tokens, env);
 	if (!expanded_value)
-	{
-		input->syntax_ok = false;
 		return ;
-	}
 	if (redir_type == TOKEN_REDIR_OUT || redir_type == TOKEN_REDIR_APPEND)
 	{
 		add_outfile(input, expanded_value, redir_type == TOKEN_REDIR_APPEND);
