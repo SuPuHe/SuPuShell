@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 12:42:37 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 13:40:43 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,8 @@ bool		handle_redirection_token(t_input *input,
 
 //parser_redirection_4.c
 char		*collect_heredoc_delimiter(t_list **current_tokens, bool *quoted);
+char		*get_expanded_filename(t_input *input,
+				t_list **current_tokens, t_env *env);
 
 //parser_word_2.c
 bool		is_adjacent_word_token(t_token *token);
