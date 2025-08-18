@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 12:44:02 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/13 13:41:45 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 12:51:16 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,20 @@ int	ft_isnumeric(const char *str)
 	return (1);
 }
 
+/**
+ * @brief Determines the exit status for the `exit` builtin command.
+ *
+ * Evaluates arguments passed to `exit` and sets the proper exit code:
+ * - If no argument is given, returns the last exit status from the shell.
+ * - If the first argument is not numeric, prints an error and returns 2.
+ * - If more than one argument is given, prints an error and returns 1.
+ * - Otherwise, converts the first argument to an integer and returns it
+ *   as an unsigned char (to match shell exit status behavior).
+ *
+ * @param command Parsed command containing arguments.
+ * @param shell Global shell state, holding last exit status.
+ * @return Exit status code to use for termination.
+ */
 int	last_status_assign(t_input *command, t_shell *shell)
 {
 	int	last_status;

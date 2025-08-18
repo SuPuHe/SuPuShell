@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/23 13:35:59 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/11 12:02:41 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 12:45:43 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,16 @@ t_list	*cf_lstnew(void *content)
 	return (node);
 }
 
+/**
+ * @brief Concatenates two strings into a newly allocated string.
+ *
+ * Allocates and returns a new string consisting of 's1' followed by 's2'.
+ * Uses centralized allocation through `cf_malloc` for memory tracking.
+ *
+ * @param s1 First string.
+ * @param s2 Second string.
+ * @return Pointer to the newly allocated concatenated string, or NULL on error.
+ */
 char	*cf_strjoin(char const *s1, char const *s2)
 {
 	char	*word;
@@ -100,6 +110,17 @@ static size_t	itoa_len(int n)
 	return (len);
 }
 
+/**
+ * @brief Converts an integer to a newly allocated string.
+ *
+ * Allocates and returns a string representation of the integer 'n'.
+ * Handles negative numbers by prefixing with '-' and uses centralized
+ * allocation through `cf_malloc` for memory tracking.
+ *
+ * @param n Integer to convert.
+ * @return Pointer to the newly allocated string containing the number,
+ *			or NULL on error.
+ */
 char	*cf_itoa(int n)
 {
 	char	*str;
