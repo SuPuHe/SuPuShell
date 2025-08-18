@@ -6,14 +6,23 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 12:29:57 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 12:50:08 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// parser_redirection_handlers_1.c
-
+/**
+ * @brief Adds an output file to the input structure.
+ *
+ * Allocates new arrays for output files and their append flags,
+ * copies existing values, and adds the new file and its append flag.
+ * Updates the count of output files.
+ *
+ * @param input Pointer to input structure.
+ * @param filename Name of the output file to add.
+ * @param append True if the file should be appended, false for overwrite.
+ */
 void	add_outfile(t_input *input, char *filename, bool append)
 {
 	char	**new_arr;
