@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 16:17:57 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 18:01:54 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 18:05:10 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,14 +57,14 @@ static char	*get_matching_file(char *pattern)
 				closedir(dir);
 				return (NULL);
 			}
-			matching_file = ft_strdup(entry->d_name);
+			matching_file = cf_strdup(entry->d_name);
 			match_count++;
 		}
 		entry = readdir(dir);
 	}
 	closedir(dir);
 	if (match_count == 0)
-		return (ft_strdup(pattern));
+		return (cf_strdup(pattern));
 	return (matching_file);
 }
 /**
