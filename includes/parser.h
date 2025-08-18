@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 13:40:43 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/18 17:47:11 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,13 +70,34 @@ char		*get_expanded_filename(t_input *input,
 bool		is_adjacent_word_token(t_token *token);
 
 //parser_word_1.c
-void		handle_heredoc_fallback(t_input *input);
-void		handle_regular_word(t_input *input, char *expanded_value);
-void		handle_wildcard_expansion(t_input *input,
-				t_token *current_tok, char *expanded_value);
-char		*concatenate_adjacent_tokens(t_list **current_tokens,
-				char *expanded_value, t_env *env, t_shell *shell);
-bool		handle_word_token(t_input *input,
-				t_list **current_tokens, t_env *env, t_shell *shell);
+bool is_token_quoted(t_token *token);
+t_token_part *create_token_parts_list(t_list *tokens_start, t_list *tokens_end);
+void free_token_parts(t_token_part *parts);
+char *create_bash_compatible_pattern(char *str, t_token_part *parts);
+bool has_unquoted_wildcards(char *str, t_token_part *parts);
+void	handle_heredoc_fallback(t_input *input);
+
+
+bool handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell);
+// t_input handle_heredoc_fallback(t_input *input);
+
+// Функции для работы с wildcard и кавычками
+bool is_token_quoted(t_token *token);
+bool is_adjacent_word_token(t_token *token);
+t_token_part *create_token_parts_list(t_list *tokens_start, t_list *tokens_end);
+void free_token_parts(t_token_part *parts);
+char *create_bash_compatible_pattern(char *str, t_token_part *parts);
+bool has_unquoted_wildcards(char *str, t_token_part *parts);
+
+// Функции для обработки wildcard
+void handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value);
+void handle_bash_compatible_wildcard_expansion(t_input *input, char *expanded_value,
+                                              t_list *tokens_start, t_list *tokens_end);
+char **expand_wildcards_with_escape(const char *pattern);
+int matches_pattern_with_escape(const char *str, const char *pattern);
+
+// Функции для concatenation
+char *concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value,
+                                 t_env *env, t_shell *shell);
 
 #endif

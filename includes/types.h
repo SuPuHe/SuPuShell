@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:12:44 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 16:34:04 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 17:43:10 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,8 @@ typedef struct s_token
 	t_token_type	type;
 	char			*value;
 	bool			has_space;
+	int				start_pos;
+	int				end_pos;
 }	t_token;
 
 typedef enum e_node_type
@@ -128,5 +130,13 @@ typedef struct s_pid_list
 	int		n;
 	pid_t	last;
 }	t_pid_list;
+
+// Структура для отслеживания частей объединенного токена
+typedef struct s_token_part {
+    int start_pos;
+    int end_pos;
+    bool is_quoted;
+    struct s_token_part *next;
+} t_token_part;
 
 #endif
