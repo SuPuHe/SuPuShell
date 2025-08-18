@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection_3.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 15:48:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:27:42 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 12:30:07 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ static bool	handle_heredoc_token_case(t_input *input,
 }
 
 static void	handle_file_redirection_case(t_input *input,
-				t_list **current_tokens, t_env *env,
-				t_token_type redir_type)
+			t_list **current_tokens, t_env *env,
+			t_token_type redir_type)
 {
 	t_token	*filename_token;
 	char	*expanded_value;
@@ -42,10 +42,22 @@ static void	handle_file_redirection_case(t_input *input,
 		return ;
 	}
 	expanded_value = expand_filename_token(filename_token, env, input->shell);
+	if (!expanded_value)
+	{
+		input->syntax_ok = false;
+		return ;
+	}
 	if (redir_type == TOKEN_REDIR_OUT || redir_type == TOKEN_REDIR_APPEND)
-		apply_output_redirection(input, redir_type, expanded_value);
+	{
+		add_outfile(input, expanded_value, redir_type == TOKEN_REDIR_APPEND);
+		input->outfile = expanded_value;
+	}
 	else if (redir_type == TOKEN_REDIR_IN)
-		apply_input_redirection(input, expanded_value);
+	{
+		if (input->infile)
+			cf_free_one(input->infile);
+		input->infile = expanded_value;
+	}
 	*current_tokens = (*current_tokens)->next;
 }
 

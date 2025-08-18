@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection_handlers_2.c                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 15:34:00 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:18:30 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 12:03:57 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,23 +15,28 @@
 bool	apply_output_redirections(t_input *input)
 {
 	int	fd;
-	int	flags;
+	int	i;
 
-	if (input->outfile)
+	i = 0;
+	while (i < input->outfiles_count)
 	{
-		flags = O_CREAT | O_WRONLY;
-		if (input->append)
-			flags |= O_APPEND;
+		if (input->all_outfiles_append_flags[i])
+			fd = open(input->all_outfiles[i], O_WRONLY | O_CREAT | O_APPEND, 0644);
 		else
-			flags |= O_TRUNC;
-		fd = open(input->outfile, flags, 0644);
-		if (fd < 0)
+			fd = open(input->all_outfiles[i], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd == -1)
 		{
-			perror(input->outfile);
+			perror("minishell");
 			return (false);
 		}
-		dup2(fd, STDOUT_FILENO);
-		close(fd);
+		if (i == input->outfiles_count - 1)
+		{
+			dup2(fd, STDOUT_FILENO);
+			close(fd);
+		}
+		else
+			close(fd);
+		i++;
 	}
 	return (true);
 }

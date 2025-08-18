@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redirection_handlers_1.c                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 13:07:31 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:27:29 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/18 12:29:57 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+// parser_redirection_handlers_1.c
 
 void	add_outfile(t_input *input, char *filename, bool append)
 {
@@ -18,8 +20,15 @@ void	add_outfile(t_input *input, char *filename, bool append)
 	bool	*new_flags;
 	int		i;
 
-	new_arr = malloc(sizeof(char *) * (input->outfiles_count + 1));
-	new_flags = malloc(sizeof(bool) * (input->outfiles_count + 1));
+	new_arr = cf_malloc(sizeof(char *) * (input->outfiles_count + 1));
+	if (!new_arr)
+		return;
+	new_flags = cf_malloc(sizeof(bool) * (input->outfiles_count + 1));
+	if (!new_flags)
+	{
+		cf_free_one(new_arr);
+		return;
+	}
 	i = 0;
 	while (i < input->outfiles_count)
 	{
@@ -27,12 +36,12 @@ void	add_outfile(t_input *input, char *filename, bool append)
 		new_flags[i] = input->all_outfiles_append_flags[i];
 		i++;
 	}
+	if (input->all_outfiles)
+		cf_free_one(input->all_outfiles);
+	if (input->all_outfiles_append_flags)
+		cf_free_one(input->all_outfiles_append_flags);
 	new_arr[input->outfiles_count] = filename;
 	new_flags[input->outfiles_count] = append;
-	if (input->all_outfiles)
-		free(input->all_outfiles);
-	if (input->all_outfiles_append_flags)
-		free(input->all_outfiles_append_flags);
 	input->all_outfiles = new_arr;
 	input->all_outfiles_append_flags = new_flags;
 	input->outfiles_count++;
@@ -48,17 +57,25 @@ void	add_outfile(t_input *input, char *filename, bool append)
  * @param redir_type Type of output redirection.
  * @param expanded_value Expanded output file name.
  */
+// In parser_redirection_handlers_1.c
+// parser_redirection_handlers_1.c
+
+// parser_redirection_handlers_1.c
+
 void	apply_output_redirection(t_input *input,
 	t_token_type redir_type, char *expanded_value)
 {
 	bool	append;
 
 	append = (redir_type == TOKEN_REDIR_APPEND);
-	add_outfile(input, expanded_value, append);
+
+	// Free the previous outfile before adding a new one
 	if (input->outfile)
 		cf_free_one(input->outfile);
-	input->outfile = cf_strdup(expanded_value);
-	input->append = append;
+
+	// Add the filename and also make a copy for `input->outfile`
+	add_outfile(input, cf_strdup(expanded_value), append);
+	input->outfile = expanded_value;
 }
 
 /**
