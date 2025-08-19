@@ -6,128 +6,98 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/21 14:00:00 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:25:55 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 17:37:49 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Cleans up memory and closes directory on error.
+ * @brief Matches a single character in pattern with escape.
  *
- * Frees all strings in the result array and closes the directory if it is open.
+ * Handles '\' escape in pattern, comparing the next character literally.
  *
- * @param result Array of strings to free.
- * @param i Last index to free.
- * @param dir Directory pointer to close.
+ * @param str Current position in string.
+ * @param pattern Current position in pattern (points to '\').
+ * @return 1 if matched, 0 otherwise.
  */
-static void	cleanup_on_error(char **result, int i, DIR *dir)
+static int	match_escape(const char *str, const char *pattern)
 {
-	while (--i >= 0)
-		cf_free_one(result[i]);
-	cf_free_one(result);
-	if (dir)
-		closedir(dir);
+	if (*str != *(pattern + 1))
+		return (0);
+	return (matches_pattern_with_escape(str + 1, pattern + 2));
 }
 
 /**
- * @brief Prepares resources for wildcard expansion.
+ * @brief Matches a string against a '*' wildcard in the pattern.
  *
- * Checks for '*' in pattern, counts matches, allocates result array,
- * and opens the current directory.
- * Handles cases with no matches or no wildcards.
+ * Skips consecutive '*' and recursively tries to match the remaining string
+ * with the rest of the pattern.
  *
- * @param pattern Pattern string to expand.
- * @param result Pointer to result array.
- * @param dir Pointer to directory pointer.
- * @return 0 on success, -1 on error or no matches.
+ * @param str Current position in string.
+ * @param pattern Current position in pattern (points to '*').
+ * @return 1 if matched, 0 otherwise.
  */
-static int	init_wildcards(const char *pattern, char ***result, DIR **dir)
+static int	match_star(const char *str, const char *pattern)
+{
+	while (*pattern == '*')
+		pattern++;
+	if (*pattern == '\0')
+		return (1);
+	while (*str)
+	{
+		if (matches_pattern_with_escape(str, pattern))
+			return (1);
+		str++;
+	}
+	return (matches_pattern_with_escape(str, pattern));
+}
+
+/**
+ * @brief Matches a string against a pattern with wildcards and escapes.
+ *
+ * Supports:
+ * - '*' matches any sequence of characters
+ * - '?' matches any single character
+ * - '\' escapes the next character in the pattern
+ *
+ * @param str Input string to match.
+ * @param pattern Pattern string containing wildcards and escapes.
+ * @return 1 if string matches pattern, 0 otherwise.
+ */
+int	matches_pattern_with_escape(const char *str, const char *pattern)
+{
+	if (*pattern == '\0')
+		return (*str == '\0');
+	if (*pattern == '\\' && *(pattern + 1) != '\0')
+		return (match_escape(str, pattern));
+	if (*pattern == '*')
+		return (match_star(str, pattern));
+	if (*str == '\0')
+		return (0);
+	if (*pattern == *str || *pattern == '?')
+		return (matches_pattern_with_escape(str + 1, pattern + 1));
+	return (0);
+}
+
+/**
+ * @brief Expands a pattern with wildcards to matching filenames.
+ *
+ * If no wildcards or no matches, returns an array with the original pattern.
+ *
+ * @param pattern Pattern string.
+ * @return Null-terminated array of matching filenames.
+ */
+char	**expand_wildcards_with_escape(const char *pattern)
 {
 	int	count;
 
-	if (!ft_strchr(pattern, '*'))
-	{
-		*result = handle_no_wildcards(pattern);
-		return (-1);
-	}
-	count = count_matches(pattern);
+	if (!ft_strchr(pattern, '*') && !ft_strchr(pattern, '?'))
+		return (return_single_pattern(pattern));
+	count = count_matching_files(pattern);
 	if (count == 0)
-	{
-		*result = handle_no_wildcards(pattern);
-		return (-1);
-	}
-	*result = create_result_array(count);
-	if (!*result)
-		return (-1);
-	*dir = opendir(".");
-	if (!*dir)
-	{
-		cf_free_one(*result);
-		return (-1);
-	}
-	return (0);
-}
-
-/**
- * @brief Checks a directory entry for wildcard matching.
- *
- * If entry matches the pattern and is not hidden, copies its name to result.
- *
- * @param result Array to store matched names.
- * @param i Current index in result array.
- * @param entry Directory entry to check.
- * @param pattern Wildcard pattern to match.
- * @return 1 if entry added, 0 if not matched, -1 on allocation error.
- */
-static int	process_entry(char **result, int i, struct dirent *entry,
-		const char *pattern)
-{
-	if (entry->d_name[0] != '.' && matches_pattern(entry->d_name, pattern))
-	{
-		result[i] = cf_strdup(entry->d_name);
-		if (!result[i])
-			return (-1);
-		return (1);
-	}
-	return (0);
-}
-
-/**
- * @brief Expands wildcards in the pattern to matching filenames.
- *
- * Scans the directory for files matching the pattern. Returns an array of
- * matched filenames, or the pattern itself if no matches are found.
- *
- * @param pattern Pattern string with wildcards.
- * @return Array of matched filenames, or NULL on error.
- */
-char	**expand_wildcards(const char *pattern)
-{
-	DIR				*dir;
-	struct dirent	*entry;
-	char			**result;
-	int				i;
-	int				ret;
-
-	if (init_wildcards(pattern, &result, &dir) == -1)
-		return (result);
-	i = 0;
-	entry = readdir(dir);
-	while (entry != NULL)
-	{
-		ret = process_entry(result, i, entry, pattern);
-		if (ret == -1)
-		{
-			cleanup_on_error(result, i, dir);
-			return (NULL);
-		}
-		i += ret;
-		entry = readdir(dir);
-	}
-	result[i] = NULL;
-	closedir(dir);
-	return (result);
+		return (return_single_pattern(pattern));
+	return (collect_matching_files(pattern, count));
 }
 
 /**

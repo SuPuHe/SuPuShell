@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 17:21:40 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 17:42:49 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ char			*collect_heredoc_delimiter(t_list **current_tokens,
 
 //parser_word_1.c
 char			*create_bash_compatible_pattern(char *str, t_token_part *parts);
-void			handle_regular_word(t_input *input, char *expanded_value);
 void			handle_heredoc_fallback(t_input *input);
 bool			handle_word_token(t_input *input,
 					t_list **current_tokens, t_env *env, t_shell *shell);
