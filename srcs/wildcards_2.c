@@ -6,119 +6,105 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 16:43:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:25:39 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 17:38:54 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Checks if a string matches a wildcard pattern.
+ * @brief Checks if a string contains unquoted wildcards.
  *
- * Supports '*' and '?' wildcards. Recursively compares the string
- * and pattern, handling multiple consecutive '*' and matching any
- * character for '?'.
+ * Iterates through the string and checks if it contains '*' or '?' characters
+ * that are not inside quoted token parts.
  *
- * @param str String to check.
- * @param pattern Wildcard pattern to match.
- * @return 1 if match, 0 otherwise.
+ * @param str Input string to check.
+ * @param parts Linked list of token parts.
+ * @return true if unquoted wildcards are found, false otherwise.
  */
-int	matches_pattern(const char *str, const char *pattern)
+static void	handle_wildcard_results(t_input *input, char *expanded_value,
+	char *bash_pattern, t_token_part *parts)
 {
-	if (*pattern == '\0')
-		return (*str == '\0');
-	if (*pattern == '*')
+	char	**wildcards;
+	int		i;
+
+	wildcards = expand_wildcards_with_escape(bash_pattern);
+	if (wildcards && wildcards[0])
 	{
-		while (*pattern == '*')
-			pattern++;
-		if (*pattern == '\0')
-			return (1);
-		while (*str)
+		i = 0;
+		while (wildcards[i])
 		{
-			if (matches_pattern(str, pattern))
-				return (1);
-			str++;
+			input->args = append_arg(input->args, wildcards[i]);
+			i++;
 		}
-		return (matches_pattern(str, pattern));
+		free_expanded_wildcards(wildcards);
 	}
-	if (*str == '\0')
-		return (0);
-	if (*pattern == *str || *pattern == '?')
-		return (matches_pattern(str + 1, pattern + 1));
-	return (0);
+	else
+		input->args = append_arg(input->args, expanded_value);
+	cf_free_one(expanded_value);
+	cf_free_one(bash_pattern);
+	free_token_parts(parts);
 }
 
 /**
- * @brief Counts files in current directory matching a wildcard pattern.
+ * @brief Handles wildcard expansion for Bash-compatible patterns.
  *
- * Scans directory and counts non-hidden files that match the pattern
- * using matches_pattern().
+ * If the expanded value contains unquoted wildcards,
+ * it creates a Bash-compatible pattern and expands it.
+ * Otherwise, it appends the expanded value directly.
  *
- * @param pattern Wildcard pattern to match.
- * @return Number of matching files.
+ * @param input Pointer to the input structure.
+ * @param expanded_value Expanded value string.
+ * @param tokens_start Start of the token list.
+ * @param tokens_end End of the token list.
  */
-int	count_matches(const char *pattern)
+static bool	handle_simple_expansion(t_input *input, char *expanded_value,
+	t_token_part *parts, char **bash_pattern)
 {
-	DIR				*dir;
-	struct dirent	*entry;
-	int				count;
-
-	count = 0;
-	dir = opendir(".");
-	if (!dir)
-		return (0);
-	entry = readdir(dir);
-	while (entry != NULL)
+	if (!parts)
 	{
-		if (entry->d_name[0] != '.' && matches_pattern(entry->d_name, pattern))
-			count++;
-		entry = readdir(dir);
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+		return (true);
 	}
-	closedir(dir);
-	return (count);
-}
-
-/**
- * @brief Allocates an array for storing wildcard expansion results.
- *
- * Allocates memory for an array of strings with space for size + 1
- * elements (including NULL terminator).
- *
- * @param size Number of elements to allocate.
- * @return Pointer to allocated array, or NULL on failure.
- */
-char	**create_result_array(int size)
-{
-	char	**result;
-
-	result = cf_malloc(sizeof(char *) * (size + 1));
-	if (!result)
-		return (NULL);
-	return (result);
-}
-
-/**
- * @brief Handles patterns without wildcards by returning the pattern itself.
- *
- * Allocates an array with one string, copies the pattern, and sets
- * the second element to NULL.
- *
- * @param pattern Pattern string without wildcards.
- * @return Array containing the pattern, or NULL on allocation failure.
- */
-char	**handle_no_wildcards(const char *pattern)
-{
-	char	**result;
-
-	result = create_result_array(1);
-	if (!result)
-		return (NULL);
-	result[0] = cf_strdup(pattern);
-	if (!result[0])
+	if (!has_unquoted_wildcards(expanded_value, parts))
 	{
-		cf_free_one(result);
-		return (NULL);
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+		free_token_parts(parts);
+		return (true);
 	}
-	result[1] = NULL;
-	return (result);
+	*bash_pattern = create_bash_compatible_pattern(expanded_value, parts);
+	if (!*bash_pattern)
+	{
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+		free_token_parts(parts);
+		return (true);
+	}
+	return (false);
+}
+
+/**
+ * @brief Handles Bash-compatible wildcard expansion.
+ *
+ * Creates a Bash-compatible pattern from the expanded value and token parts,
+ * then expands it to matching filenames. If no matches, appends the original
+ * expanded value.
+ *
+ * @param input Pointer to the input structure.
+ * @param expanded_value Expanded value string.
+ * @param tokens_start Start of the token list.
+ * @param tokens_end End of the token list.
+ */
+void	handle_bash_compatible_wildcard_expansion(t_input *input,
+	char *expanded_value, t_list *tokens_start, t_list *tokens_end)
+{
+	t_token_part	*parts;
+	char			*bash_pattern;
+
+	parts = create_token_parts_list(tokens_start, tokens_end);
+	if (handle_simple_expansion(input, expanded_value, parts, &bash_pattern))
+		return ;
+	handle_wildcard_results(input, expanded_value, bash_pattern, parts);
 }

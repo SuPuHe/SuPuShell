@@ -6,7 +6,7 @@
 #    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/08/19 17:19:50 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/08/19 17:39:15 by vpushkar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,7 +35,7 @@ RM = rm -rf
 SRCS = minishell.c helpers.c env_helpers_1.c signals.c commands_1.c \
 commands_helpers.c commands_2.c small_helpers.c billy.c \
 wildcards_1.c centralized_free.c cf_libft.c centralized_alloc.c path_helpers.c \
-wildcards_2.c wildcards_3.c  wildcards_4.c executor_main_2.c executor_main_1.c \
+wildcards_2.c executor_main_2.c executor_main_1.c \
 executor_other.c executor_pipe_1.c expander_utils.c expander.c parser_command.c \
 parser_main.c parser_redirection_handlers_1.c string_builder_1.c ast.c \
 wildcard_helpers.c parser_redirection_1.c parser_word_2.c parser_word_1.c \

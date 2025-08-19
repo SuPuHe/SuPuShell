@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 17:21:35 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 17:42:45 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,31 +48,6 @@ char	*create_bash_compatible_pattern(char *str, t_token_part *parts)
 	}
 	pattern[pattern_pos] = '\0';
 	return (pattern);
-}
-
-/**
- * @brief Handles a regular word token, adding it to command arguments.
- *
- * Adds the expanded word to the input arguments if not empty.
- * Frees the expanded value after use.
- *
- * @param input Pointer to the input structure.
- * @param expanded_value Expanded word string.
- */
-void	handle_regular_word(t_input *input, char *expanded_value)
-{
-	if (ft_strlen(expanded_value) > 0)
-	{
-		input->args = append_arg(input->args, expanded_value);
-		cf_free_one(expanded_value);
-	}
-	else if (expanded_value)
-	{
-		input->args = append_arg(input->args, cf_strdup(""));
-		cf_free_one(expanded_value);
-	}
-	else
-		cf_free_one(expanded_value);
 }
 
 /**
