@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 14:39:38 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/19 14:57:53 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -427,44 +427,12 @@ char	**expand_wildcards_with_escape(const char *pattern)
 	return (collect_matching_files(pattern, count));
 }
 
-void handle_bash_compatible_wildcard_expansion(t_input *input, char *expanded_value,
-	t_list *tokens_start, t_list *tokens_end)
+static void	handle_wildcard_results(t_input *input, char *expanded_value,
+	char *bash_pattern, t_token_part *parts)
 {
-	char **wildcards;
-	char *bash_pattern;
-	t_token_part *parts;
-	int i;
+	char	**wildcards;
+	int		i;
 
-	// Создаем список частей с информацией о кавычках
-	parts = create_token_parts_list(tokens_start, tokens_end);
-	if (!parts)
-	{
-		input->args = append_arg(input->args, expanded_value);
-		cf_free_one(expanded_value);
-		return;
-	}
-
-	// Проверяем, есть ли незакавыченные wildcard символы
-	if (!has_unquoted_wildcards(expanded_value, parts))
-	{
-		// Нет незакавыченных wildcard - обрабатываем как обычное слово
-		input->args = append_arg(input->args, expanded_value);
-		cf_free_one(expanded_value);
-		free_token_parts(parts);
-		return;
-	}
-
-	// Создаем bash-совместимый паттерн (экранируем wildcard в кавычках)
-	bash_pattern = create_bash_compatible_pattern(expanded_value, parts);
-	if (!bash_pattern)
-	{
-		input->args = append_arg(input->args, expanded_value);
-		cf_free_one(expanded_value);
-		free_token_parts(parts);
-		return;
-	}
-
-	// Применяем wildcard расширение с экранированным паттерном
 	wildcards = expand_wildcards_with_escape(bash_pattern);
 	if (wildcards && wildcards[0])
 	{
@@ -482,6 +450,46 @@ void handle_bash_compatible_wildcard_expansion(t_input *input, char *expanded_va
 	cf_free_one(bash_pattern);
 	free_token_parts(parts);
 }
+
+static bool	handle_simple_expansion(t_input *input, char *expanded_value,
+	t_token_part *parts, char **bash_pattern)
+{
+	if (!parts)
+	{
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+		return (true);
+	}
+	if (!has_unquoted_wildcards(expanded_value, parts))
+	{
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+		free_token_parts(parts);
+		return (true);
+	}
+	*bash_pattern = create_bash_compatible_pattern(expanded_value, parts);
+	if (!*bash_pattern)
+	{
+		input->args = append_arg(input->args, expanded_value);
+		cf_free_one(expanded_value);
+		free_token_parts(parts);
+		return (true);
+	}
+	return (false);
+}
+
+void	handle_bash_compatible_wildcard_expansion(t_input *input,
+	char *expanded_value, t_list *tokens_start, t_list *tokens_end)
+{
+	t_token_part	*parts;
+	char			*bash_pattern;
+
+	parts = create_token_parts_list(tokens_start, tokens_end);
+	if (handle_simple_expansion(input, expanded_value, parts, &bash_pattern))
+		return ;
+	handle_wildcard_results(input, expanded_value, bash_pattern, parts);
+}
+
 /**
  * @brief Handles fallback for heredoc if no arguments are present.
  *
@@ -540,15 +548,15 @@ void	handle_regular_word(t_input *input, char *expanded_value)
  * @param current_tok Pointer to the current token.
  * @param expanded_value Expanded word string.
  */
-void handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expanded_value)
+void	handle_wildcard_expansion(t_input *input,
+			t_token *current_tok, char *expanded_value)
 {
 	char	**wildcards;
 	int		i;
 
-	if (current_tok->type == TOKEN_WORD &&
-		(ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
+	if (current_tok->type == TOKEN_WORD
+		&& (ft_strchr(expanded_value, '*') || ft_strchr(expanded_value, '?')))
 	{
-
 		wildcards = expand_wildcards(expanded_value);
 		if (wildcards && wildcards[0])
 		{
@@ -580,18 +588,19 @@ void handle_wildcard_expansion(t_input *input, t_token *current_tok, char *expan
  * @param shell Pointer to the shell structure.
  * @return Combined expanded string (must be freed).
  */
-char *concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value,
-				 t_env *env, t_shell *shell)
+char	*concatenate_adjacent_tokens(t_list **current_tokens,
+			char *expanded_value, t_env *env, t_shell *shell)
 {
 	t_list	*next_token;
 	char	*next_expanded;
 	char	*combined;
 
 	next_token = (*current_tokens)->next;
-	while (next_token && !((t_token *)next_token->content)->has_space &&
-			is_adjacent_word_token((t_token *)next_token->content))
+	while (next_token && !((t_token *)next_token->content)->has_space
+		&& is_adjacent_word_token((t_token *)next_token->content))
 	{
-		next_expanded = expand_token_value((t_token *)next_token->content, env, shell);
+		next_expanded = expand_token_value((t_token *)next_token->content,
+				env, shell);
 		if (next_expanded)
 		{
 			combined = ft_strjoin_free(expanded_value, next_expanded);
@@ -619,7 +628,8 @@ char *concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value,
  * @param shell Pointer to the shell structure.
  * @return true if successful, false otherwise.
  */
-bool handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_shell *shell)
+bool	handle_word_token(t_input *input,
+		t_list **current_tokens, t_env *env, t_shell *shell)
 {
 	t_token	*current_tok;
 	char	*expanded_value;
@@ -631,10 +641,11 @@ bool handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_sh
 	expanded_value = expand_token_value(current_tok, env, shell);
 	if (!expanded_value)
 		return (input->syntax_ok = false, false);
-	expanded_value = concatenate_adjacent_tokens(current_tokens, expanded_value, env, shell);
+	expanded_value = concatenate_adjacent_tokens(current_tokens,
+			expanded_value, env, shell);
 	tokens_end_next = (*current_tokens)->next;
-	// Используем bash-совместимую обработку wildcard
-	handle_bash_compatible_wildcard_expansion(input, expanded_value, tokens_start, tokens_end_next);
+	handle_bash_compatible_wildcard_expansion(input, expanded_value,
+		tokens_start, tokens_end_next);
 	*current_tokens = (*current_tokens)->next;
 	return (true);
 }
