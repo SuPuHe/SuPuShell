@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+         #
+#    By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/30 10:05:20 by omizin            #+#    #+#              #
-#    Updated: 2025/08/18 13:52:45 by vpushkar         ###   ########.fr        #
+#    Updated: 2025/08/19 16:48:33 by omizin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,7 +42,7 @@ parser_redirection_1.c parser_word_2.c parser_word_1.c \
 tokenizer_handlers.c tokenizer_main_1.c tokenizer_main_2.c \
 input_checker.c string_builder_2.c parser_redirection_2.c \
 parser_redirection_handlers_2.c parser_redirection_3.c \
-parser_redirection_4.c executor_pipe_2.c \
+parser_redirection_4.c parser_redirection_5.c executor_pipe_2.c \
 env_helpers_2.c commands_3.c minishell_helper.c
 
 
