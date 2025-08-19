@@ -6,136 +6,223 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 11:50:00 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/19 13:53:54 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-bool is_token_quoted(t_token *token)
+/**
+ * @brief Checks if a token is quoted.
+ *
+ * Determines whether a token was originally enclosed in single or double quotes.
+ *
+ * @param token Pointer to the token to check.
+ * @return true if the token is single- or double-quoted, false otherwise.
+ */
+bool	is_token_quoted(t_token *token)
 {
 	if (!token)
 		return (false);
-	return (token->type == TOKEN_SINGLE_QUOTE_WORD ||
-			token->type == TOKEN_DOUBLE_QUOTE_WORD);
+	return (token->type == TOKEN_SINGLE_QUOTE_WORD
+		|| token->type == TOKEN_DOUBLE_QUOTE_WORD);
 }
 
-t_token_part *create_token_parts_list(t_list *tokens_start, t_list *tokens_end)
+/**
+ * @brief Creates a single token part from a token.
+ *
+ * Allocates a new t_token_part, sets start/end positions and
+ * quotation status.
+ *
+ * @param token Pointer to the token.
+ * @param start_pos Start position of the token in the combined string.
+ * @return Pointer to the newly allocated token part,
+ * 			or NULL on allocation failure.
+ */
+static t_token_part	*create_token_part(t_token *token, int start_pos)
 {
-	t_token_part	*head = NULL;
-	t_token_part	*current_part = NULL;
-	t_list			*token_node = tokens_start;
-	int				pos = 0;
+	t_token_part	*part;
 
+	part = cf_malloc(sizeof(t_token_part));
+	if (!part)
+		return (NULL);
+	part->start_pos = start_pos;
+	part->end_pos = start_pos + ft_strlen(token->value) - 1;
+	part->is_quoted = is_token_quoted(token);
+	part->next = NULL;
+	return (part);
+}
+
+/**
+ * @brief Appends a token part to the linked list.
+ *
+ * Updates the head and current_part pointers and returns the new current.
+ *
+ * @param head Pointer to the head of the list (may be updated if empty).
+ * @param current_part Current last node of the list.
+ * @param new_part New token part to append.
+ * @return Updated current_part pointer after appending.
+ */
+static t_token_part	*append_token_part(t_token_part **head,
+	t_token_part *current_part, t_token_part *new_part)
+{
+	if (!*head)
+	{
+		*head = new_part;
+		return (new_part);
+	}
+	else
+	{
+		current_part->next = new_part;
+		return (new_part);
+	}
+}
+
+/**
+ * @brief Creates a linked list of token parts from a range of tokens.
+ *
+ * Iterates from tokens_start up to (but not including) tokens_end,
+ * creating t_token_part nodes for each token and linking them into a list.
+ * Frees already allocated parts if any allocation fails.
+ *
+ * @param tokens_start Start of the token list.
+ * @param tokens_end End of the token list (exclusive).
+ * @return Pointer to the head of the linked list of token parts,
+ *			or NULL if allocation failed.
+ */
+t_token_part	*create_token_parts_list(t_list *tokens_start,
+	t_list *tokens_end)
+{
+	t_token_part	*head;
+	t_token_part	*current_part;
+	t_token_part	*new_part;
+	t_list			*token_node;
+	int				pos;
+
+	head = NULL;
+	current_part = NULL;
+	token_node = tokens_start;
+	pos = 0;
 	while (token_node && token_node != tokens_end)
 	{
-		t_token *token = (t_token *)token_node->content;
-		t_token_part *new_part = cf_malloc(sizeof(t_token_part));
-
+		new_part = create_token_part((t_token *)token_node->content, pos);
 		if (!new_part)
 		{
 			free_token_parts(head);
-			return NULL;
+			return (NULL);
 		}
-
-		new_part->start_pos = pos;
-		new_part->end_pos = pos + ft_strlen(token->value) - 1;
-		new_part->is_quoted = is_token_quoted(token);
-		new_part->next = NULL;
-
-		if (!head)
-		{
-			head = new_part;
-			current_part = new_part;
-		}
-		else
-		{
-			current_part->next = new_part;
-			current_part = new_part;
-		}
-
-		pos += ft_strlen(token->value);
+		current_part = append_token_part(&head, current_part, new_part);
+		pos += ft_strlen(((t_token *)token_node->content)->value);
 		token_node = token_node->next;
 	}
-
 	return (head);
 }
 
-void free_token_parts(t_token_part *parts)
+/**
+ * @brief Frees a linked list of token parts.
+ *
+ * Iterates through the linked list of t_token_part structures and frees
+ * each node using centralized memory management.
+ *
+ * @param parts Pointer to the head of the token parts list.
+ */
+void	free_token_parts(t_token_part *parts)
 {
+	t_token_part	*next;
+
 	while (parts)
 	{
-		t_token_part *next = parts->next;
+		next = parts->next;
 		cf_free_one(parts);
 		parts = next;
 	}
 }
 
-bool has_unquoted_wildcards(char *str, t_token_part *parts)
+/**
+ * @brief Checks if the character at index is inside a quoted token part.
+ *
+ * @param parts Linked list of token parts.
+ * @param index Index of the character in the string.
+ * @return true if the character is inside a quoted part, false otherwise.
+ */
+static bool	is_in_quoted_part(t_token_part *parts, int index)
 {
-	int len = ft_strlen(str);
-	int i  = 0;
+	t_token_part	*current;
+
+	current = parts;
+	while (current)
+	{
+		if (index >= current->start_pos && index <= current->end_pos
+			&& current->is_quoted)
+			return (true);
+		current = current->next;
+	}
+	return (false);
+}
+
+/**
+ * @brief Checks if the string contains unquoted wildcards '*' or '?'.
+ *
+ * Iterates through the string and returns true if a wildcard is found
+ * outside of quoted token parts.
+ *
+ * @param str The string to check.
+ * @param parts Linked list of token parts with quotation info.
+ * @return true if there is at least one unquoted wildcard, false otherwise.
+ */
+bool	has_unquoted_wildcards(char *str, t_token_part *parts)
+{
+	int	len;
+	int	i;
+
+	len = ft_strlen(str);
+	i = 0;
 	while (i < len)
 	{
 		if (str[i] == '*' || str[i] == '?')
 		{
-			// Проверяем, находится ли этот символ в закавыченной части
-			t_token_part *current = parts;
-			bool in_quoted_part = false;
-
-			while (current)
-			{
-				if (i >= current->start_pos && i <= current->end_pos && current->is_quoted)
-				{
-					in_quoted_part = true;
-					break ;
-				}
-				current = current->next;
-			}
-
-			if (!in_quoted_part)
-				return (true); // Нашли незакавыченный wildcard
+			if (!is_in_quoted_part(parts, i))
+				return (true);
 		}
 		i++;
 	}
-
-	return false;
+	return (false);
 }
 
-char *create_bash_compatible_pattern(char *str, t_token_part *parts)
+/**
+ * @brief Creates a Bash-compatible pattern string with escaped wildcards.
+ *
+ * Iterates through the input string and escapes wildcard characters (*, ?)
+ * if they appear inside quoted token parts. Allocates a new string to hold
+ * the pattern.
+ *
+ * @param str Input string.
+ * @param parts Linked list of token parts.
+ * @return Allocated string containing the pattern, or
+ * 			NULL on allocation failure.
+ */
+char	*create_bash_compatible_pattern(char *str, t_token_part *parts)
 {
-	int		len = ft_strlen(str);
-	char	*pattern = cf_malloc(len * 2 + 1); // Запас на экранирование
-	if (!pattern)
-		return NULL;
+	int		len;
+	char	*pattern;
+	int		pattern_pos;
+	int		i;
+	char	c;
 
-	int pattern_pos = 0;
-	int i = 0;
+	len = ft_strlen(str);
+	pattern = cf_malloc(len * 2 + 1);
+	if (!pattern)
+		return (NULL);
+	pattern_pos = 0;
+	i = 0;
 	while (i < len)
 	{
-		char c = str[i];
-
-		t_token_part *current = parts;
-		bool in_quoted_part = false;
-
-		while (current)
-		{
-			if (i >= current->start_pos && i <= current->end_pos && current->is_quoted)
-			{
-				in_quoted_part = true;
-				break ;
-			}
-			current = current->next;
-		}
-
-		// Если wildcard символ в закавыченной части - экранируем его
-		if ((c == '*' || c == '?') && in_quoted_part)
+		c = str[i];
+		if ((c == '*' || c == '?') && is_in_quoted_part(parts, i))
 			pattern[pattern_pos++] = '\\';
-
 		pattern[pattern_pos++] = c;
 		i++;
 	}
-
 	pattern[pattern_pos] = '\0';
 	return (pattern);
 }
@@ -416,23 +503,19 @@ char *concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value,
 	while (next_token && !((t_token *)next_token->content)->has_space &&
 			is_adjacent_word_token((t_token *)next_token->content))
 	{
-
 		next_expanded = expand_token_value((t_token *)next_token->content, env, shell);
-
 		if (next_expanded)
 		{
 			combined = ft_strjoin_free(expanded_value, next_expanded);
 			cf_free_one(expanded_value);
 			cf_free_one(next_expanded);
 			expanded_value = combined;
-
 			*current_tokens = next_token;
 			next_token = next_token->next;
 		}
 		else
 			break ;
 	}
-
 	return (expanded_value);
 }
 
@@ -457,17 +540,13 @@ bool handle_word_token(t_input *input, t_list **current_tokens, t_env *env, t_sh
 
 	current_tok = (t_token *)(*current_tokens)->content;
 	tokens_start = *current_tokens;
-
 	expanded_value = expand_token_value(current_tok, env, shell);
 	if (!expanded_value)
 		return (input->syntax_ok = false, false);
-
 	expanded_value = concatenate_adjacent_tokens(current_tokens, expanded_value, env, shell);
 	tokens_end_next = (*current_tokens)->next;
-
 	// Используем bash-совместимую обработку wildcard
 	handle_bash_compatible_wildcard_expansion(input, expanded_value, tokens_start, tokens_end_next);
-
 	*current_tokens = (*current_tokens)->next;
 	return (true);
 }
