@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 13:58:18 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/19 14:39:38 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,83 +295,140 @@ int	matches_pattern_with_escape(const char *str, const char *pattern)
 	return (0);
 }
 
-char	**expand_wildcards_with_escape(const char *pattern)
+/**
+ * @brief Returns a dynamically allocated array with the original pattern.
+ *
+ * Used when no wildcard expansion is needed or no matches found.
+ *
+ * @param pattern Original string.
+ * @return Null-terminated array with pattern copy.
+ */
+static char	**return_single_pattern(const char *pattern)
+{
+	char	**result;
+
+	result = cf_malloc(sizeof(char *) * 2);
+	if (!result)
+		return (NULL);
+	result[0] = cf_strdup(pattern);
+	result[1] = NULL;
+	return (result);
+}
+
+/**
+ * @brief Counts files in the current directory matching the pattern.
+ *
+ * @param pattern Pattern with wildcards.
+ * @return Number of matching files.
+ */
+static int	count_matching_files(const char *pattern)
+{
+	DIR				*dir;
+	struct dirent	*entry;
+	int				count;
+
+	dir = opendir(".");
+	count = 0;
+	if (!dir)
+		return (0);
+	entry = readdir(dir);
+	while (entry != NULL)
+	{
+		if (entry->d_name[0] != '.'
+			&& matches_pattern_with_escape(entry->d_name, pattern))
+			count++;
+		entry = readdir(dir);
+	}
+	closedir(dir);
+	return (count);
+}
+
+/**
+ * @brief Safely appends a matched filename to the result array.
+ *
+ * Allocates memory for the filename, updates the index, and frees all
+ * previously allocated entries if allocation fails.
+ *
+ * @param result Array of strings.
+ * @param i Pointer to current index in the array.
+ * @param name Matched filename.
+ * @return true if successful, false on allocation failure.
+ */
+static bool	append_match_to_result(char **result, int *i, const char *name)
+{
+	result[*i] = cf_strdup(name);
+	if (!result[*i])
+	{
+		while (--(*i) >= 0)
+			cf_free_one(result[*i]);
+		cf_free_one(result);
+		return (false);
+	}
+	(*i)++;
+	return (true);
+}
+
+/**
+ * @brief Collects files matching a wildcard pattern in the current directory.
+ *
+ * Opens the directory, checks each file against the pattern, and stores
+ * matches in a null-terminated array.
+ *
+ * @param pattern Pattern with wildcards.
+ * @param count Number of matching files expected.
+ * @return Null-terminated array of matching filenames, or NULL on failure.
+ */
+static char	**collect_matching_files(const char *pattern, int count)
 {
 	DIR				*dir;
 	struct dirent	*entry;
 	char			**result;
-	int				i = 0;
-	int				count;
+	int				i;
+
+	dir = opendir(".");
+	i = 0;
+	if (!dir)
+		return (NULL);
+	result = cf_malloc(sizeof(char *) * (count + 1));
+	if (!result)
+		return (closedir(dir), NULL);
+	entry = readdir(dir);
+	while (entry != NULL && i < count)
+	{
+		if (entry->d_name[0] != '.'
+			&& matches_pattern_with_escape(entry->d_name, pattern))
+		{
+			if (!append_match_to_result(result, &i, entry->d_name))
+				return (closedir(dir), NULL);
+		}
+		entry = readdir(dir);
+	}
+	result[i] = NULL;
+	return (closedir(dir), result);
+}
+
+/**
+ * @brief Expands a pattern with wildcards to matching filenames.
+ *
+ * If no wildcards or no matches, returns an array with the original pattern.
+ *
+ * @param pattern Pattern string.
+ * @return Null-terminated array of matching filenames.
+ */
+char	**expand_wildcards_with_escape(const char *pattern)
+{
+	int	count;
 
 	if (!ft_strchr(pattern, '*') && !ft_strchr(pattern, '?'))
-	{
-		result = cf_malloc(sizeof(char*) * 2);
-		if (!result)
-			return NULL;
-		result[0] = cf_strdup(pattern);
-		result[1] = NULL;
-		return (result);
-	}
-
-	// Считаем совпадения
-	count = 0;
-	dir = opendir(".");
-	if (!dir) return NULL;
-
-	while ((entry = readdir(dir)) != NULL)
-	{
-		if (entry->d_name[0] != '.' && matches_pattern_with_escape(entry->d_name, pattern))
-			count++;
-	}
-	closedir(dir);
-
+		return (return_single_pattern(pattern));
+	count = count_matching_files(pattern);
 	if (count == 0)
-	{
-		// Нет совпадений - возвращаем оригинальный паттерн
-		result = cf_malloc(sizeof(char*) * 2);
-		if (!result)
-			return NULL;
-		result[0] = cf_strdup(pattern);
-		result[1] = NULL;
-		return (result);
-	}
-
-	result = cf_malloc(sizeof(char*) * (count + 1));
-	if (!result)
-		return (NULL);
-
-	dir = opendir(".");
-	if (!dir)
-	{
-		free(result);
-		return (NULL);
-	}
-
-	while ((entry = readdir(dir)) != NULL && i < count)
-	{
-		if (entry->d_name[0] != '.' && matches_pattern_with_escape(entry->d_name, pattern))
-		{
-			result[i] = cf_strdup(entry->d_name);
-			if (!result[i])
-			{
-				// Cleanup on error
-				while (--i >= 0)
-					cf_free_one(result[i]);
-				cf_free_one(result);
-				closedir(dir);
-				return (NULL);
-			}
-			i++;
-		}
-	}
-
-	result[i] = NULL;
-	closedir(dir);
-	return (result);
+		return (return_single_pattern(pattern));
+	return (collect_matching_files(pattern, count));
 }
 
 void handle_bash_compatible_wildcard_expansion(t_input *input, char *expanded_value,
-											  t_list *tokens_start, t_list *tokens_end)
+	t_list *tokens_start, t_list *tokens_end)
 {
 	char **wildcards;
 	char *bash_pattern;
