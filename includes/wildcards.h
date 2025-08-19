@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:18:15 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 17:26:06 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 17:17:35 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,5 +22,20 @@ int		matches_pattern(const char *str, const char *pattern);
 int		count_matches(const char *pattern);
 char	**create_result_array(int size);
 char	**handle_no_wildcards(const char *pattern);
+
+// wildcards_3.c
+int		matches_pattern_with_escape(const char *str, const char *pattern);
+char	**expand_wildcards_with_escape(const char *pattern);
+void	handle_wildcard_expansion(t_input *input,
+			t_token *current_tok, char *expanded_value);
+// wildcards_4.c
+void	handle_bash_compatible_wildcard_expansion(t_input *input,
+			char *expanded_value, t_list *tokens_start, t_list *tokens_end);
+
+// wildcard_helpers.c
+char	**return_single_pattern(const char *pattern);
+int		count_matching_files(const char *pattern);
+bool	append_match_to_result(char **result, int *i, const char *name);
+char	**collect_matching_files(const char *pattern, int count);
 
 #endif
