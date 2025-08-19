@@ -6,25 +6,25 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 17:42:45 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 18:01:08 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Creates a Bash-compatible pattern string with escaped wildcards.
+ * @brief Escapes wildcard characters inside a pattern string.
  *
- * Iterates through the input string and escapes wildcard characters (*, ?)
- * if they appear inside quoted token parts. Allocates a new string to hold
- * the pattern.
+ * This function scans the given pattern and adds escape characters (`\`)
+ * before any special wildcard symbols (`*`, `?`) when they appear inside
+ * quoted segments. This ensures that those symbols are treated as literal
+ * characters instead of being expanded by the shell.
  *
- * @param str Input string.
- * @param parts Linked list of token parts.
- * @return Allocated string containing the pattern, or
- * 			NULL on allocation failure.
+ * @param pattern The input string that may contain wildcards and quotes.
+ * @return A newly allocated string with wildcards properly escaped,
+ * or NULL if allocation fails. The caller is responsible for freeing it.
  */
-char	*create_bash_compatible_pattern(char *str, t_token_part *parts)
+char	*escape_wildcards_in_quotes(char *str, t_token_part *parts)
 {
 	int		len;
 	char	*pattern;
@@ -101,7 +101,7 @@ bool	handle_word_token(t_input *input,
 	expanded_value = concatenate_adjacent_tokens(current_tokens,
 			expanded_value, env, shell);
 	tokens_end_next = (*current_tokens)->next;
-	handle_bash_compatible_wildcard_expansion(input, expanded_value,
+	handle_glob_expansion(input, expanded_value,
 		tokens_start, tokens_end_next);
 	*current_tokens = (*current_tokens)->next;
 	return (true);

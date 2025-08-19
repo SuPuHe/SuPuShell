@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   input_checker.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:02:06 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 12:47:21 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/19 18:09:01 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ bool	handle_non_quote_syntax(char c,
 		if (c == '\\' || c == ';')
 			return (printf("Error input: Unsupported character '\\' or ';'\n"),
 				false);
-		else if (c == '(')
+		if (c == '(')
 			check->l_par++;
 		else if (c == ')')
 			check->r_par++;

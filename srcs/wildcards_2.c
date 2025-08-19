@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 16:43:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 17:38:54 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 18:02:51 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@
  * @return true if unquoted wildcards are found, false otherwise.
  */
 static void	handle_wildcard_results(t_input *input, char *expanded_value,
-	char *bash_pattern, t_token_part *parts)
+	char *pattern, t_token_part *parts)
 {
 	char	**wildcards;
 	int		i;
 
-	wildcards = expand_wildcards_with_escape(bash_pattern);
+	wildcards = expand_wildcards_with_escape(pattern);
 	if (wildcards && wildcards[0])
 	{
 		i = 0;
@@ -42,24 +42,28 @@ static void	handle_wildcard_results(t_input *input, char *expanded_value,
 	else
 		input->args = append_arg(input->args, expanded_value);
 	cf_free_one(expanded_value);
-	cf_free_one(bash_pattern);
+	cf_free_one(pattern);
 	free_token_parts(parts);
 }
 
 /**
- * @brief Handles wildcard expansion for Bash-compatible patterns.
+ * @brief Handles simple expansion and prepares wildcard patterns if needed.
  *
- * If the expanded value contains unquoted wildcards,
- * it creates a Bash-compatible pattern and expands it.
- * Otherwise, it appends the expanded value directly.
+ * This function decides how to handle an expanded value:
+ * - If there are no token parts, the value is directly added as an argument.
+ * - If the value does not contain unquoted wildcards, it is appended directly.
+ * - If unquoted wildcards are present, it escapes quoted parts and produces
+ *   a glob pattern string in @p pattern for later expansion.
  *
- * @param input Pointer to the input structure.
- * @param expanded_value Expanded value string.
- * @param tokens_start Start of the token list.
- * @param tokens_end End of the token list.
+ * @param input Pointer to the input structure holding parsed arguments.
+ * @param expanded_value Expanded value string (ownership is transferred).
+ * @param parts List of token parts describing quotes and special characters.
+ * @param pattern Output pointer for the prepared glob pattern (if any).
+ * @return true if the argument was fully processed and appended to input->args,
+ *			false if a glob pattern was prepared and requires further expansion.
  */
 static bool	handle_simple_expansion(t_input *input, char *expanded_value,
-	t_token_part *parts, char **bash_pattern)
+	t_token_part *parts, char **pattern)
 {
 	if (!parts)
 	{
@@ -74,8 +78,8 @@ static bool	handle_simple_expansion(t_input *input, char *expanded_value,
 		free_token_parts(parts);
 		return (true);
 	}
-	*bash_pattern = create_bash_compatible_pattern(expanded_value, parts);
-	if (!*bash_pattern)
+	*pattern = escape_wildcards_in_quotes(expanded_value, parts);
+	if (!*pattern)
 	{
 		input->args = append_arg(input->args, expanded_value);
 		cf_free_one(expanded_value);
@@ -86,25 +90,25 @@ static bool	handle_simple_expansion(t_input *input, char *expanded_value,
 }
 
 /**
- * @brief Handles Bash-compatible wildcard expansion.
+ * @brief Handles wildcard (glob) expansion for tokens.
  *
- * Creates a Bash-compatible pattern from the expanded value and token parts,
- * then expands it to matching filenames. If no matches, appends the original
- * expanded value.
+ * Builds a globbing pattern from the expanded value and token parts,
+ * then expands it into matching filenames. If no matches are found,
+ * the original expanded value is preserved.
  *
  * @param input Pointer to the input structure.
  * @param expanded_value Expanded value string.
  * @param tokens_start Start of the token list.
  * @param tokens_end End of the token list.
  */
-void	handle_bash_compatible_wildcard_expansion(t_input *input,
+void	handle_glob_expansion(t_input *input,
 	char *expanded_value, t_list *tokens_start, t_list *tokens_end)
 {
 	t_token_part	*parts;
-	char			*bash_pattern;
+	char			*pattern;
 
 	parts = create_token_parts_list(tokens_start, tokens_end);
-	if (handle_simple_expansion(input, expanded_value, parts, &bash_pattern))
+	if (handle_simple_expansion(input, expanded_value, parts, &pattern))
 		return ;
-	handle_wildcard_results(input, expanded_value, bash_pattern, parts);
+	handle_wildcard_results(input, expanded_value, pattern, parts);
 }
