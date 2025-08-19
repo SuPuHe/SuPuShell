@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:18:15 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 17:39:55 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 18:01:08 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void	handle_wildcard_expansion(t_input *input,
 void	free_expanded_wildcards(char **expanded);
 
 // wildcars_2.c
-void	handle_bash_compatible_wildcard_expansion(t_input *input,
+void	handle_glob_expansion(t_input *input,
 			char *expanded_value, t_list *tokens_start, t_list *tokens_end);
 
 // wildcard_helpers.c

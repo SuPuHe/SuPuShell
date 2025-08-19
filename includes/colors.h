@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   colors.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:12:38 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/31 10:44:20 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/19 18:05:30 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,6 @@
 # define BOLDCYAN    "\033[1m\033[36m"
 # define BOLDWHITE   "\033[1m\033[37m"
 
-# define SHELLNAME "\001\033[1m\033[36m\002Billyshell$ \001\033[0m\002"
+# define SHELLNAME "\001\033[1m\033[36m\002Billyshell♂ \001\033[0m\002"
 
 #endif

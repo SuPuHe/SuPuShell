@@ -6,7 +6,7 @@
 /*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:05:42 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/01 15:01:47 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 18:03:21 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ t_ast_node	*parse_primary(t_list **tokens, t_shell *shell)
 	else if (current_token->type == TOKEN_AMPERSAND)
 	{
 		shell->last_exit_status = 2;
-		ft_printf("Billyshell: syntax error near unexpected token '&'\n");
+		ft_putstr_fd("Billyshell: syntax error near unexpected token '&'\n", 2);
 		return (NULL);
 	}
 	shell->last_exit_status = 0;
