@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/18 17:47:11 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/19 16:47:49 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,15 +62,17 @@ bool		handle_redirection_token(t_input *input,
 				t_list **current_tokens, t_env *env);
 
 //parser_redirection_4.c
-char		*collect_heredoc_delimiter(t_list **current_tokens, bool *quoted);
 char		*get_expanded_filename(t_input *input,
 				t_list **current_tokens, t_env *env);
+
+//parser_redirection_5.c
+char		*collect_heredoc_delimiter(t_list **current_tokens, bool *quoted);
 
 //parser_word_2.c
 bool		is_adjacent_word_token(t_token *token);
 
 //parser_word_1.c
-bool is_token_quoted(t_token *token);
+bool	is_token_quoted(t_token *token);
 t_token_part *create_token_parts_list(t_list *tokens_start, t_list *tokens_end);
 void free_token_parts(t_token_part *parts);
 char *create_bash_compatible_pattern(char *str, t_token_part *parts);
@@ -98,6 +100,6 @@ int matches_pattern_with_escape(const char *str, const char *pattern);
 
 // Функции для concatenation
 char *concatenate_adjacent_tokens(t_list **current_tokens, char *expanded_value,
-                                 t_env *env, t_shell *shell);
+		t_env *env, t_shell *shell);
 
 #endif
