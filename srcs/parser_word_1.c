@@ -6,7 +6,7 @@
 /*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:15:20 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 13:53:54 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/19 13:58:18 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,40 +227,71 @@ char	*create_bash_compatible_pattern(char *str, t_token_part *parts)
 	return (pattern);
 }
 
+/**
+ * @brief Matches a single character in pattern with escape.
+ *
+ * Handles '\' escape in pattern, comparing the next character literally.
+ *
+ * @param str Current position in string.
+ * @param pattern Current position in pattern (points to '\').
+ * @return 1 if matched, 0 otherwise.
+ */
+static int	match_escape(const char *str, const char *pattern)
+{
+	if (*str != *(pattern + 1))
+		return (0);
+	return (matches_pattern_with_escape(str + 1, pattern + 2));
+}
+
+/**
+ * @brief Matches a string against a '*' wildcard in the pattern.
+ *
+ * Skips consecutive '*' and recursively tries to match the remaining string
+ * with the rest of the pattern.
+ *
+ * @param str Current position in string.
+ * @param pattern Current position in pattern (points to '*').
+ * @return 1 if matched, 0 otherwise.
+ */
+static int	match_star(const char *str, const char *pattern)
+{
+	while (*pattern == '*')
+		pattern++;
+	if (*pattern == '\0')
+		return (1);
+	while (*str)
+	{
+		if (matches_pattern_with_escape(str, pattern))
+			return (1);
+		str++;
+	}
+	return (matches_pattern_with_escape(str, pattern));
+}
+
+/**
+ * @brief Matches a string against a pattern with wildcards and escapes.
+ *
+ * Supports:
+ * - '*' matches any sequence of characters
+ * - '?' matches any single character
+ * - '\' escapes the next character in the pattern
+ *
+ * @param str Input string to match.
+ * @param pattern Pattern string containing wildcards and escapes.
+ * @return 1 if string matches pattern, 0 otherwise.
+ */
 int	matches_pattern_with_escape(const char *str, const char *pattern)
 {
 	if (*pattern == '\0')
 		return (*str == '\0');
-
-	// Обработка экранированных символов
 	if (*pattern == '\\' && *(pattern + 1) != '\0')
-	{
-		if (*str != *(pattern + 1))
-			return (0);
-		return (matches_pattern_with_escape(str + 1, pattern + 2));
-	}
-
+		return (match_escape(str, pattern));
 	if (*pattern == '*')
-	{
-		while (*pattern == '*')
-			pattern++;
-		if (*pattern == '\0')
-			return (1);
-		while (*str)
-		{
-			if (matches_pattern_with_escape(str, pattern))
-				return (1);
-			str++;
-		}
-		return (matches_pattern_with_escape(str, pattern));
-	}
-
+		return (match_star(str, pattern));
 	if (*str == '\0')
 		return (0);
-
 	if (*pattern == *str || *pattern == '?')
-		return matches_pattern_with_escape(str + 1, pattern + 1);
-
+		return (matches_pattern_with_escape(str + 1, pattern + 1));
 	return (0);
 }
 
