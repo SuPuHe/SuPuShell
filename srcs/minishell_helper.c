@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell_helper.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 17:06:05 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 18:09:06 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:35:11 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,4 +88,38 @@ bool	process_one_command_iteration(char *line,
 	execute_node(ast, shell);
 	free_ast(ast);
 	return (true);
+}
+
+/**
+ * @brief Checks if a token is a command terminator.
+ *
+ * Returns true if the token is a pipe, AND, OR, right parenthesis,
+ * or end token.
+ *
+ * @param token Pointer to the token to check.
+ * @return true if token is a terminator, false otherwise.
+ */
+bool	is_command_terminator(t_token *token)
+{
+	return (token->type == TOKEN_PIPE || token->type == TOKEN_AND
+		|| token->type == TOKEN_OR || token->type == TOKEN_RPAREN
+		|| token->type == TOKEN_END);
+}
+
+/**
+ * @brief Initializes the input structure for a command.
+ *
+ * Sets environment, syntax flag, and shell pointer in the input struct.
+ *
+ * @param input Pointer to the input structure to initialize.
+ * @param env Pointer to the environment structure.
+ * @param shell Pointer to the shell structure.
+ */
+void	init_input_structure(t_input *input, t_env *env, t_shell *shell)
+{
+	ft_memset(input, 0, sizeof(t_input));
+	input->env = env;
+	input->syntax_ok = true;
+	input->shell = shell;
+	input->heredoc_processed = false;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 10:06:41 by omizin            #+#    #+#             */
-/*   Updated: 2025/08/15 17:09:59 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:35:53 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,5 @@
 # include <termios.h>
 # include <term.h>
 # include <stdbool.h>
-
-//minishell_helper.c
-bool	process_one_command_iteration(char *line,
-			t_shell *shell, int interactive);
 
 #endif

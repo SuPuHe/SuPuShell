@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 15:30:25 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/19 17:57:03 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:35:30 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,6 @@
 # include "stdbool.h"
 
 //parser_command.c
-bool			is_command_terminator(t_token *token);
-void			init_input_structure(t_input *input,
-					t_env *env, t_shell *shell);
 t_ast_node		*parse_primary_subshell(t_list **tokens, t_shell *shell);
 t_ast_node		*parse_primary_command(t_list **tokens, t_shell *shell);
 t_input			parse_command_from_tokens(t_list **current_tokens,
