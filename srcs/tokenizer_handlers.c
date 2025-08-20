@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokenizer_handlers.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:01:04 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/13 13:42:45 by omizin           ###   ########.fr       */
+/*   Updated: 2025/08/20 17:05:10 by vpushkar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,5 @@ t_token	*handle_operator_tokens(const char *line, int *i)
 		return ((*i)++, create_token(TOKEN_LPAREN, NULL));
 	else if (line[*i] == ')')
 		return ((*i)++, create_token(TOKEN_RPAREN, NULL));
-	else if (line[*i] == '&')
-		return ((*i)++, create_token(TOKEN_AMPERSAND, NULL));
 	return (NULL);
 }
