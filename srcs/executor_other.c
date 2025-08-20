@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_other.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:30:54 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/07/30 18:05:30 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:33:30 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,17 @@ void	execute_subshell_child(t_ast_node *node, t_shell *shell)
 
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+	if (node->command)
+	{
+		if (!apply_input_redirections(node->command)
+			|| !apply_output_redirections(node->command))
+		{
+			perror("subshell redirection");
+			rl_clear_history();
+			cf_free_all();
+			exit(1);
+		}
+	}
 	status = execute_node(node->left, shell);
 	rl_clear_history();
 	cf_free_all();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ast.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 12:23:19 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/05 17:05:21 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:33:04 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void	free_ast(t_ast_node *node)
 		free_ast(node->left);
 	if (node->right)
 		free_ast(node->right);
-	if (node->type == NODE_CMD && node->command)
+	if (node->command)
 	{
 		free_heredoc_delimiters(node->command);
 		cf_free_one(node->command);

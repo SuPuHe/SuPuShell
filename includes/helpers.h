@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   helpers.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpushkar <vpushkar@student.42heilbronn.de> +#+  +:+       +#+        */
+/*   By: omizin <omizin@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 17:15:11 by vpushkar          #+#    #+#             */
-/*   Updated: 2025/08/15 16:48:41 by vpushkar         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:36:20 by omizin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,4 +42,10 @@ int		ft_isspace(char c);
 char	**append_arg(char **args, char *new_arg);
 int		last_status_assign(t_input *command, t_shell *shell);
 
+//minishell_helper.c
+bool	process_one_command_iteration(char *line,
+			t_shell *shell, int interactive);
+bool	is_command_terminator(t_token *token);
+void	init_input_structure(t_input *input,
+			t_env *env, t_shell *shell);
 #endif
